@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .puzzle-tile {
+    @apply w-full aspect-square flex items-center justify-center text-white font-bold rounded-lg transition-all duration-200 cursor-pointer hover:opacity-90;
+  }
+  
+  .puzzle-grid {
+    @apply grid grid-cols-puzzle gap-1 bg-gray-200 p-4 rounded-lg max-w-2xl mx-auto;
+  }
+}
