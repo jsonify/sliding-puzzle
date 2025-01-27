@@ -103,10 +103,11 @@ const SlidingPuzzle = () => {
     if (!currentSeed) return;
     
     const nearSolvedEmptyPos = { row: 4, col: 3 };
+    const sequence = generateSolvablePuzzle(GRID_SIZE, currentSeed);
     setEmptyPos(nearSolvedEmptyPos);
     setBoard(generateBoardFromSequence(sequence, nearSolvedEmptyPos));
     setSolved(false);
-  }, [currentSeed, sequence]);
+  }, [currentSeed]);
 
   return (
     <div className="flex flex-col justify-center items-center min-h-[500px]">

@@ -32,18 +32,13 @@ export function generateSolvablePuzzle(size: number, seed?: number): number[] {
   // Create sequence 1 to n (excluding the empty tile)
   const numbers = Array.from({ length: size * size - 1 }, (_, i) => i + 1);
   
-  let sequence: number[];
-  let attempts = 0;
-  const maxAttempts = 1000;
-
-  do {
-    sequence = shuffleArray(numbers, seed);
-    attempts++;
-    if (attempts >= maxAttempts) {
-      console.warn('Max attempts reached, returning current sequence');
-      break;
-    }
-  } while (countInversions(sequence) % 2 !== 0);
+  let sequence = shuffleArray(numbers, seed);
+  
+  // If sequence has odd inversions, swap last two numbers to make it even
+  if (countInversions(sequence) % 2 !== 0) {
+    const lastIndex = sequence.length - 1;
+    [sequence[lastIndex], sequence[lastIndex - 1]] = [sequence[lastIndex - 1], sequence[lastIndex]];
+  }
   
   return sequence;
 }
