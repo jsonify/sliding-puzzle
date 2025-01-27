@@ -81,18 +81,18 @@ const SlidingPuzzle = () => {
   const [board, setBoard] = useState(() => generateRandomBoard(sequence));
 
   useEffect(() => {
-    if (isSolved(board)) {
+    if (!solved && isSolved(board)) {
       setSolved(true);
     }
-  }, [board]);
+  }, [board, solved]);
 
   const canMove = (row: number, col: number) => {
-    return (row === emptyPos.row || col === emptyPos.col) &&
+    return !solved && (row === emptyPos.row || col === emptyPos.col) &&
            !(row === emptyPos.row && col === emptyPos.col);
   };
 
   const handleTileClick = useCallback((clickedRow: number, clickedCol: number) => {
-    if (!canMove(clickedRow, clickedCol)) return;
+    if (!canMove(clickedRow, clickedCol) || solved) return;
 
     setBoard(prevBoard => {
       const newBoard = prevBoard.map(r => [...r]);
