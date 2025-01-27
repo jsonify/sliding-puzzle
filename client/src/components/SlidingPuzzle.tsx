@@ -77,8 +77,12 @@ const SlidingPuzzle = () => {
         }
       }
       
+      // Store the clicked tile temporarily
+      const clickedTile = newBoard[clickedRow][clickedCol];
       // Place empty tile at clicked position
-      newBoard[clickedRow][clickedCol] = newBoard[emptyPos.row][emptyPos.col];
+      newBoard[clickedRow][clickedCol] = { number: null, color: null, isEmpty: true };
+      // Place clicked tile at empty position
+      newBoard[emptyPos.row][emptyPos.col] = clickedTile;
       return newBoard;
     });
 
