@@ -1,5 +1,6 @@
 // client/src/components/SlidingPuzzle.tsx
 import React, { useState, useCallback } from 'react';
+import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 
 const colors = ['#90caf9', '#f48fb1', '#81c784', '#ffb74d', '#ba68c8', '#4fc3f7'];
 const GRID_SIZE = 5;
@@ -7,7 +8,7 @@ const EMPTY_POSITION = { row: 4, col: 4 };
 
 const SlidingPuzzle = () => {
   const [board, setBoard] = useState(() => {
-    const sequence = [7,19,21,16,2,10,13,12,18,1,14,8,11,22,24,9,3,17,4,5,15,20,6,23];
+    const sequence = generateSolvablePuzzle(GRID_SIZE);
     const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
     let seqIndex = 0;
     
