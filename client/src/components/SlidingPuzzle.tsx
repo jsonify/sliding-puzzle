@@ -22,39 +22,32 @@ const isSolved = (board: any[][]) => {
 const GRID_SIZE = 5;
 const EMPTY_POSITION = { row: 4, col: 4 };
 
-const generateNearSolvedBoard = (size: number) => {
+const generateNearSolvedBoard = (size: number, sequence: number[]) => {
+  // Create the solved board first
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
       const position = row * size + col;
       
-      // Make the second-to-last position empty instead of the last
-      if (position === 23) {
+      // Last position should be empty in solved state
+      if (position === size * size - 1) {
         return { number: null, color: null, isEmpty: true };
       }
-      // Put the last tile in the second-to-last position
-      else if (position === 22) {
-        return {
-          number: 24,
-          color: colors[Math.floor(23 / 4)],
-          isEmpty: false
-        };
-      }
-      // Put the empty tile in the last position
-      else if (position === 24) {
-        return {
-          number: 23,
-          color: colors[Math.floor(22 / 4)],
-          isEmpty: false
-        };
-      }
-      // All other positions are in their solved positions
+      
+      // Get the number from the sequence
+      const num = sequence[position];
       return {
-        number: position + 1,
-        color: colors[Math.floor(position / 4)],
+        number: num,
+        color: colors[Math.floor((num - 1) / 4)],
         isEmpty: false
       };
     })
   );
+  
+  // Swap the last two tiles to make it almost solved
+  const lastTile = {...board[4][3]};  // Save second to last tile
+  board[4][3] = { number: null, color: null, isEmpty: true };  // Make second to last position empty
+  board[4][4] = lastTile;  // Put the second to last tile in last position
+  
   return board;
 };
 
@@ -188,34 +181,7 @@ const SlidingPuzzle = () => {
           onClick={() => {
             if (!currentSeed) return;
             const sequence = generateSolvablePuzzle(GRID_SIZE, currentSeed);
-            const board = Array(GRID_SIZE).fill(null).map((_, row) =>
-              Array(GRID_SIZE).fill(null).map((_, col) => {
-                const position = row * GRID_SIZE + col;
-                if (position === 23) {
-                  return { number: null, color: null, isEmpty: true };
-                }
-                if (position === 22) {
-                  return {
-                    number: sequence[23],
-                    color: colors[Math.floor((sequence[23] - 1) / 4)],
-                    isEmpty: false
-                  };
-                }
-                if (position === 24) {
-                  return {
-                    number: sequence[22],
-                    color: colors[Math.floor((sequence[22] - 1) / 4)],
-                    isEmpty: false
-                  };
-                }
-                return {
-                  number: sequence[position],
-                  color: colors[Math.floor((sequence[position] - 1) / 4)],
-                  isEmpty: false
-                };
-              })
-            );
-            setBoard(board);
+            setBoard(generateNearSolvedBoard(GRID_SIZE, sequence));
             setEmptyPos({ row: 4, col: 3 }); // Position 23
             setSolved(false);
           }}
