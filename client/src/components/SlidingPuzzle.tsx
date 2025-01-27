@@ -31,23 +31,58 @@ const SlidingPuzzle = () => {
 
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
 
-  const isAdjacent = (row, col) => (
-    (Math.abs(row - emptyPos.row) === 1 && col === emptyPos.col) ||
-    (Math.abs(col - emptyPos.col) === 1 && row === emptyPos.row)
-  );
+  const canMove = (row: number, col: number) => {
+    return row === emptyPos.row || col === emptyPos.col;
+  };
 
-  const handleTileClick = useCallback((row, col) => {
-    if (!isAdjacent(row, col)) return;
+  const handleTileClick = useCallback((clickedRow: number, clickedCol: number) => {
+    if (!canMove(clickedRow, clickedCol)) return;
 
     setBoard(prevBoard => {
       const newBoard = prevBoard.map(r => [...r]);
-      const clickedTile = newBoard[row][col];
-      newBoard[row][col] = newBoard[emptyPos.row][emptyPos.col];
-      newBoard[emptyPos.row][emptyPos.col] = clickedTile;
+      
+      if (clickedRow === emptyPos.row) {
+        // Moving horizontally
+        const start = Math.min(clickedCol, emptyPos.col);
+        const end = Math.max(clickedCol, emptyPos.col);
+        const row = clickedRow;
+        
+        if (clickedCol < emptyPos.col) {
+          // Moving right
+          for (let col = end; col > start; col--) {
+            newBoard[row][col] = newBoard[row][col - 1];
+          }
+        } else {
+          // Moving left
+          for (let col = start; col < end; col++) {
+            newBoard[row][col] = newBoard[row][col + 1];
+          }
+        }
+      } else {
+        // Moving vertically
+        const start = Math.min(clickedRow, emptyPos.row);
+        const end = Math.max(clickedRow, emptyPos.row);
+        const col = clickedCol;
+        
+        if (clickedRow < emptyPos.row) {
+          // Moving down
+          for (let row = end; row > start; row--) {
+            newBoard[row][col] = newBoard[row - 1][col];
+          }
+        } else {
+          // Moving up
+          for (let row = start; row < end; row++) {
+            newBoard[row][col] = newBoard[row + 1][col];
+          }
+        }
+      }
+      
+      // Place empty tile at clicked position
+      newBoard[clickedRow][clickedCol] = newBoard[emptyPos.row][emptyPos.col];
       return newBoard;
     });
 
-    setEmptyPos({ row, col });
+    setEmptyPos({ row: clickedRow, col: clickedCol });
   }, [emptyPos]);
 
   return (
@@ -63,12 +98,12 @@ const SlidingPuzzle = () => {
                     w-full h-full rounded-lg flex items-center justify-center
                     text-white text-2xl font-bold
                     ${tile.isEmpty ? 'bg-gray-300' : 'hover:brightness-90'}
-                    ${isAdjacent(rowIndex, colIndex) && !tile.isEmpty ? 'cursor-pointer' : 'cursor-not-allowed'}
+                    ${canMove(rowIndex, colIndex) && !tile.isEmpty ? 'cursor-pointer' : 'cursor-not-allowed'}
                     transition-all duration-200
                   `}
                   style={{ backgroundColor: tile.isEmpty ? undefined : tile.color }}
                   onClick={() => handleTileClick(rowIndex, colIndex)}
-                  disabled={tile.isEmpty || !isAdjacent(rowIndex, colIndex)}
+                  disabled={tile.isEmpty || !canMove(rowIndex, colIndex)}
                 >
                   {tile.number}
                 </button>
