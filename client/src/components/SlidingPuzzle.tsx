@@ -23,30 +23,33 @@ const GRID_SIZE = 5;
 const EMPTY_POSITION = { row: 4, col: 4 };
 
 const generateNearSolvedBoard = (size: number, sequence: number[]) => {
-  // Create the solved board first
+  // Create a board with tiles in their solved positions
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
       const position = row * size + col;
       
-      // Last position should be empty in solved state
-      if (position === size * size - 1) {
+      // For the second to last position (23), place empty tile
+      if (position === 23) {
         return { number: null, color: null, isEmpty: true };
       }
       
-      // Get the number from the sequence
-      const num = sequence[position];
+      // For the last position (24), place the tile that should be at position 23
+      if (position === 24) {
+        return {
+          number: sequence[23],
+          color: colors[Math.floor((sequence[23] - 1) / 4)],
+          isEmpty: false
+        };
+      }
+      
+      // For all other positions, place tiles according to solution sequence
       return {
-        number: num,
-        color: colors[Math.floor((num - 1) / 4)],
+        number: sequence[position],
+        color: colors[Math.floor((sequence[position] - 1) / 4)],
         isEmpty: false
       };
     })
   );
-  
-  // Swap the last two tiles to make it almost solved
-  const lastTile = {...board[4][3]};  // Save second to last tile
-  board[4][3] = { number: null, color: null, isEmpty: true };  // Make second to last position empty
-  board[4][4] = lastTile;  // Put the second to last tile in last position
   
   return board;
 };
