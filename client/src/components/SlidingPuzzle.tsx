@@ -156,7 +156,7 @@ const SlidingPuzzle = () => {
         <button
           onClick={() => {
             setBoard(generateNearSolvedBoard(GRID_SIZE));
-            setEmptyPos(EMPTY_POSITION);
+            setEmptyPos({ row: 4, col: 3 }); // Position 23
             setSolved(false);
           }}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
