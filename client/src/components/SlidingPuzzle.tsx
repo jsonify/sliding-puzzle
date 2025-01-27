@@ -103,27 +103,37 @@ const SlidingPuzzle = () => {
       if (clickedRow === emptyPos.row) {
         // Moving horizontally
         const direction = clickedCol < emptyPos.col ? 1 : -1;
-        const clickedTile = newBoard[clickedRow][clickedCol];
+        const clickedTile = {...newBoard[clickedRow][clickedCol]};
         
-        // Shift tiles between clicked and empty positions
-        for (let col = clickedCol; col !== emptyPos.col - direction; col += direction) {
-          newBoard[clickedRow][col] = newBoard[clickedRow][col + direction];
+        if (direction === 1) {
+          // Moving right
+          for (let col = clickedCol; col < emptyPos.col; col++) {
+            newBoard[clickedRow][col] = {...newBoard[clickedRow][col + 1]};
+          }
+        } else {
+          // Moving left
+          for (let col = clickedCol; col > emptyPos.col; col--) {
+            newBoard[clickedRow][col] = {...newBoard[clickedRow][col - 1]};
+          }
         }
-        
-        // Place clicked tile in empty position
-        newBoard[emptyPos.row][emptyPos.col] = clickedTile;
+        newBoard[clickedRow][emptyPos.col] = clickedTile;
       } else {
         // Moving vertically
         const direction = clickedRow < emptyPos.row ? 1 : -1;
-        const clickedTile = newBoard[clickedRow][clickedCol];
+        const clickedTile = {...newBoard[clickedRow][clickedCol]};
         
-        // Shift tiles between clicked and empty positions
-        for (let row = clickedRow; row !== emptyPos.row - direction; row += direction) {
-          newBoard[row][clickedCol] = newBoard[row + direction][clickedCol];
+        if (direction === 1) {
+          // Moving down
+          for (let row = clickedRow; row < emptyPos.row; row++) {
+            newBoard[row][clickedCol] = {...newBoard[row + 1][clickedCol]};
+          }
+        } else {
+          // Moving up
+          for (let row = clickedRow; row > emptyPos.row; row--) {
+            newBoard[row][clickedCol] = {...newBoard[row - 1][clickedCol]};
+          }
         }
-        
-        // Place clicked tile in empty position
-        newBoard[emptyPos.row][emptyPos.col] = clickedTile;
+        newBoard[emptyPos.row][clickedCol] = clickedTile;
       }
       
       // Place empty tile at clicked position
