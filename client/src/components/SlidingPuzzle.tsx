@@ -136,6 +136,39 @@ const SlidingPuzzle = () => {
   return (
     <div className="flex flex-col justify-center items-center min-h-[500px]">
       <div className="mb-4 flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder="Enter seed"
+            className="px-2 py-1 border rounded w-24"
+            onChange={(e) => {
+              const newSeed = parseInt(e.target.value) || Math.floor(Math.random() * 1000000);
+              setBoard(() => {
+                const sequence = generateSolvablePuzzle(GRID_SIZE, newSeed);
+                const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+                let seqIndex = 0;
+                
+                for (let i = 0; i < GRID_SIZE; i++) {
+                  for (let j = 0; j < GRID_SIZE; j++) {
+                    if (i === EMPTY_POSITION.row && j === EMPTY_POSITION.col) {
+                      initialBoard[i][j] = { number: null, color: null, isEmpty: true };
+                    } else {
+                      const num = sequence[seqIndex++];
+                      initialBoard[i][j] = {
+                        number: num,
+                        color: colors[Math.floor((num - 1) / 4)],
+                        isEmpty: false
+                      };
+                    }
+                  }
+                }
+                return initialBoard;
+              });
+              setEmptyPos(EMPTY_POSITION);
+              setSolved(false);
+            }}
+          />
+        </div>
         <button
           onClick={() => {
             setBoard(generateNearSolvedBoard(GRID_SIZE));

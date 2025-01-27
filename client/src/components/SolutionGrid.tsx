@@ -35,7 +35,6 @@ const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, showNumbers }
                 `}
                 style={{ backgroundColor: tile.isEmpty ? undefined : tile.color }}
               >
-                {showNumbers ? tile.number : ''}
               </div>
             ))}
           </div>

@@ -10,16 +10,25 @@ function countInversions(sequence: number[]): number {
   return inversions;
 }
 
-function shuffleArray(array: number[]): number[] {
+function seededRandom(seed: number) {
+  return function() {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+}
+
+function shuffleArray(array: number[], seed?: number): number[] {
   const shuffled = [...array];
+  const random = seed !== undefined ? seededRandom(seed) : Math.random;
+  
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
 }
 
-export function generateSolvablePuzzle(size: number): number[] {
+export function generateSolvablePuzzle(size: number, seed?: number): number[] {
   // Create sequence 1 to n (excluding the empty tile)
   const numbers = Array.from({ length: size * size - 1 }, (_, i) => i + 1);
   
