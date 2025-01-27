@@ -21,10 +21,9 @@ const SlidingPuzzle = () => {
           row.push({
             number: sequence[seqIndex],
             color: colors[Math.floor(sequence[seqIndex] - 1) / 4],
-            seqIndex++,
             isEmpty: false
           });
-          counter++;
+          seqIndex++;
         }
       }
       initialBoard.push(row);
