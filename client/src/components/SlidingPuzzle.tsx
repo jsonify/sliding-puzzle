@@ -9,15 +9,15 @@ interface GameSettings {
 
 const colors = ['#01EA72', '#A600EA', '#EB9502', '#035EEA', '#EA1901', '#CBEA02'];
 const isSolved = (board: any[][]) => {
-  let expectedNum = 1;
+  // Check each position against the expected color pattern
   for (let i = 0; i < GRID_SIZE; i++) {
     for (let j = 0; j < GRID_SIZE; j++) {
       if (i === GRID_SIZE - 1 && j === GRID_SIZE - 1) {
         // Last position should be empty
         if (!board[i][j].isEmpty) return false;
       } else {
-        if (board[i][j].number !== expectedNum) return false;
-        expectedNum++;
+        const expectedColorIndex = Math.floor((i * GRID_SIZE + j) / 4);
+        if (board[i][j].color !== colors[expectedColorIndex]) return false;
       }
     }
   }

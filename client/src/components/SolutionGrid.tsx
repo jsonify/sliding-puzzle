@@ -9,13 +9,13 @@ interface SolutionGridProps {
 const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, showNumbers }) => {
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
-      const number = row * size + col + 1;
       if (row === size - 1 && col === size - 1) {
-        return { number: null, color: null, isEmpty: true };
+        return { number: row * size + col + 1, color: null, isEmpty: true };
       }
+      const colorIndex = Math.floor((row * size + col) / 4);
       return {
-        number,
-        color: colors[Math.floor((number - 1) / 4)],
+        number: row * size + col + 1,
+        color: colors[colorIndex],
         isEmpty: false
       };
     })
