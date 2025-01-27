@@ -1,5 +1,4 @@
 // client/src/App.tsx
-import React from 'react';
 import SlidingPuzzle from './components/SlidingPuzzle';
 
 export default function App() {
