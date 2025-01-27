@@ -26,6 +26,27 @@ const isSolved = (board: any[][]) => {
 const GRID_SIZE = 5;
 const EMPTY_POSITION = { row: 4, col: 4 };
 
+const generateNearSolvedBoard = (size: number) => {
+  const board = Array(size).fill(null).map((_, row) =>
+    Array(size).fill(null).map((_, col) => {
+      if (row === size - 1 && col === size - 1) {
+        return { number: null, color: null, isEmpty: true };
+      }
+      // Just swap the last two non-empty tiles
+      let position = row * size + col;
+      if (position === 22) position = 23;
+      else if (position === 23) position = 22;
+      
+      return {
+        number: position + 1,
+        color: colors[Math.floor(position / 4)],
+        isEmpty: false
+      };
+    })
+  );
+  return board;
+};
+
 const SlidingPuzzle = () => {
   const [board, setBoard] = useState(() => {
     const sequence = generateSolvablePuzzle(GRID_SIZE);
@@ -108,6 +129,16 @@ const SlidingPuzzle = () => {
           />
           <span>Show Numbers</span>
         </label>
+        <button
+          onClick={() => {
+            setBoard(generateNearSolvedBoard(GRID_SIZE));
+            setEmptyPos(EMPTY_POSITION);
+            setSolved(false);
+          }}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Debug: Almost Solve
+        </button>
       </div>
       {solved && (
         <div className="mb-4 p-4 bg-green-500 text-white rounded-lg text-xl font-bold">
