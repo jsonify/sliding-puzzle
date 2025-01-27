@@ -1,6 +1,7 @@
 // client/src/components/SlidingPuzzle.tsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateSolvablePuzzle } from '../utils/puzzleUtils';
+import SolutionGrid from './SolutionGrid';
 
 const colors = ['#90caf9', '#f48fb1', '#81c784', '#ffb74d', '#ba68c8', '#4fc3f7'];
 const isSolved = (board: any[][]) => {
@@ -119,6 +120,10 @@ const SlidingPuzzle = () => {
             </div>
           ))}
         </div>
+      </div>
+      <div className="mt-8 flex flex-col items-center">
+        <h2 className="text-xl font-bold mb-2">Solution</h2>
+        <SolutionGrid size={GRID_SIZE} colors={colors} />
       </div>
     </div>
   );
