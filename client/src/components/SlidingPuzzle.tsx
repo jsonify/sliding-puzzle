@@ -3,6 +3,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 import SolutionGrid from './SolutionGrid';
 
+interface GameSettings {
+  showNumbers: boolean;
+}
+
 const colors = ['#01EA72', '#A600EA', '#EB9502', '#035EEA', '#EA1901', '#CBEA02'];
 const isSolved = (board: any[][]) => {
   let expectedNum = 1;
@@ -47,6 +51,9 @@ const SlidingPuzzle = () => {
 
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
   const [solved, setSolved] = useState(false);
+  const [settings, setSettings] = useState<GameSettings>({
+    showNumbers: true
+  });
 
   useEffect(() => {
     if (isSolved(board)) {
@@ -91,6 +98,17 @@ const SlidingPuzzle = () => {
 
   return (
     <div className="flex flex-col justify-center items-center min-h-[500px]">
+      <div className="mb-4 flex items-center gap-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={settings.showNumbers}
+            onChange={(e) => setSettings(prev => ({ ...prev, showNumbers: e.target.checked }))}
+            className="w-4 h-4"
+          />
+          <span>Show Numbers</span>
+        </label>
+      </div>
       {solved && (
         <div className="mb-4 p-4 bg-green-500 text-white rounded-lg text-xl font-bold">
           Congratulations! Puzzle Solved! 🎉
@@ -114,7 +132,7 @@ const SlidingPuzzle = () => {
                   onClick={() => handleTileClick(rowIndex, colIndex)}
                   disabled={tile.isEmpty || !canMove(rowIndex, colIndex)}
                 >
-                  {tile.number}
+                  {settings.showNumbers ? tile.number : ''}
                 </button>
               ))}
             </div>
@@ -123,7 +141,7 @@ const SlidingPuzzle = () => {
       </div>
       <div className="mt-8 flex flex-col items-center">
         <h2 className="text-xl font-bold mb-2">Solution</h2>
-        <SolutionGrid size={GRID_SIZE} colors={colors} />
+        <SolutionGrid size={GRID_SIZE} colors={colors} showNumbers={settings.showNumbers} />
       </div>
     </div>
   );

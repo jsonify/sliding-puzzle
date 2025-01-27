@@ -3,6 +3,7 @@ import React from 'react';
 interface SolutionGridProps {
   size: number;
   colors: string[];
+  showNumbers?: boolean;
 }
 
 const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors }) => {
@@ -35,7 +36,7 @@ const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors }) => {
                 `}
                 style={{ backgroundColor: tile.isEmpty ? undefined : tile.color }}
               >
-                {tile.number}
+                {props.showNumbers ? tile.number : ''}
               </div>
             ))}
           </div>
