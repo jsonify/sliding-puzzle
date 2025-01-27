@@ -1,19 +1,41 @@
+// client/src/components/Board/Tile.tsx
+// Description: This code defines a Tile component for a game board. Each tile can be empty or contain a number and color. The tile is clickable if it is movable, and the appearance changes based on its state.
+
 import React from 'react';
 
 interface TileProps {
-  id: number;
   color: string;
-  onClick: (id: number) => void;
+  number: number;
+  isEmpty: boolean;
+  isMovable: boolean;
+  onClick: () => void;
 }
 
-const Tile: React.FC<TileProps> = ({ id, color, onClick }) => {
+export const TileComponent: React.FC<TileProps> = ({ 
+  color, 
+  number, 
+  isEmpty, 
+  isMovable, 
+  onClick 
+}) => {
+  if (isEmpty) {
+    return <div className="aspect-square bg-gray-300 rounded" />;
+  }
+
   return (
-    <div
-      className="w-16 h-16 rounded cursor-pointer transition-all duration-200"
+    <button
+      onClick={onClick}
+      disabled={!isMovable}
+      className={`
+        aspect-square rounded flex items-center justify-center
+        ${isMovable ? 'cursor-pointer hover:brightness-90' : 'cursor-not-allowed'}
+        transition-all duration-200
+      `}
       style={{ backgroundColor: color }}
-      onClick={() => onClick(id)}
-    />
+    >
+      <span className="text-white text-lg font-bold">
+        {number}
+      </span>
+    </button>
   );
 };
-
-export default Tile;

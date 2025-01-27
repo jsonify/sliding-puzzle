@@ -1,42 +1,46 @@
-// useGame.ts
-import { useState, useEffect, useCallback } from 'react';
-import { socket } from '../services/socket';
-import type { BoardState, Move } from '../components/Board/types';
-
-type Position = {
-  row: number;
-  col: number;
-};
+// client/src/hooks/useGame.ts
+import { useState, useCallback, useEffect } from 'react';
+import { BoardState, Move, Position } from '../components/Board/types';
+import { generatePuzzle, isWinningState } from '../utils/puzzleGenerator';
 
 export const useGame = (gameId: string) => {
-  const [boardState, setBoardState] = useState<BoardState>([]);
-  const [emptyPosition, setEmptyPosition] = useState<Position>({ row: 4, col: 4 });
+  const [boardState, setBoardState] = useState<BoardState>(() => generatePuzzle());
+  const [emptyPosition, setEmptyPosition] = useState<Position>(() => {
+    const board = boardState;
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 5; col++) {
+        if (board[row][col].isEmpty) {
+          return { row, col };
+        }
+      }
+    }
+    return { row: 4, col: 4 }; // fallback
+  });
   const [isSolved, setIsSolved] = useState(false);
-
-  useEffect(() => {
-    socket.emit('joinGame', gameId);
-
-    socket.on('gameState', (state) => {
-      setBoardState(state.board);
-      setEmptyPosition(state.emptyPosition);
-      setIsSolved(state.status === 'completed');
-    });
-
-    return () => {
-      socket.off('gameState');
-      socket.emit('leaveGame', gameId);
-    };
-  }, [gameId]);
-
-  const makeMove = useCallback((move: Move) => {
-    socket.emit('move', { gameId, move });
-  }, [gameId]);
 
   const isValidMove = useCallback((move: Move): boolean => {
     const rowDiff = Math.abs(move.from.row - move.to.row);
     const colDiff = Math.abs(move.from.col - move.to.col);
     return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
   }, []);
+
+  const makeMove = useCallback((move: Move) => {
+    if (!isValidMove(move)) return;
+
+    setBoardState(prev => {
+      const newBoard = prev.map(row => [...row]);
+      const temp = newBoard[move.from.row][move.from.col];
+      newBoard[move.from.row][move.from.col] = newBoard[move.to.row][move.to.col];
+      newBoard[move.to.row][move.to.col] = temp;
+      return newBoard;
+    });
+
+    setEmptyPosition(move.from);
+  }, [isValidMove]);
+
+  useEffect(() => {
+    setIsSolved(isWinningState(boardState));
+  }, [boardState]);
 
   return {
     boardState,

@@ -1,10 +1,18 @@
-export interface BoardState {
-  tiles: number[][];
-  emptyPosition: [number, number];
+// client/src/components/Board/types.ts
+export interface Position {
+  row: number;
+  col: number;
 }
 
 export interface Move {
-  tileId: number;
-  from: [number, number];
-  to: [number, number];
+  from: Position;
+  to: Position;
 }
+
+export interface Tile {
+  color: string;
+  number: number;
+  isEmpty: boolean;
+}
+
+export type BoardState = Tile[][];
