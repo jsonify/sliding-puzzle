@@ -1,17 +1,22 @@
 import React from 'react';
+import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 
 interface SolutionGridProps {
   size: number;
   colors: string[];
+  seed?: number;
 }
 
-const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors }) => {
+const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, seed }) => {
+  const sequence = seed ? generateSolvablePuzzle(size, seed) : Array.from({ length: size * size - 1 }, (_, i) => i + 1);
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
-      if (row === size - 1 && col === size - 1) {
-        return { number: row * size + col + 1, color: null, isEmpty: true };
+      const position = row * size + col;
+      if (position === size * size - 1) {
+        return { number: null, color: null, isEmpty: true };
       }
-      const colorIndex = Math.floor((row * size + col) / 4);
+      const num = sequence[position];
+      const colorIndex = Math.floor((num - 1) / 4);
       return {
         number: row * size + col + 1,
         color: colors[colorIndex],

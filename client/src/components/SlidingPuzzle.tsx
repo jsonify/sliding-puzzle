@@ -147,25 +147,6 @@ const SlidingPuzzle = () => {
           <button
             onClick={() => {
               if (!currentSeed) return;
-                const sequence = generateSolvablePuzzle(GRID_SIZE, newSeed);
-                const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
-                let seqIndex = 0;
-                
-                for (let i = 0; i < GRID_SIZE; i++) {
-                  for (let j = 0; j < GRID_SIZE; j++) {
-                    if (i === EMPTY_POSITION.row && j === EMPTY_POSITION.col) {
-                      initialBoard[i][j] = { number: null, color: null, isEmpty: true };
-                    } else {
-                      const num = sequence[seqIndex++];
-                      initialBoard[i][j] = {
-                        number: num,
-                        color: colors[Math.floor((num - 1) / 4)],
-                        isEmpty: false
-                      };
-                    }
-                  }
-                }
-                return initialBoard;
               setBoard(() => {
                 const sequence = generateSolvablePuzzle(GRID_SIZE, currentSeed);
                 const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
@@ -266,7 +247,7 @@ const SlidingPuzzle = () => {
       </div>
       <div className="mt-8 flex flex-col items-center">
         <h2 className="text-xl font-bold mb-2">Solution</h2>
-        <SolutionGrid size={GRID_SIZE} colors={colors} />
+        <SolutionGrid size={GRID_SIZE} colors={colors} seed={currentSeed} />
       </div>
     </div>
   );
