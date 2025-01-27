@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 import SolutionGrid from './SolutionGrid';
 
-const colors = ['#90caf9', '#f48fb1', '#81c784', '#ffb74d', '#ba68c8', '#4fc3f7'];
+const colors = ['#01EA72', '#A600EA', '#EB9502', '#035EEA', '#EA1901', '#CBEA02'];
 const isSolved = (board: any[][]) => {
   let expectedNum = 1;
   for (let i = 0; i < GRID_SIZE; i++) {
