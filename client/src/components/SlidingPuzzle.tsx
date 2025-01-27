@@ -29,14 +29,29 @@ const EMPTY_POSITION = { row: 4, col: 4 };
 const generateNearSolvedBoard = (size: number) => {
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
-      if (row === size - 1 && col === size - 1) {
+      const position = row * size + col;
+      
+      // Make the second-to-last position empty instead of the last
+      if (position === 23) {
         return { number: null, color: null, isEmpty: true };
       }
-      // Just swap the last two non-empty tiles
-      let position = row * size + col;
-      if (position === 22) position = 23;
-      else if (position === 23) position = 22;
-      
+      // Put the last tile in the second-to-last position
+      else if (position === 22) {
+        return {
+          number: 24,
+          color: colors[Math.floor(23 / 4)],
+          isEmpty: false
+        };
+      }
+      // Put the empty tile in the last position
+      else if (position === 24) {
+        return {
+          number: 23,
+          color: colors[Math.floor(22 / 4)],
+          isEmpty: false
+        };
+      }
+      // All other positions are in their solved positions
       return {
         number: position + 1,
         color: colors[Math.floor(position / 4)],
