@@ -1,8 +1,23 @@
 // client/src/components/SlidingPuzzle.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 
 const colors = ['#90caf9', '#f48fb1', '#81c784', '#ffb74d', '#ba68c8', '#4fc3f7'];
+const isSolved = (board: any[][]) => {
+  let expectedNum = 1;
+  for (let i = 0; i < GRID_SIZE; i++) {
+    for (let j = 0; j < GRID_SIZE; j++) {
+      if (i === GRID_SIZE - 1 && j === GRID_SIZE - 1) {
+        // Last position should be empty
+        if (!board[i][j].isEmpty) return false;
+      } else {
+        if (board[i][j].number !== expectedNum) return false;
+        expectedNum++;
+      }
+    }
+  }
+  return true;
+};
 const GRID_SIZE = 5;
 const EMPTY_POSITION = { row: 4, col: 4 };
 
@@ -30,6 +45,13 @@ const SlidingPuzzle = () => {
   });
 
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
+  const [solved, setSolved] = useState(false);
+
+  useEffect(() => {
+    if (isSolved(board)) {
+      setSolved(true);
+    }
+  }, [board]);
 
   const canMove = (row: number, col: number) => {
     return row === emptyPos.row || col === emptyPos.col;
@@ -67,7 +89,12 @@ const SlidingPuzzle = () => {
   }, [emptyPos]);
 
   return (
-    <div className="flex justify-center items-center min-h-[500px]">
+    <div className="flex flex-col justify-center items-center min-h-[500px]">
+      {solved && (
+        <div className="mb-4 p-4 bg-green-500 text-white rounded-lg text-xl font-bold">
+          Congratulations! Puzzle Solved! 🎉
+        </div>
+      )}
       <div className="w-[500px] h-[500px] bg-gray-100 p-6 rounded-xl">
         <div className="grid grid-rows-5 h-full">
           {board.map((row, rowIndex) => (
