@@ -5,7 +5,7 @@ interface SolutionGridProps {
   colors: string[];
 }
 
-const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, showNumbers }) => {
+const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors }) => {
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
       if (row === size - 1 && col === size - 1) {

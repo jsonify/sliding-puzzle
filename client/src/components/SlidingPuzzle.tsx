@@ -83,6 +83,7 @@ const SlidingPuzzle = () => {
 
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
   const [solved, setSolved] = useState(false);
+  const [currentSeed, setCurrentSeed] = useState<number>();
   useEffect(() => {
     if (isSolved(board)) {
       setSolved(true);
@@ -141,10 +142,32 @@ const SlidingPuzzle = () => {
             type="number"
             placeholder="Enter seed"
             className="px-2 py-1 border rounded w-24"
-            onChange={(e) => {
-              const newSeed = parseInt(e.target.value) || Math.floor(Math.random() * 1000000);
-              setBoard(() => {
+            onChange={(e) => setCurrentSeed(parseInt(e.target.value) || Math.floor(Math.random() * 1000000))}
+          />
+          <button
+            onClick={() => {
+              if (!currentSeed) return;
                 const sequence = generateSolvablePuzzle(GRID_SIZE, newSeed);
+                const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+                let seqIndex = 0;
+                
+                for (let i = 0; i < GRID_SIZE; i++) {
+                  for (let j = 0; j < GRID_SIZE; j++) {
+                    if (i === EMPTY_POSITION.row && j === EMPTY_POSITION.col) {
+                      initialBoard[i][j] = { number: null, color: null, isEmpty: true };
+                    } else {
+                      const num = sequence[seqIndex++];
+                      initialBoard[i][j] = {
+                        number: num,
+                        color: colors[Math.floor((num - 1) / 4)],
+                        isEmpty: false
+                      };
+                    }
+                  }
+                }
+                return initialBoard;
+              setBoard(() => {
+                const sequence = generateSolvablePuzzle(GRID_SIZE, currentSeed);
                 const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
                 let seqIndex = 0;
                 
@@ -167,11 +190,43 @@ const SlidingPuzzle = () => {
               setEmptyPos(EMPTY_POSITION);
               setSolved(false);
             }}
-          />
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Go!
+          </button>
         </div>
         <button
           onClick={() => {
-            setBoard(generateNearSolvedBoard(GRID_SIZE));
+            if (!currentSeed) return;
+            const sequence = generateSolvablePuzzle(GRID_SIZE, currentSeed);
+            const board = Array(GRID_SIZE).fill(null).map((_, row) =>
+              Array(GRID_SIZE).fill(null).map((_, col) => {
+                const position = row * GRID_SIZE + col;
+                if (position === 23) {
+                  return { number: null, color: null, isEmpty: true };
+                }
+                if (position === 22) {
+                  return {
+                    number: sequence[23],
+                    color: colors[Math.floor((sequence[23] - 1) / 4)],
+                    isEmpty: false
+                  };
+                }
+                if (position === 24) {
+                  return {
+                    number: sequence[22],
+                    color: colors[Math.floor((sequence[22] - 1) / 4)],
+                    isEmpty: false
+                  };
+                }
+                return {
+                  number: sequence[position],
+                  color: colors[Math.floor((sequence[position] - 1) / 4)],
+                  isEmpty: false
+                };
+              })
+            );
+            setBoard(board);
             setEmptyPos({ row: 4, col: 3 }); // Position 23
             setSolved(false);
           }}
