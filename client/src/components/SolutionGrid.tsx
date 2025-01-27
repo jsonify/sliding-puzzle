@@ -6,7 +6,7 @@ interface SolutionGridProps {
   showNumbers?: boolean;
 }
 
-const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors }) => {
+const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, showNumbers }) => {
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
       const number = row * size + col + 1;
@@ -36,7 +36,7 @@ const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors }) => {
                 `}
                 style={{ backgroundColor: tile.isEmpty ? undefined : tile.color }}
               >
-                {props.showNumbers ? tile.number : ''}
+                {showNumbers ? tile.number : ''}
               </div>
             ))}
           </div>
