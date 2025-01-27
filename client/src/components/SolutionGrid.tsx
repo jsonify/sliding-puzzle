@@ -41,7 +41,7 @@ const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, seed }) => {
                 `}
                 style={{ backgroundColor: tile.color }}
               >
-                {tile.number}
+                {/* {tile.number} */}
               </div>
             ))}
           </div>
