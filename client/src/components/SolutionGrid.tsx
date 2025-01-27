@@ -8,12 +8,9 @@ interface SolutionGridProps {
 }
 
 const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, seed }) => {
-  const sequence = useMemo(() => 
-    generateSolvablePuzzle(size, seed || Math.floor(Math.random() * 1000000)),
-    [seed, size]
-  );
-  
-  const board = useMemo(() => 
+  const board = useMemo(() => {
+    const sequence = generateSolvablePuzzle(size, seed || Math.floor(Math.random() * 1000000));
+    return 
     Array(size).fill(null).map((_, row) =>
       Array(size).fill(null).map((_, col) => {
         const position = row * size + col;

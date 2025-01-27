@@ -33,9 +33,17 @@ export function generateSolvablePuzzle(size: number, seed?: number): number[] {
   const numbers = Array.from({ length: size * size - 1 }, (_, i) => i + 1);
   
   let sequence: number[];
+  let attempts = 0;
+  const maxAttempts = 1000;
+
   do {
-    sequence = shuffleArray(numbers);
-  } while (countInversions(sequence) % 2 !== 0); // For 5x5, need even inversions
+    sequence = shuffleArray(numbers, seed);
+    attempts++;
+    if (attempts >= maxAttempts) {
+      console.warn('Max attempts reached, returning current sequence');
+      break;
+    }
+  } while (countInversions(sequence) % 2 !== 0);
   
   return sequence;
 }

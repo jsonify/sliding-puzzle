@@ -48,12 +48,11 @@ const SlidingPuzzle = () => {
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
   const [solved, setSolved] = useState(false);
 
-  const sequence = useMemo(() => 
-    generateSolvablePuzzle(GRID_SIZE, currentSeed || Math.floor(Math.random() * 1000000)),
-    [currentSeed]
-  );
-
-  const [board, setBoard] = useState(() => generateBoardFromSequence(sequence, EMPTY_POSITION));
+  const [board, setBoard] = useState(() => {
+    const initialSeed = Math.floor(Math.random() * 1000000);
+    const initialSequence = generateSolvablePuzzle(GRID_SIZE, initialSeed);
+    return generateBoardFromSequence(initialSequence, EMPTY_POSITION);
+  });
 
   useEffect(() => {
     if (isSolved(board)) {
