@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 
 interface SolutionGridProps {
@@ -8,7 +8,11 @@ interface SolutionGridProps {
 }
 
 const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, seed }) => {
-  const sequence = seed ? generateSolvablePuzzle(size, seed) : Array.from({ length: size * size - 1 }, (_, i) => i + 1);
+  const sequence = useMemo(() => 
+    seed ? generateSolvablePuzzle(size, seed) : Array.from({ length: size * size - 1 }, (_, i) => i + 1),
+    [seed, size]
+  );
+  
   const board = Array(size).fill(null).map((_, row) =>
     Array(size).fill(null).map((_, col) => {
       const position = row * size + col;
