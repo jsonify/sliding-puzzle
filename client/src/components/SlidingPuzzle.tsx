@@ -73,11 +73,10 @@ const SlidingPuzzle = () => {
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
   const [solved, setSolved] = useState(false);
 
-  const sequence = useMemo(() => 
-    generateSolvablePuzzle(GRID_SIZE, currentSeed || Math.floor(Math.random() * 1000000)),
-    [currentSeed]
+  const [sequence, setSequence] = useState(() => 
+    generateSolvablePuzzle(GRID_SIZE, Math.floor(Math.random() * 1000000))
   );
-
+  
   const [board, setBoard] = useState(() => generateRandomBoard(sequence));
 
   useEffect(() => {
@@ -121,10 +120,11 @@ const SlidingPuzzle = () => {
   }, [emptyPos]);
 
   const handleNewPuzzle = useCallback((seed: number) => {
+    const newSequence = generateSolvablePuzzle(GRID_SIZE, seed);
     setCurrentSeed(seed);
+    setSequence(newSequence);
     setEmptyPos(EMPTY_POSITION);
     setSolved(false);
-    const newSequence = generateSolvablePuzzle(GRID_SIZE, seed);
     setBoard(generateRandomBoard(newSequence));
   }, []);
 
