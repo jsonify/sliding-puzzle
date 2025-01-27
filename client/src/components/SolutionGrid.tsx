@@ -3,7 +3,6 @@ import React from 'react';
 interface SolutionGridProps {
   size: number;
   colors: string[];
-  showNumbers?: boolean;
 }
 
 const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, showNumbers }) => {
