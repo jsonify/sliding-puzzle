@@ -17,12 +17,12 @@ const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, seed }) => {
     Array(size).fill(null).map((_, col) => {
       const position = row * size + col;
       if (position === size * size - 1) {
-        return { number: null, color: null, isEmpty: true };
+        return { number: null, color: undefined, isEmpty: true };
       }
       const num = sequence[position];
       const colorIndex = Math.floor((num - 1) / 4);
       return {
-        number: row * size + col + 1,
+        number: num,
         color: colors[colorIndex],
         isEmpty: false
       };
@@ -42,8 +42,9 @@ const SolutionGrid: React.FC<SolutionGridProps> = ({ size, colors, seed }) => {
                   text-white text-sm font-bold
                   ${tile.isEmpty ? 'bg-gray-300' : ''}
                 `}
-                style={{ backgroundColor: tile.isEmpty ? undefined : tile.color }}
+                style={{ backgroundColor: tile.color }}
               >
+                {tile.number}
               </div>
             ))}
           </div>

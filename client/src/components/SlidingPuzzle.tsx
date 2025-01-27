@@ -1,15 +1,16 @@
 // client/src/components/SlidingPuzzle.tsx
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 import SolutionGrid from './SolutionGrid';
 
 const colors = ['#01EA72', '#A600EA', '#EB9502', '#035EEA', '#EA1901', '#CBEA02'];
+const GRID_SIZE = 5;
+const EMPTY_POSITION = { row: 4, col: 4 };
+
 const isSolved = (board: any[][]) => {
-  // Check each position against the expected color pattern
   for (let i = 0; i < GRID_SIZE; i++) {
     for (let j = 0; j < GRID_SIZE; j++) {
       if (i === GRID_SIZE - 1 && j === GRID_SIZE - 1) {
-        // Last position should be empty
         if (!board[i][j].isEmpty) return false;
       } else {
         const expectedColorIndex = Math.floor((i * GRID_SIZE + j) / 4);
@@ -19,67 +20,41 @@ const isSolved = (board: any[][]) => {
   }
   return true;
 };
-const GRID_SIZE = 5;
-const EMPTY_POSITION = { row: 4, col: 4 };
 
-const generateNearSolvedBoard = (size: number, sequence: number[]) => {
-  // Create a board with tiles in their solved positions
-  const board = Array(size).fill(null).map((_, row) =>
-    Array(size).fill(null).map((_, col) => {
-      const position = row * size + col;
+const generateBoardFromSequence = (sequence: number[], emptyPos = EMPTY_POSITION) => {
+  const board = Array(GRID_SIZE).fill(null).map((_, row) =>
+    Array(GRID_SIZE).fill(null).map((_, col) => {
+      const position = row * GRID_SIZE + col;
       
-      // For the second to last position (23), place empty tile
-      if (position === 23) {
+      if (row === emptyPos.row && col === emptyPos.col) {
         return { number: null, color: null, isEmpty: true };
       }
       
-      // For the last position (24), place the tile that should be at position 23
-      if (position === 24) {
-        return {
-          number: sequence[23],
-          color: colors[Math.floor((sequence[23] - 1) / 4)],
-          isEmpty: false
-        };
-      }
+      const seqIndex = position - (position >= (emptyPos.row * GRID_SIZE + emptyPos.col) ? 1 : 0);
+      const num = sequence[seqIndex];
       
-      // For all other positions, place tiles according to solution sequence
       return {
-        number: sequence[position],
-        color: colors[Math.floor((sequence[position] - 1) / 4)],
+        number: num,
+        color: colors[Math.floor((num - 1) / 4)],
         isEmpty: false
       };
     })
   );
-  
   return board;
 };
 
 const SlidingPuzzle = () => {
-  const [board, setBoard] = useState(() => {
-    const sequence = generateSolvablePuzzle(GRID_SIZE);
-    const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
-    let seqIndex = 0;
-    
-    for (let i = 0; i < GRID_SIZE; i++) {
-      for (let j = 0; j < GRID_SIZE; j++) {
-        if (i === EMPTY_POSITION.row && j === EMPTY_POSITION.col) {
-          initialBoard[i][j] = { number: null, color: null, isEmpty: true };
-        } else {
-          const num = sequence[seqIndex++];
-          initialBoard[i][j] = {
-            number: num,
-            color: colors[Math.floor((num - 1) / 4)],
-            isEmpty: false
-          };
-        }
-      }
-    }
-    return initialBoard;
-  });
-
+  const [currentSeed, setCurrentSeed] = useState<number>();
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
   const [solved, setSolved] = useState(false);
-  const [currentSeed, setCurrentSeed] = useState<number>();
+
+  const sequence = useMemo(() => 
+    currentSeed ? generateSolvablePuzzle(GRID_SIZE, currentSeed) : generateSolvablePuzzle(GRID_SIZE),
+    [currentSeed]
+  );
+
+  const [board, setBoard] = useState(() => generateBoardFromSequence(sequence));
+
   useEffect(() => {
     if (isSolved(board)) {
       setSolved(true);
@@ -87,7 +62,8 @@ const SlidingPuzzle = () => {
   }, [board]);
 
   const canMove = (row: number, col: number) => {
-    return row === emptyPos.row || col === emptyPos.col;
+    return (row === emptyPos.row || col === emptyPos.col) &&
+           !(row === emptyPos.row && col === emptyPos.col);
   };
 
   const handleTileClick = useCallback((clickedRow: number, clickedCol: number) => {
@@ -96,47 +72,42 @@ const SlidingPuzzle = () => {
     setBoard(prevBoard => {
       const newBoard = prevBoard.map(r => [...r]);
       
-      const clickedTile = {...newBoard[clickedRow][clickedCol]};
-      
       if (clickedRow === emptyPos.row) {
         // Moving horizontally
         const direction = clickedCol < emptyPos.col ? 1 : -1;
-        
-        if (direction === 1) {
-          // Moving right
-          for (let col = emptyPos.col - 1; col >= clickedCol; col--) {
-            newBoard[clickedRow][col + 1] = {...newBoard[clickedRow][col]};
-          }
-        } else {
-          // Moving left
-          for (let col = emptyPos.col + 1; col <= clickedCol; col++) {
-            newBoard[clickedRow][col - 1] = {...newBoard[clickedRow][col]};
-          }
+        for (let col = emptyPos.col; col !== clickedCol; col -= direction) {
+          newBoard[clickedRow][col] = {...newBoard[clickedRow][col - direction]};
         }
       } else {
         // Moving vertically
         const direction = clickedRow < emptyPos.row ? 1 : -1;
-        
-        if (direction === 1) {
-          // Moving down
-          for (let row = emptyPos.row - 1; row >= clickedRow; row--) {
-            newBoard[row + 1][clickedCol] = {...newBoard[row][clickedCol]};
-          }
-        } else {
-          // Moving up
-          for (let row = emptyPos.row + 1; row <= clickedRow; row++) {
-            newBoard[row - 1][clickedCol] = {...newBoard[row][clickedCol]};
-          }
+        for (let row = emptyPos.row; row !== clickedRow; row -= direction) {
+          newBoard[row][clickedCol] = {...newBoard[row - direction][clickedCol]};
         }
       }
       
-      // Place clicked tile in original empty position
       newBoard[clickedRow][clickedCol] = { number: null, color: null, isEmpty: true };
       return newBoard;
     });
 
     setEmptyPos({ row: clickedRow, col: clickedCol });
   }, [emptyPos]);
+
+  const handleNewPuzzle = useCallback((seed: number) => {
+    setCurrentSeed(seed);
+    setEmptyPos(EMPTY_POSITION);
+    setSolved(false);
+    setBoard(generateBoardFromSequence(generateSolvablePuzzle(GRID_SIZE, seed)));
+  }, []);
+
+  const handleAlmostSolve = useCallback(() => {
+    if (!currentSeed) return;
+    
+    const nearSolvedEmptyPos = { row: 4, col: 3 };
+    setEmptyPos(nearSolvedEmptyPos);
+    setBoard(generateBoardFromSequence(sequence, nearSolvedEmptyPos));
+    setSolved(false);
+  }, [currentSeed, sequence]);
 
   return (
     <div className="flex flex-col justify-center items-center min-h-[500px]">
@@ -146,58 +117,32 @@ const SlidingPuzzle = () => {
             type="number"
             placeholder="Enter seed"
             className="px-2 py-1 border rounded w-24"
-            onChange={(e) => setCurrentSeed(parseInt(e.target.value) || Math.floor(Math.random() * 1000000))}
+            onChange={(e) => {
+              const seed = parseInt(e.target.value) || Math.floor(Math.random() * 1000000);
+              setCurrentSeed(seed);
+            }}
           />
           <button
-            onClick={() => {
-              if (!currentSeed) return;
-              setBoard(() => {
-                const sequence = generateSolvablePuzzle(GRID_SIZE, currentSeed);
-                const initialBoard = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
-                let seqIndex = 0;
-                
-                for (let i = 0; i < GRID_SIZE; i++) {
-                  for (let j = 0; j < GRID_SIZE; j++) {
-                    if (i === EMPTY_POSITION.row && j === EMPTY_POSITION.col) {
-                      initialBoard[i][j] = { number: null, color: null, isEmpty: true };
-                    } else {
-                      const num = sequence[seqIndex++];
-                      initialBoard[i][j] = {
-                        number: num,
-                        color: colors[Math.floor((num - 1) / 4)],
-                        isEmpty: false
-                      };
-                    }
-                  }
-                }
-                return initialBoard;
-              });
-              setEmptyPos(EMPTY_POSITION);
-              setSolved(false);
-            }}
+            onClick={() => currentSeed && handleNewPuzzle(currentSeed)}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
             Go!
           </button>
         </div>
         <button
-          onClick={() => {
-            if (!currentSeed) return;
-            const sequence = generateSolvablePuzzle(GRID_SIZE, currentSeed);
-            setBoard(generateNearSolvedBoard(GRID_SIZE, sequence));
-            setEmptyPos({ row: 4, col: 3 }); // Position 23
-            setSolved(false);
-          }}
+          onClick={handleAlmostSolve}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Debug: Almost Solve
         </button>
       </div>
+
       {solved && (
         <div className="mb-4 p-4 bg-green-500 text-white rounded-lg text-xl font-bold">
           Congratulations! Puzzle Solved! 🎉
         </div>
       )}
+
       <div className="w-[500px] h-[500px] bg-gray-100 p-6 rounded-xl">
         <div className="grid grid-rows-5 h-full">
           {board.map((row, rowIndex) => (
@@ -212,16 +157,18 @@ const SlidingPuzzle = () => {
                     ${canMove(rowIndex, colIndex) && !tile.isEmpty ? 'cursor-pointer' : 'cursor-not-allowed'}
                     transition-all duration-200
                   `}
-                  style={{ backgroundColor: tile.isEmpty ? undefined : tile.color }}
+                  style={{ backgroundColor: tile.isEmpty ? undefined : tile.color || '' }}
                   onClick={() => handleTileClick(rowIndex, colIndex)}
                   disabled={tile.isEmpty || !canMove(rowIndex, colIndex)}
                 >
+                  {tile.number}
                 </button>
               ))}
             </div>
           ))}
         </div>
       </div>
+
       <div className="mt-8 flex flex-col items-center">
         <h2 className="text-xl font-bold mb-2">Solution</h2>
         <SolutionGrid size={GRID_SIZE} colors={colors} seed={currentSeed} />
