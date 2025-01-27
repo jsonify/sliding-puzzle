@@ -107,21 +107,30 @@ const SlidingPuzzle = () => {
     setBoard(prevBoard => {
       const newBoard = prevBoard.map(r => [...r]);
       
-      // Store the clicked tile
-      const clickedTile = newBoard[clickedRow][clickedCol];
-      
       if (clickedRow === emptyPos.row) {
         // Moving horizontally
         const direction = clickedCol < emptyPos.col ? 1 : -1;
-        for (let col = emptyPos.col; col !== clickedCol; col -= direction) {
-          newBoard[clickedRow][col] = newBoard[clickedRow][col - direction];
+        const clickedTile = newBoard[clickedRow][clickedCol];
+        
+        // Shift tiles between clicked and empty positions
+        for (let col = clickedCol; col !== emptyPos.col - direction; col += direction) {
+          newBoard[clickedRow][col] = newBoard[clickedRow][col + direction];
         }
+        
+        // Place clicked tile in empty position
+        newBoard[emptyPos.row][emptyPos.col] = clickedTile;
       } else {
         // Moving vertically
         const direction = clickedRow < emptyPos.row ? 1 : -1;
-        for (let row = emptyPos.row; row !== clickedRow; row -= direction) {
-          newBoard[row][clickedCol] = newBoard[row - direction][clickedCol];
+        const clickedTile = newBoard[clickedRow][clickedCol];
+        
+        // Shift tiles between clicked and empty positions
+        for (let row = clickedRow; row !== emptyPos.row - direction; row += direction) {
+          newBoard[row][clickedCol] = newBoard[row + direction][clickedCol];
         }
+        
+        // Place clicked tile in empty position
+        newBoard[emptyPos.row][emptyPos.col] = clickedTile;
       }
       
       // Place empty tile at clicked position
