@@ -1,5 +1,6 @@
 // client/src/utils/puzzleGenerator.ts
 import { Tile, BoardState } from '../components/Board/types';
+import { PredefinedPuzzle } from '../data/predefinedPuzzles';
 
 const COLORS = [
   '#FF6B6B', // red
@@ -10,32 +11,45 @@ const COLORS = [
   '#D4A5A5'  // pink
 ];
 
-export function generatePuzzle(): BoardState {
+export function generatePuzzleFromPattern(pattern: number[][]): BoardState {
+  return pattern.map(row => 
+    row.map(colorIndex => ({
+      color: colorIndex === 0 ? '' : COLORS[colorIndex - 1],
+      number: colorIndex,
+      isEmpty: colorIndex === 0
+    }))
+  );
+}
+
+export function createShuffledPuzzle(pattern: number[][]): BoardState {
   const tiles: Tile[] = [];
   
-  // Generate tiles (24 colored tiles + 1 empty)
-  for (let i = 0; i < 24; i++) {
+  // Convert pattern to tiles
+  pattern.flat().forEach((colorIndex) => {
     tiles.push({
-      color: COLORS[Math.floor(i / 4)],
-      number: i + 1,
-      isEmpty: false
+      color: colorIndex === 0 ? '' : COLORS[colorIndex - 1],
+      number: colorIndex,
+      isEmpty: colorIndex === 0
     });
-  }
-  tiles.push({ color: '', number: 0, isEmpty: true });
+  });
 
-  // Shuffle tiles until a valid configuration is found
+  // Shuffle tiles until valid
   let shuffledTiles: Tile[];
   do {
     shuffledTiles = [...tiles].sort(() => Math.random() - 0.5);
   } while (!isSolvable(shuffledTiles));
 
-  // Convert to 5x5 grid
+  // Convert back to 5x5 grid
   const board: BoardState = [];
   for (let i = 0; i < 5; i++) {
     board.push(shuffledTiles.slice(i * 5, (i + 1) * 5));
   }
 
   return board;
+}
+
+export function loadPredefinedPuzzle(puzzle: PredefinedPuzzle): BoardState {
+  return createShuffledPuzzle(puzzle.pattern);
 }
 
 function isSolvable(tiles: Tile[]): boolean {
