@@ -17,36 +17,39 @@ const SolutionGrid: React.FC<SolutionGridProps> = ({
   predefinedPuzzle 
 }) => {
   const board = useMemo(() => {
+    // Handle predefined puzzle case
     if (predefinedPuzzle) {
-      // Use predefined puzzle pattern
-      return predefinedPuzzle.pattern.map((row, rowIndex) =>
-        row.map((colorIndex, colIndex) => ({
-          number: colorIndex,
-          color: colorIndex === 0 ? null : colors[colorIndex - 1],
-          isEmpty: colorIndex === 0
-        }))
-      );
-    } else {
-      // Use randomly generated sequence
-      const sequence = seed 
-        ? generateSolvablePuzzle(size, seed)
-        : Array.from({ length: size * size - 1 }, (_, i) => i + 1);
-      
       return Array(size).fill(null).map((_, row) =>
         Array(size).fill(null).map((_, col) => {
-          const position = row * size + col;
-          if (position === size * size - 1) {
-            return { number: null, color: null, isEmpty: true };
-          }
-          const num = sequence[position];
+          const value = predefinedPuzzle.pattern[row][col];
           return {
-            number: num,
-            color: colors[Math.floor((num - 1) / 4)],
-            isEmpty: false
+            number: value,
+            color: value === 0 ? null : colors[Math.floor((value - 1) / 4)],
+            isEmpty: value === 0
           };
         })
       );
     }
+    
+    // Handle random puzzle case
+    const sequence = seed 
+      ? generateSolvablePuzzle(size, seed)
+      : Array.from({ length: size * size - 1 }, (_, i) => i + 1);
+    
+    return Array(size).fill(null).map((_, row) =>
+      Array(size).fill(null).map((_, col) => {
+        const position = row * size + col;
+        if (position === size * size - 1) {
+          return { number: null, color: null, isEmpty: true };
+        }
+        const num = sequence[position];
+        return {
+          number: num,
+          color: colors[Math.floor((num - 1) / 4)],
+          isEmpty: false
+        };
+      })
+    );
   }, [size, colors, seed, predefinedPuzzle]);
 
   return (

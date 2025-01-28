@@ -227,7 +227,12 @@ const SlidingPuzzle = () => {
 
       <div className="mt-8 flex flex-col items-center">
         <h2 className="text-xl font-bold mb-2">Solution</h2>
-        <SolutionGrid size={GRID_SIZE} colors={colors} seed={currentSeed} />
+        <SolutionGrid 
+          size={GRID_SIZE} 
+          colors={colors} 
+          seed={currentSeed}
+          predefinedPuzzle={currentPuzzle}
+        />
       </div>
     </div>
   );
