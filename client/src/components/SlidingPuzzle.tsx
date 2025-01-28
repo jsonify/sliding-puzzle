@@ -75,11 +75,13 @@ const SlidingPuzzle = () => {
   const [currentSeed, setCurrentSeed] = useState<number>();
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
   const [solved, setSolved] = useState(false);
+  const [currentPuzzle, setCurrentPuzzle] = useState<PredefinedPuzzle | undefined>();
   const [showPuzzleSelector, setShowPuzzleSelector] = useState(false);
 
   const handlePredefinedPuzzleSelect = (puzzle: PredefinedPuzzle) => {
     const newBoard = loadPredefinedPuzzle(puzzle);
     setBoard(newBoard);
+    setCurrentPuzzle(puzzle);
     setEmptyPos({ 
       row: newBoard.findIndex(row => row.some(tile => tile.isEmpty)),
       col: newBoard.find(row => row.some(tile => tile.isEmpty))!
