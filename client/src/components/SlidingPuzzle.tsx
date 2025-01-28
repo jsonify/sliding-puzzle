@@ -1,6 +1,9 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { generateSolvablePuzzle } from '../utils/puzzleUtils';
 import SolutionGrid from './SolutionGrid';
+import PuzzleSelector from './PuzzleSelector';
+import { loadPredefinedPuzzle } from '../utils/puzzleGenerator';
+import { PredefinedPuzzle } from '../data/predefinedPuzzles';
 
 const colors = ['#01EA72', '#A600EA', '#EB9502', '#035EEA', '#EA1901', '#CBEA02'];
 const GRID_SIZE = 5;
@@ -72,6 +75,19 @@ const SlidingPuzzle = () => {
   const [currentSeed, setCurrentSeed] = useState<number>();
   const [emptyPos, setEmptyPos] = useState(EMPTY_POSITION);
   const [solved, setSolved] = useState(false);
+  const [showPuzzleSelector, setShowPuzzleSelector] = useState(false);
+
+  const handlePredefinedPuzzleSelect = (puzzle: PredefinedPuzzle) => {
+    const newBoard = loadPredefinedPuzzle(puzzle);
+    setBoard(newBoard);
+    setEmptyPos({ 
+      row: newBoard.findIndex(row => row.some(tile => tile.isEmpty)),
+      col: newBoard.find(row => row.some(tile => tile.isEmpty))!
+           .findIndex(tile => tile.isEmpty)
+    });
+    setSolved(false);
+    setShowPuzzleSelector(false);
+  };
 
   const [sequence, setSequence] = useState(() => 
     generateSolvablePuzzle(GRID_SIZE, Math.floor(Math.random() * 1000000))
@@ -162,6 +178,19 @@ const SlidingPuzzle = () => {
         >
           Debug: Almost Solve
         </button>
+        <button
+          onClick={() => setShowPuzzleSelector(!showPuzzleSelector)}
+          className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+        >
+          Load Predefined Puzzle
+        </button>
+      </div>
+
+      {showPuzzleSelector && (
+        <div className="mb-4 w-full max-w-4xl">
+          <h2 className="text-xl font-bold mb-4">Select a Puzzle</h2>
+          <PuzzleSelector onSelectPuzzle={handlePredefinedPuzzleSelect} />
+        </div>
       </div>
 
       {solved && (
