@@ -191,7 +191,7 @@ const SlidingPuzzle = () => {
           <h2 className="text-xl font-bold mb-4">Select a Puzzle</h2>
           <PuzzleSelector onSelectPuzzle={handlePredefinedPuzzleSelect} />
         </div>
-      </div>
+      )}
 
       {solved && (
         <div className="mb-4 p-4 bg-green-500 text-white rounded-lg text-xl font-bold">
