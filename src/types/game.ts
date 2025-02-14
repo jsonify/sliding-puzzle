@@ -22,7 +22,7 @@ export interface GameState {
   isWon: boolean;
 }
 
-export interface TileProps {
+export interface TileProperties {
   number: number;
   position: Position;
   size: number;

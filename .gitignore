@@ -1,4 +1,17 @@
+# Dependencies
 node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+.cache
+
+# IDE and editor files
+.idea
+.vscode
+*.swp
+*.swo
 .DS_Store
 dist
 dist-ssr
@@ -8,4 +21,8 @@ coverage
 .nyc_output
 .stylelintcache
 cypress/videos
+cypress/downloads
+
+# Github Workflows
+.github/workflows
 codebase.md
