@@ -1,18 +1,26 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App from 'App'
-import renderWithProviders from 'testUtils'
+import App from '../App'
+import renderWithProviders from '../testUtils'
 
 describe('<App />', () => {
-	it('renders', async () => {
-		window.history.pushState({}, 'Home', '/')
-		renderWithProviders(<App />, false)
+  it('renders level select screen initially', () => {
+    renderWithProviders(<App />, false)
+    expect(screen.getByText('Sliding Puzzle')).toBeInTheDocument()
+    expect(screen.getByText('Select Grid Size')).toBeInTheDocument()
+    expect(screen.getByText('Select Difficulty')).toBeInTheDocument()
+  })
 
-		await expect(screen.findByText('Apple')).resolves.toBeInTheDocument()
-		await userEvent.click(screen.getByText('Apple'))
+  it('starts game when clicking start game', async () => {
+    renderWithProviders(<App />, false)
+    const user = userEvent.setup()
 
-		await expect(
-			screen.findByText('Vitamins per 100 g (3.5 oz)')
-		).resolves.toBeInTheDocument()
-	})
+    // Click start game
+    await user.click(screen.getByText('Start Game'))
+
+    // Verify game UI is rendered
+    expect(screen.getByText('Moves:')).toBeInTheDocument()
+    expect(screen.getByText('Time:')).toBeInTheDocument()
+    expect(screen.getByText('New Game')).toBeInTheDocument()
+  })
 })

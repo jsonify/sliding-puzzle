@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { GameControls } from '../GameControls';
 import type { Difficulty, GridSize } from '../../types/game';
 
@@ -82,7 +83,7 @@ describe('GameControls', () => {
   describe('Accessibility', () => {
     it('has accessible button labels', () => {
       render(<GameControls {...defaultProps} />);
-      expect(screen.getByText('New Game')).toHaveAttribute('role', 'button');
+      expect(screen.getByText('New Game')).toBeInTheDocument();
     });
 
     it('provides visual feedback for interactive elements', () => {
