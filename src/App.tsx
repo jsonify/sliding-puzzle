@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Board } from './components/Board';
+import Board from './components/Board';
 import { GameControls } from './components/GameControls';
 import { LevelSelect } from './components/LevelSelect';
 import type { Board as BoardType, Difficulty, GridSize, Position } from './types/game';
