@@ -1,6 +1,6 @@
 # Sliding Puzzle Game
 
-A modern implementation of the classic 15-puzzle (sliding puzzle) game built with React, TypeScript, and Tailwind CSS.
+A modern implementation of the classic 15-puzzle (sliding puzzle) game built with React, TypeScript, and Tailwind CSS, but with a twist.
 
 ```
 +------------------+
