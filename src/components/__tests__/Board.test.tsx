@@ -100,7 +100,14 @@ describe('Board', () => {
       });
 
       // Check 5x5 grid
-      const largerBoard: BoardType = Array(5).fill(Array(5).fill(0));
+      const largerBoard: BoardType = [
+        [1, 2, 3, 4, 5],
+        [6, 7, 8, 9, 10],
+        [11, 12, 13, 14, 15],
+        [16, 17, 18, 19, 20],
+        [21, 22, 23, 24, 0]
+      ];
+      
       rerender(<Board {...defaultProps} gridSize={5 as GridSize} tiles={largerBoard} />);
       tiles = screen.getAllByRole('button');
       tiles.forEach(tile => {

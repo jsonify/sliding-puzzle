@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Tile } from '../Tile';
+import { vi } from 'vitest';
+import Tile from '../Tile';
 import type { Position } from '../../types/game';
 
 describe('Tile', () => {

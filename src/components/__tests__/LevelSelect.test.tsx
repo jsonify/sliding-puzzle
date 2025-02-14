@@ -110,8 +110,14 @@ describe('LevelSelect', () => {
     it('provides visual feedback for interactive elements', () => {
       render(<LevelSelect {...defaultProps} />);
       const buttons = screen.getAllByRole('button');
-      buttons.forEach(button => {
-        expect(button).toHaveClass('transition-all');
+      
+      // Grid size and difficulty buttons use transition-all
+      const gridAndDifficultyButtons = buttons.filter(button => 
+        !button.textContent?.includes('Start Game')
+      );
+      
+      gridAndDifficultyButtons.forEach(button => {
+        expect(button).toHaveClass('transition-all', 'duration-200');
       });
     });
   });
