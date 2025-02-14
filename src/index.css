@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .animate-win {
+    animation: win 0.5s ease-in-out;
+  }
+
+  @keyframes win {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+}
+
+/* Focus styles for better accessibility */
+@layer base {
+  :focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800;
+  }
+}
+
+/* Scrollbar styles */
+@layer utilities {
+  .custom-scrollbar {
+    @apply scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent;
+  }
+}
+
+/* Game board container */
+.game-container {
+  @apply min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900;
+}

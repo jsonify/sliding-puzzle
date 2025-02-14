@@ -1,0 +1,21 @@
++------------------+
+|     15 Puzzle     |
++------------------+
+|  1   2   3   4   |
+|  5   6   7   8   |
+|  9  10  11  12   |
+| 13  14  15       |
++------------------+
+|   [New Game]     |
+|   Grid Size: 4   |
++------------------+
+
+Features shown:
+- 4x4 grid layout
+- Empty space in bottom right
+- Game controls
+- Current state display
+
+Note: This is a text representation.
+Replace with actual screenshot when
+the game is deployed.
