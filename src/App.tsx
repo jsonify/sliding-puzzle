@@ -1,4 +1,4 @@
-import type { FC, KeyboardEvent, ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
 // Components
@@ -150,6 +150,9 @@ function App(): ReactElement {
 					}
 					break
 				}
+				default: {
+					break
+				}
 			}
 
 			if (targetPosition !== undefined) {
@@ -211,7 +214,7 @@ function App(): ReactElement {
 						.toString()
 						.padStart(TIME_DISPLAY_PAD_LENGTH, '0')}
 				</p>
-				<button
+				<button type="button" aria-label="Play Again" 
 					onClick={onStartNewGame}
 					className='rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-600'
 				>
@@ -235,7 +238,7 @@ function App(): ReactElement {
 
 	return (
 		<div className='game-container'>
-			{gameState.isWon ? renderWinningModal() : null}
+			{gameState.isWon ? renderWinningModal() : undefined}
 
 			<div className='mx-auto w-full max-w-4xl space-y-6'>
 				<GameControls
