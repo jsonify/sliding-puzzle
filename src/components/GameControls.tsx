@@ -1,5 +1,6 @@
-import type { Difficulty, GameControlsProps, GridSize } from '../types/game';
-import { GameConstants, GridSizes } from '../constants/gameConstants';
+import type { Difficulty, GameControlsProperties, GridSize } from '../types/game';
+import { type ChangeEvent, useCallback } from 'react';
+import { GridSizes } from '../constants/gameConstants';
 import { formatTime } from '../utils/leaderboardUtils';
 
 /** Grid size options */
@@ -7,10 +8,27 @@ const gridSizeOptions: readonly GridSize[] = GridSizes.SIZES;
 
 /** Difficulty options */
 const difficultyOptions: readonly Difficulty[] = ['easy', 'medium', 'hard'] as const;
-
+const OFFSET = 1
 /** Format difficulty text for display */
-const formatDifficulty = (diff: Difficulty): string => 
-  diff.charAt(0).toUpperCase() + diff.slice(1);
+const formatDifficulty = (diff: Difficulty): string =>
+  diff.charAt(0).toUpperCase() + diff.slice(OFFSET);
+
+/** Type guard for Difficulty */
+const isDifficulty = (value: string): value is Difficulty => 
+  difficultyOptions.includes(value as Difficulty);
+
+/** Handle difficulty change with type validation */
+const handleDifficultyChange = (
+  event: ChangeEvent<HTMLSelectElement>,
+  onDifficultyChange: (difficulty: Difficulty) => void
+): void => {
+  const value = event.target.value;
+  if (isDifficulty(value)) {
+    onDifficultyChange(value);
+  } else {
+    console.error(`Invalid difficulty value: ${value}`);
+  }
+};
 
 /**
  * Game controls component for managing game state and settings
@@ -23,7 +41,7 @@ export default function GameControls({
   onDifficultyChange,
   currentSize,
   currentDifficulty,
-}: GameControlsProps): JSX.Element {
+}: GameControlsProperties): JSX.Element {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
       <div className="flex space-x-4">
@@ -49,7 +67,11 @@ export default function GameControls({
         <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentSize}
-          onChange={(e) => onSizeChange(Number(e.target.value) as GridSize)}
+          onChange={useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+            const size = Number(event.target.value);
+            if (gridSizeOptions.includes(size as GridSize))
+              onSizeChange(size as GridSize);
+          }, [onSizeChange])}
           aria-label="Grid Size"
         >
           {gridSizeOptions.map((size) => (
@@ -62,7 +84,9 @@ export default function GameControls({
         <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentDifficulty}
-          onChange={(e) => onDifficultyChange(e.target.value as Difficulty)}
+          onChange={useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+            handleDifficultyChange(event, onDifficultyChange);
+          }, [onDifficultyChange])}
           aria-label="Difficulty"
         >
           {difficultyOptions.map((diff) => (

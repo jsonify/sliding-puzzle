@@ -143,6 +143,9 @@ describe('<App />', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Moves: 0')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
       expect(screen.getByText('Time: 0:00')).toBeInTheDocument()
     })
   })
@@ -166,7 +169,10 @@ describe('<App />', () => {
 
     await waitFor(() => {
       expect(screen.getByText('🎉 Congratulations! 🎉')).toBeInTheDocument()
-      expect(screen.getByText('You solved the puzzle!')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+            expect(screen.getByText('You solved the puzzle!')).toBeInTheDocument()
     })
   })
 
@@ -196,7 +202,13 @@ describe('<App />', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Moves: 0')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
       expect(screen.getByText('Time: 0:00')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
       expect(screen.queryByText('🎉 Congratulations! 🎉')).not.toBeInTheDocument()
     })
   })
