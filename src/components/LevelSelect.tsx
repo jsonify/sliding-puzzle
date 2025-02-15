@@ -82,8 +82,8 @@ class LevelSelectErrorBoundary extends React.Component<
       return (
         <div className="text-center text-red-600 p-4">
           <h2>Something went wrong with the level selection.</h2>
-          <button
-            onClick={() => this.setState({ hasError: false })}
+          <button type="button"
+            onClick={(): void => this.setState({ hasError: false })}
             className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
           >
             Try again
@@ -117,7 +117,7 @@ export function LevelSelect({
   );
 
   // Memoized callback handlers
-  const handleSizeSelect = useCallback(
+  const onHandleSizeSelect = useCallback(
     (size: GridSize) => {
       setIsLoading(true);
       try {
@@ -129,7 +129,7 @@ export function LevelSelect({
     [validatedDifficulty, onLevelSelect]
   );
 
-  const handleDifficultySelect = useCallback(
+  const onHandleDifficultySelect = useCallback(
     (difficulty: Difficulty) => {
       setIsLoading(true);
       try {
@@ -141,7 +141,7 @@ export function LevelSelect({
     [validatedSize, onLevelSelect]
   );
 
-  const handleStartGame = useCallback(() => {
+  const onHandleStartGame = useCallback(() => {
     setIsLoading(true);
     try {
       onLevelSelect(validatedSize, validatedDifficulty);
@@ -168,7 +168,7 @@ export function LevelSelect({
                 key={`size-${size}`}
                 size={size}
                 isSelected={validatedSize === size}
-                onClick={() => handleSizeSelect(size)}
+                onClick={() => onHandleSizeSelect(size)}
               />
             ))}
           </div>
@@ -185,7 +185,7 @@ export function LevelSelect({
                 key={`difficulty-${difficulty}`}
                 difficulty={difficulty}
                 isSelected={validatedDifficulty === difficulty}
-                onClick={() => handleDifficultySelect(difficulty)}
+                onClick={() => onHandleDifficultySelect(difficulty)}
               />
             ))}
           </div>
@@ -195,7 +195,7 @@ export function LevelSelect({
         <div className="text-center pt-4">
           <button
             type="button"
-            onClick={handleStartGame}
+            onClick={onHandleStartGame}
             className={styles.START_BUTTON}
             aria-label="Start game with selected settings"
             disabled={isLoading}
