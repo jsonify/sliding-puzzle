@@ -174,11 +174,11 @@ export function getMovablePositions(board: Board): Position[] {
   // Check all adjacent positions
   const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
   for (const [dx, dy] of directions) {
-    const newRow = emptyPos.row + dx;
-    const newCol = emptyPos.col + dy;
+    const updatedRow = emptyPos.row + dx;
+    const updatedCol = emptyPos.col + dy;
     
-    if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size) {
-      movable.push({ row: newRow, col: newCol });
+    if (updatedRow >= 0 && updatedRow < size && updatedCol >= 0 && updatedCol < size) {
+      movable.push({ row: updatedRow, col: updatedCol });
     }
   }
   
