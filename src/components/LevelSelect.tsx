@@ -1,156 +1,215 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Difficulty, GridSize, LevelSelectProps } from '../types/game';
+import { GAME_CONFIG, DEFAULT_CONFIG } from '../constants/gameConfig';
+import { LEVEL_SELECT_STYLES as styles } from '../constants/styles';
+import { PreviewGrid } from './PreviewGrid/PreviewGrid';
 
-const GRID_SIZES: GridSize[] = [3, 4, 5, 6, 7, 8, 9];
-const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
+// Define button style variants
+const getButtonStyles = (isSelected: boolean): string => 
+  isSelected
+    ? `${styles.BASE_BUTTON} ${styles.SELECTED_BUTTON}`
+    : `${styles.BASE_BUTTON} ${styles.HOVER_BUTTON}`;
 
-// Number of empty tiles in the puzzle grid
-const EMPTY_TILES_COUNT = 1;
+const getDifficultyStyles = (isSelected: boolean): string => 
+  isSelected
+    ? `${styles.BASE_DIFFICULTY} ${styles.SELECTED_DIFFICULTY}`
+    : `${styles.BASE_DIFFICULTY} ${styles.DEFAULT_DIFFICULTY}`;
 
-// Utility function to generate unique cell IDs
-const generateCellId = (size: GridSize, index: number): string => 
-  `cell-${size}-${index}`;
+// Button components with memoization
+const SizeButton = React.memo(function SizeButton({
+  size,
+  isSelected,
+  onClick,
+}: {
+  size: GridSize;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`p-2 rounded-lg ${getButtonStyles(isSelected)}`}
+      aria-label={`Select ${size}x${size} grid`}
+      aria-pressed={isSelected}
+    >
+      <div className="text-center mb-2 font-medium">
+        {size}x{size}
+      </div>
+      <PreviewGrid size={size} />
+    </button>
+  );
+});
 
-// Define button style variants with explicit return types
-const getButtonStyles = (isSelected: boolean): string => {
-  const baseStyles = 'transition-all duration-200';
-  return isSelected
-    ? `${baseStyles} ring-2 ring-blue-500 bg-blue-50 dark:bg-gray-700`
-    : `${baseStyles} hover:bg-gray-50 dark:hover:bg-gray-700`;
-};
+const DifficultyButton = React.memo(function DifficultyButton({
+  difficulty,
+  isSelected,
+  onClick,
+}: {
+  difficulty: Difficulty;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={getDifficultyStyles(isSelected)}
+      aria-label={`Select ${difficulty} difficulty`}
+      aria-pressed={isSelected}
+    >
+      {difficulty}
+    </button>
+  );
+});
 
-const getDifficultyStyles = (isSelected: boolean): string => {
-  const baseStyles = 'px-6 py-3 rounded-lg capitalize font-medium transition-all duration-200';
-  return isSelected
-    ? `${baseStyles} bg-blue-500 text-white`
-    : `${baseStyles} bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600`;
-};
+// Error boundary component
+class LevelSelectErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return (
+        <div className="text-center text-red-600 p-4">
+          <h2>Something went wrong with the level selection.</h2>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Main component
 export function LevelSelect({
   onLevelSelect,
-  currentSize,
-  currentDifficulty,
-}: LevelSelectProps) {
-  // Ensure valid current size and difficulty
-  const validatedSize = GRID_SIZES.includes(currentSize) ? currentSize : GRID_SIZES[0];
-  const validatedDifficulty = DIFFICULTIES.includes(currentDifficulty) ? currentDifficulty : DIFFICULTIES[0];
+  currentSize = DEFAULT_CONFIG.size,
+  currentDifficulty = DEFAULT_CONFIG.difficulty,
+}: LevelSelectProps): JSX.Element {
+  // State for tracking loading and error states
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Memoize the onLevelSelect callback for each size
-  const onHandleSizeSelect = useCallback(
-    (size: GridSize) => () => onLevelSelect(size, validatedDifficulty),
+  // Validate input props with default fallbacks
+  const validatedSize = React.useMemo(() => 
+    GAME_CONFIG.GRID_SIZES.includes(currentSize) ? currentSize : DEFAULT_CONFIG.size,
+    [currentSize]
+  );
+
+  const validatedDifficulty = React.useMemo(() => 
+    GAME_CONFIG.DIFFICULTIES.includes(currentDifficulty) ? currentDifficulty : DEFAULT_CONFIG.difficulty,
+    [currentDifficulty]
+  );
+
+  // Memoized callback handlers
+  const handleSizeSelect = useCallback(
+    (size: GridSize) => {
+      setIsLoading(true);
+      try {
+        onLevelSelect(size, validatedDifficulty);
+      } finally {
+        setIsLoading(false);
+      }
+    },
     [validatedDifficulty, onLevelSelect]
   );
 
-  // Memoize the onLevelSelect callback for each difficulty
-  const onHandleDifficultySelect = useCallback(
-    (difficulty: Difficulty) => () => onLevelSelect(validatedSize, difficulty),
+  const handleDifficultySelect = useCallback(
+    (difficulty: Difficulty) => {
+      setIsLoading(true);
+      try {
+        onLevelSelect(validatedSize, difficulty);
+      } finally {
+        setIsLoading(false);
+      }
+    },
     [validatedSize, onLevelSelect]
   );
 
-  // Preview grid for size selection
-  const renderPreviewGrid = useCallback((size: GridSize) => {
-    // Calculate total grid cells excluding the empty tile
-    // and memoize the array of filled tiles using undefined
-    const cells = useMemo(
-      () => Array.from<undefined, undefined>(
-        { length: size * size - EMPTY_TILES_COUNT },
-        () => undefined
-      ),
-      [size]
-    );
-
-    return (
-      <div
-        className="grid gap-0.5 w-full aspect-square"
-        style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
-        role="grid"
-        aria-label={`${size}x${size} grid preview`}
-      >
-        {cells.map((_, index) => (
-          <div
-            key={generateCellId(size, index)}
-            className="bg-gray-300 dark:bg-gray-600 rounded-sm"
-            style={{ aspectRatio: '1 / 1' }}
-            role="gridcell"
-          />
-        ))}
-        <div 
-          className="bg-gray-100 dark:bg-gray-800 rounded-sm" 
-          role="gridcell"
-          aria-label="Empty cell"
-        />
-      </div>
-    );
-  }, []);
+  const handleStartGame = useCallback(() => {
+    setIsLoading(true);
+    try {
+      onLevelSelect(validatedSize, validatedDifficulty);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [validatedSize, validatedDifficulty, onLevelSelect]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
-        Sliding Puzzle
-      </h1>
+    <LevelSelectErrorBoundary>
+      <div className={styles.CONTAINER}>
+        <h1 className={styles.TITLE}>
+          Sliding Puzzle
+        </h1>
 
-      {/* Grid Size Selection */}
-      <div className="space-y-4" role="group" aria-labelledby="grid-size-label">
-        <h2 id="grid-size-label" className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-          Select Grid Size
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {GRID_SIZES.map(size => (
-            <button
-              type="button"
-              key={`size-${size}`}
-              onClick={onHandleSizeSelect(size)}
-              className={`p-2 rounded-lg ${getButtonStyles(validatedSize === size)}`}
-              aria-label={`Select ${size}x${size} grid`}
-              aria-pressed={validatedSize === size}
-            >
-              <div className="text-center mb-2 font-medium">
-                {size}x{size}
-              </div>
-              {renderPreviewGrid(size)}
-            </button>
-          ))}
+        {/* Grid Size Selection */}
+        <div className={styles.SECTION} role="group" aria-labelledby="grid-size-label">
+          <h2 id="grid-size-label" className={styles.SECTION_TITLE}>
+            Select Grid Size
+          </h2>
+          <div className={styles.GRID_CONTAINER}>
+            {GAME_CONFIG.GRID_SIZES.map(size => (
+              <SizeButton
+                key={`size-${size}`}
+                size={size}
+                isSelected={validatedSize === size}
+                onClick={() => handleSizeSelect(size)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Difficulty Selection */}
+        <div className={styles.SECTION} role="group" aria-labelledby="difficulty-label">
+          <h2 id="difficulty-label" className={styles.SECTION_TITLE}>
+            Select Difficulty
+          </h2>
+          <div className={styles.DIFFICULTY_CONTAINER}>
+            {GAME_CONFIG.DIFFICULTIES.map(difficulty => (
+              <DifficultyButton
+                key={`difficulty-${difficulty}`}
+                difficulty={difficulty}
+                isSelected={validatedDifficulty === difficulty}
+                onClick={() => handleDifficultySelect(difficulty)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Start Button */}
+        <div className="text-center pt-4">
+          <button
+            type="button"
+            onClick={handleStartGame}
+            className={styles.START_BUTTON}
+            aria-label="Start game with selected settings"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Starting...' : 'Start Game'}
+          </button>
+        </div>
+
+        {/* Instructions */}
+        <div className={styles.INSTRUCTIONS}>
+          <p>Click or use arrow keys to move tiles</p>
+          <p>Arrange the numbers in order with the empty space in the bottom right</p>
         </div>
       </div>
-
-      {/* Difficulty Selection */}
-      <div className="space-y-4" role="group" aria-labelledby="difficulty-label">
-        <h2 id="difficulty-label" className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-          Select Difficulty
-        </h2>
-        <div className="flex flex-wrap justify-center gap-4">
-          {DIFFICULTIES.map(difficulty => (
-            <button
-              type="button"
-              key={`difficulty-${difficulty}`}
-              onClick={onHandleDifficultySelect(difficulty)}
-              className={getDifficultyStyles(validatedDifficulty === difficulty)}
-              aria-label={`Select ${difficulty} difficulty`}
-              aria-pressed={validatedDifficulty === difficulty}
-            >
-              {difficulty}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Start Button */}
-      <div className="text-center pt-4">
-        <button
-          type="button"
-          onClick={() => onLevelSelect(validatedSize, validatedDifficulty)}
-          className="px-8 py-4 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold text-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-          aria-label="Start game with selected settings"
-        >
-          Start Game
-        </button>
-      </div>
-
-      {/* Instructions */}
-      <div className="text-center text-gray-600 dark:text-gray-400 text-sm mt-8">
-        <p>Click or use arrow keys to move tiles</p>
-        <p>Arrange the numbers in order with the empty space in the bottom right</p>
-      </div>
-    </div>
+    </LevelSelectErrorBoundary>
   );
 }
