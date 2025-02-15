@@ -1,4 +1,4 @@
-import { Board, Difficulty, GridSize, Position, LeaderboardEntry, Leaderboard } from '../types/game';
+import { Board, Difficulty, GridSize, Position, LeaderboardEntry, Leaderboard, GameHistoryEntry, Achievement, GlobalStats, LeaderboardData } from '../types/game';
 
 /**
  * Creates a solved board of the specified size
@@ -145,12 +145,6 @@ export function shuffleBoard(board: Board, difficulty: Difficulty): Board {
     emptyPos = move;
   }
   
-  // If resulting board is not solvable, make one more move to make it solvable
-  if (!isSolvable(currentBoard) && emptyPos.row !== size - 1) {
-    const validMove = { row: emptyPos.row > 0 ? emptyPos.row - 1 : emptyPos.row + 1, col: emptyPos.col };
-    currentBoard = makeMove(currentBoard, validMove, emptyPos);
-  }
-  
   return currentBoard;
 }
 
@@ -174,15 +168,65 @@ export function getMovablePositions(board: Board): Position[] {
   // Check all adjacent positions
   const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
   for (const [dx, dy] of directions) {
-    const updatedRow = emptyPos.row + dx;
-    const updatedCol = emptyPos.col + dy;
+    const nextRow = emptyPos.row + dx;
+    const nextCol = emptyPos.col + dy;
     
-    if (updatedRow >= 0 && updatedRow < size && updatedCol >= 0 && updatedCol < size) {
-      movable.push({ row: updatedRow, col: updatedCol });
+    if (nextRow >= 0 && nextRow < size && nextCol >= 0 && nextCol < size) {
+      movable.push({ row: nextRow, col: nextCol });
     }
   }
   
   return movable;
+}
+
+const ACHIEVEMENTS: Achievement[] = [
+  {
+    id: 'speed-demon',
+    name: 'Speed Demon',
+    description: 'Complete any puzzle under 30 seconds',
+    unlockedAt: '',
+    criteria: { type: 'time', value: 30 }
+  },
+  {
+    id: 'efficiency-expert',
+    name: 'Efficiency Expert',
+    description: 'Complete a puzzle with minimum possible moves',
+    unlockedAt: '',
+    criteria: { type: 'moves', value: 0 }
+  },
+  {
+    id: 'grid-master',
+    name: 'Grid Master',
+    description: 'Complete puzzles on all difficulties',
+    unlockedAt: '',
+    criteria: { type: 'special', value: 0 }
+  }
+];
+
+/**
+ * Calculate minimum possible moves for a grid size
+ */
+function calculateMinimumMoves(gridSize: GridSize): number {
+  return gridSize * gridSize - 1;
+}
+
+/**
+ * Initialize empty global stats
+ */
+function initializeGlobalStats(): GlobalStats {
+  return {
+    totalGamesPlayed: 0,
+    totalTimePlayed: 0,
+    totalMoves: 0,
+    gamesPerDifficulty: {
+      easy: 0,
+      medium: 0,
+      hard: 0
+    },
+    gamesPerSize: {
+      3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0
+    }
+  };
 }
 
 /**
@@ -193,11 +237,62 @@ function getLeaderboardKey(gridSize: GridSize, difficulty: Difficulty): string {
 }
 
 /**
+ * Migrate old leaderboard data to new format
+ */
+function migrateLeaderboardData(oldData: Record<string, any>): LeaderboardData {
+  const newData: LeaderboardData = {
+    categories: {},
+    global: initializeGlobalStats(),
+    achievements: ACHIEVEMENTS
+  };
+
+  // Migrate existing categories
+  Object.entries(oldData).forEach(([key, data]) => {
+    if (typeof data === 'object' && data.bestMoves && data.bestTime) {
+      newData.categories[key] = {
+        bestMoves: data.bestMoves,
+        bestTime: data.bestTime,
+        recentGames: [],
+        stats: {
+          gamesPlayed: 0,
+          totalTime: 0,
+          totalMoves: 0,
+          averageTime: 0,
+          averageMoves: 0
+        }
+      };
+    }
+  });
+
+  return newData;
+}
+
+/**
  * Load leaderboard data from localStorage
  */
 export function loadLeaderboard(): Leaderboard {
   const data = localStorage.getItem('sliding-puzzle-leaderboard');
-  return data ? JSON.parse(data) : {};
+  if (!data) {
+    return {
+      categories: {},
+      global: initializeGlobalStats(),
+      achievements: ACHIEVEMENTS
+    };
+  }
+
+  const parsedData = JSON.parse(data);
+  
+  // Check if data needs migration
+  if (!parsedData.categories) {
+    return migrateLeaderboardData(parsedData);
+  }
+
+  // Ensure achievements array is up to date
+  if (!parsedData.achievements) {
+    parsedData.achievements = ACHIEVEMENTS;
+  }
+
+  return parsedData;
 }
 
 /**
@@ -225,29 +320,87 @@ export function updateLeaderboard(
   moves: number,
   timeSeconds: number
 ): void {
-  const leaderboard = loadLeaderboard();
+  let leaderboard = loadLeaderboard();
   const key = getLeaderboardKey(gridSize, difficulty);
-  const entry: LeaderboardEntry = {
+  
+  // Create game history entry
+  const historyEntry: GameHistoryEntry = {
+    id: Date.now().toString(),
     moves,
     timeSeconds,
     completedAt: new Date().toISOString(),
     difficulty,
     gridSize,
+    achievementsUnlocked: []
   };
 
-  if (!leaderboard[key]) {
-    leaderboard[key] = {
-      bestMoves: entry,
-      bestTime: entry,
+  // Initialize category if it doesn't exist
+  if (!leaderboard.categories[key]) {
+    leaderboard.categories[key] = {
+      bestMoves: historyEntry,
+      bestTime: historyEntry,
+      recentGames: [historyEntry],
+      stats: {
+        gamesPlayed: 1,
+        totalTime: timeSeconds,
+        totalMoves: moves,
+        averageTime: timeSeconds,
+        averageMoves: moves
+      }
     };
   } else {
-    if (moves < leaderboard[key].bestMoves.moves) {
-      leaderboard[key].bestMoves = entry;
+    const category = leaderboard.categories[key];
+    
+    // Update best scores
+    if (moves < category.bestMoves.moves) {
+      category.bestMoves = historyEntry;
     }
-    if (timeSeconds < leaderboard[key].bestTime.timeSeconds) {
-      leaderboard[key].bestTime = entry;
+    if (timeSeconds < category.bestTime.timeSeconds) {
+      category.bestTime = historyEntry;
+    }
+    
+    // Update category statistics
+    category.stats.gamesPlayed++;
+    category.stats.totalTime += timeSeconds;
+    category.stats.totalMoves += moves;
+    category.stats.averageTime = category.stats.totalTime / category.stats.gamesPlayed;
+    category.stats.averageMoves = category.stats.totalMoves / category.stats.gamesPlayed;
+    
+    // Add to recent games
+    category.recentGames.unshift(historyEntry);
+    if (category.recentGames.length > 10) {
+      category.recentGames.pop();
     }
   }
+
+  // Update global statistics
+  leaderboard.global.totalGamesPlayed++;
+  leaderboard.global.totalTimePlayed += timeSeconds;
+  leaderboard.global.totalMoves += moves;
+  leaderboard.global.gamesPerDifficulty[difficulty]++;
+  leaderboard.global.gamesPerSize[gridSize]++;
+
+  // Check for achievements
+  const unlockedAchievements: string[] = [];
+  
+  // Speed Demon achievement
+  if (timeSeconds <= 30 && !leaderboard.achievements.find(a => a.id === 'speed-demon')?.unlockedAt) {
+    unlockedAchievements.push('speed-demon');
+  }
+  
+  // Efficiency Expert achievement
+  if (moves <= calculateMinimumMoves(gridSize) && !leaderboard.achievements.find(a => a.id === 'efficiency-expert')?.unlockedAt) {
+    unlockedAchievements.push('efficiency-expert');
+  }
+
+  // Update achievements
+  unlockedAchievements.forEach(id => {
+    const achievement = leaderboard.achievements.find(a => a.id === id);
+    if (achievement) {
+      achievement.unlockedAt = new Date().toISOString();
+      historyEntry.achievementsUnlocked.push(id);
+    }
+  });
 
   saveLeaderboard(leaderboard);
 }

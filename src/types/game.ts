@@ -62,9 +62,49 @@ export interface LeaderboardEntry {
   gridSize: GridSize;
 }
 
-export interface Leaderboard {
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  unlockedAt: string;
+  criteria: {
+    type: 'moves' | 'time' | 'games' | 'special';
+    value: number;
+  };
+}
+
+export interface GameHistoryEntry extends LeaderboardEntry {
+  id: string;
+  achievementsUnlocked: string[]; // Achievement IDs
+}
+
+export interface GlobalStats {
+  totalGamesPlayed: number;
+  totalTimePlayed: number;
+  totalMoves: number;
+  gamesPerDifficulty: Record<Difficulty, number>;
+  gamesPerSize: Record<GridSize, number>;
+}
+
+export interface LeaderboardCategories {
   [key: string]: {
     bestMoves: LeaderboardEntry;
     bestTime: LeaderboardEntry;
+    recentGames: GameHistoryEntry[];
+    stats: {
+      gamesPlayed: number;
+      totalTime: number;
+      totalMoves: number;
+      averageTime: number;
+      averageMoves: number;
+    };
   };
 }
+
+export interface LeaderboardData {
+  categories: LeaderboardCategories;
+  global: GlobalStats;
+  achievements: Achievement[];
+}
+
+export type Leaderboard = LeaderboardData;
