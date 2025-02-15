@@ -33,7 +33,11 @@ describe('<App />', () => {
     
     await waitFor(() => {
       expect(screen.getByText('Moves:')).toBeInTheDocument()
+    })
+    await waitFor(() => {
       expect(screen.getByText('Time:')).toBeInTheDocument()
+    })
+    await waitFor(() => {
       expect(screen.getByText('New Game')).toBeInTheDocument()
     })
   })
