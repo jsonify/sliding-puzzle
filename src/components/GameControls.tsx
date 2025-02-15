@@ -1,10 +1,21 @@
-import React from 'react';
-import { Difficulty, GameControlsProps, GridSize } from '../types/game';
+import type { Difficulty, GameControlsProps, GridSize } from '../types/game';
+import { GameConstants, GridSizes } from '../constants/gameConstants';
+import { formatTime } from '../utils/leaderboardUtils';
 
-const GRID_SIZES: GridSize[] = [3, 4, 5, 6, 7, 8, 9];
-const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
+/** Grid size options */
+const gridSizeOptions: readonly GridSize[] = GridSizes.SIZES;
 
-export function GameControls({
+/** Difficulty options */
+const difficultyOptions: readonly Difficulty[] = ['easy', 'medium', 'hard'] as const;
+
+/** Format difficulty text for display */
+const formatDifficulty = (diff: Difficulty): string => 
+  diff.charAt(0).toUpperCase() + diff.slice(1);
+
+/**
+ * Game controls component for managing game state and settings
+ */
+export default function GameControls({ 
   moves,
   time,
   onNewGame,
@@ -12,82 +23,54 @@ export function GameControls({
   onDifficultyChange,
   currentSize,
   currentDifficulty,
-}: GameControlsProps) {
-  // Format time from seconds to MM:SS
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
+}: GameControlsProps): JSX.Element {
   return (
-    <div className="w-full max-w-lg mx-auto p-4 space-y-4">
-      {/* Stats Display */}
-      <div className="flex justify-between items-center">
-        <div className="text-gray-700 dark:text-gray-300">
-          Moves: <span className="font-bold">{moves}</span>
+    <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+      <div className="flex space-x-4">
+        <div className="text-xl">
+          <span className="font-medium">Moves: </span>
+          <span>{moves}</span>
         </div>
-        <div className="text-gray-700 dark:text-gray-300">
-          Time: <span className="font-bold">{formatTime(time)}</span>
+        <div className="text-xl">
+          <span className="font-medium">Time: </span>
+          <span>{formatTime(time)}</span>
         </div>
       </div>
 
-      {/* Grid Size Selector */}
-      <div className="flex flex-wrap gap-2 justify-center">
-        {GRID_SIZES.map(size => (
-          <button
-            key={size}
-            onClick={() => onSizeChange(size)}
-            className={`
-              px-3 py-2 rounded
-              transition-colors duration-200
-              ${
-                currentSize === size
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }
-            `}
-          >
-            {size}x{size}
-          </button>
-        ))}
-      </div>
-
-      {/* Difficulty Selector */}
-      <div className="flex justify-center gap-2">
-        {DIFFICULTIES.map(difficulty => (
-          <button
-            key={difficulty}
-            onClick={() => onDifficultyChange(difficulty)}
-            className={`
-              px-4 py-2 rounded capitalize
-              transition-colors duration-200
-              ${
-                currentDifficulty === difficulty
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }
-            `}
-          >
-            {difficulty}
-          </button>
-        ))}
-      </div>
-
-      {/* New Game Button */}
-      <div className="flex justify-center">
+      <div className="flex space-x-4">
         <button
+          type="button"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
           onClick={onNewGame}
-          className="
-            px-6 py-3 rounded
-            bg-green-500 hover:bg-green-600
-            text-white font-bold
-            transition-colors duration-200
-            shadow-md hover:shadow-lg
-          "
         >
           New Game
         </button>
+
+        <select
+          className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+          value={currentSize}
+          onChange={(e) => onSizeChange(Number(e.target.value) as GridSize)}
+          aria-label="Grid Size"
+        >
+          {gridSizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {size}x{size}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+          value={currentDifficulty}
+          onChange={(e) => onDifficultyChange(e.target.value as Difficulty)}
+          aria-label="Difficulty"
+        >
+          {difficultyOptions.map((diff) => (
+            <option key={diff} value={diff}>
+              {formatDifficulty(diff)}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

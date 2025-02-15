@@ -1,4 +1,4 @@
-import { screen, waitFor, act } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest'
 import App from '../App'
@@ -28,18 +28,12 @@ describe('<App />', () => {
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: undefined })
 
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Start Game' }))
-    })
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
     vi.advanceTimersByTime(100)
     
     await waitFor(() => {
       expect(screen.getByText('Moves:')).toBeInTheDocument()
-    })
-    await waitFor(() => {
       expect(screen.getByText('Time:')).toBeInTheDocument()
-    })
-    await waitFor(() => {
       expect(screen.getByText('New Game')).toBeInTheDocument()
     })
   })
@@ -102,13 +96,8 @@ describe('<App />', () => {
     await vi.advanceTimersByTimeAsync(100)
 
     const keys = ['{ArrowUp}', '{ArrowDown}', '{ArrowLeft}', '{ArrowRight}']
-    await act(async () => {
-      for (const key of keys) {
-        await user.keyboard(key)
-      }
-      await vi.advanceTimersByTimeAsync(100)
-    })
-
+    await user.keyboard(keys.join(''))
+    await vi.advanceTimersByTimeAsync(100)
     await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
@@ -150,8 +139,6 @@ describe('<App />', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Moves: 0')).toBeInTheDocument()
-    })
-    await waitFor(() => {
       expect(screen.getByText('Time: 0:00')).toBeInTheDocument()
     })
   })
@@ -168,16 +155,13 @@ describe('<App />', () => {
     await user.click(tiles[0])
     await vi.runOnlyPendingTimersAsync()
 
-    await act(async () => {
-      const board = screen.getByTestId('game-board')
-      board.dispatchEvent(new CustomEvent('win'))
-      await vi.runOnlyPendingTimersAsync()
-    })
+    // Simulate winning state
+    const board = screen.getByTestId('game-board')
+    board.dispatchEvent(new CustomEvent('win'))
+    await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
       expect(screen.getByText('🎉 Congratulations! 🎉')).toBeInTheDocument()
-    })
-    await waitFor(() => {
       expect(screen.getByText('You solved the puzzle!')).toBeInTheDocument()
     })
   })
@@ -194,28 +178,21 @@ describe('<App />', () => {
     await user.click(tiles[0])
     await vi.runOnlyPendingTimersAsync()
     
-    await act(async () => {
-      const board = screen.getByTestId('game-board')
-      board.dispatchEvent(new CustomEvent('win'))
-      await vi.runOnlyPendingTimersAsync()
-    })
+    // Simulate winning state
+    const board = screen.getByTestId('game-board')
+    board.dispatchEvent(new CustomEvent('win'))
+    await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Play Again' })).toBeInTheDocument()
     })
 
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Play Again' }))
-      await vi.runOnlyPendingTimersAsync()
-    })
+    await user.click(screen.getByRole('button', { name: 'Play Again' }))
+    await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
       expect(screen.getByText('Moves: 0')).toBeInTheDocument()
-    })
-    await waitFor(() => {
       expect(screen.getByText('Time: 0:00')).toBeInTheDocument()
-    })
-    await waitFor(() => {
       expect(screen.queryByText('🎉 Congratulations! 🎉')).not.toBeInTheDocument()
     })
   })

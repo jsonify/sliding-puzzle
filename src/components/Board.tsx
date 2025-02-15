@@ -4,6 +4,8 @@ import { getMovablePositions } from '../utils/gameUtils';
 import { BoardUI, BoardClassNames } from '../constants/boardUI';
 import Tile from './Tile';
 
+const PADDING_FACTOR = 2;
+
 /** Create a unique ID for a tile */
 const createTileId = (number: number, row: number, col: number): string => {
   const padding = String(number).padStart(BoardUI.TILE_NUMBER_MIN_LENGTH, '0');
@@ -37,7 +39,7 @@ const calculateBoardWidth = (): number => {
   if (typeof window === 'undefined') return BoardUI.BOARD_MAX_WIDTH_PX;
   
   const viewportWidth = window.innerWidth;
-  const availableWidth = viewportWidth - (BoardUI.VIEWPORT_MIN_PADDING_PX * 2);
+  const availableWidth = viewportWidth - (BoardUI.VIEWPORT_MIN_PADDING_PX * PADDING_FACTOR);
   return Math.min(BoardUI.BOARD_MAX_WIDTH_PX, Math.max(availableWidth, 0));
 };
 
