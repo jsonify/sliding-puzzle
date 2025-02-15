@@ -2,6 +2,7 @@ import { defineConfig } from 'cypress'
 
 const RUNMODE = 2
 const OPENMODE = 0
+const VIDEO_COMPRESSION = 32
 
 export default defineConfig({
   fileServerFolder: 'dist',
@@ -16,6 +17,6 @@ export default defineConfig({
     },
     screenshotOnRunFailure: true,
     video: true,
-    videoCompression: 32
+    videoCompression: VIDEO_COMPRESSION
   }
 })
