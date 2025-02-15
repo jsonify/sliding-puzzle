@@ -1,5 +1,5 @@
 import type { Difficulty, GameControlsProperties, GridSize } from '../types/game';
-import { type ChangeEvent, onUseCallback } from 'react';
+import { type ChangeEvent, useCallback } from 'react';
 import { GridSizes } from '../constants/gameConstants';
 import { formatTime } from '../utils/leaderboardUtils';
 
@@ -42,6 +42,17 @@ export default function GameControls({
   currentSize,
   currentDifficulty,
 }: GameControlsProperties): JSX.Element {
+  const onHandleSizeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const size = Number(event.target.value);
+    if (gridSizeOptions.includes(size as GridSize)) {
+      onSizeChange(size as GridSize);
+    }
+  }, [onSizeChange]);
+
+  const handleDifficultySelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    handleDifficultyChange(event, onDifficultyChange);
+  }, [onDifficultyChange]);
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
       <div className="flex space-x-4">
@@ -67,11 +78,7 @@ export default function GameControls({
         <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentSize}
-          onChange={onUseCallback((event: ChangeEvent<HTMLSelectElement>) => {
-            const size = Number(event.target.value);
-            if (gridSizeOptions.includes(size as GridSize))
-              onSizeChange(size as GridSize);
-          }, [onSizeChange])}
+          onChange={onHandleSizeChange}
           aria-label="Grid Size"
         >
           {gridSizeOptions.map((size) => (
@@ -84,9 +91,7 @@ export default function GameControls({
         <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentDifficulty}
-          onChange={onUseCallback((event: ChangeEvent<HTMLSelectElement>) => {
-            handleDifficultyChange(event, onDifficultyChange);
-          }, [onDifficultyChange])}
+          onChange={handleDifficultySelect}
           aria-label="Difficulty"
         >
           {difficultyOptions.map((diff) => (
