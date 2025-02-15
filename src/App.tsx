@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Board from './components/Board'
 import GameControls from './components/GameControls'
 import { LevelSelect } from './components/LevelSelect'
-import { Leaderboard } from './components/Leaderboard'
+import Leaderboard from './components/Leaderboard'
 
 // Types
 import type {
