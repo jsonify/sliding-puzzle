@@ -6,35 +6,32 @@ import renderWithProviders from '../testUtils'
 
 describe('<App />', () => {
   beforeEach(() => {
-    vi.useFakeTimers({
-      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame']
-    })
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
     vi.runOnlyPendingTimers()
     vi.useRealTimers()
+    vi.clearAllTimers()
   })
 
-  it('renders level select screen initially', () => {
-    act(() => {
-      renderWithProviders(<App />, false)
-    })
+  it('renders level select screen initially', async () => {
+    vi.useFakeTimers()
+    renderWithProviders(<App />, false)
     expect(screen.getByText('Sliding Puzzle')).toBeInTheDocument()
     expect(screen.getByText('Select Grid Size')).toBeInTheDocument()
     expect(screen.getByText('Select Difficulty')).toBeInTheDocument()
   })
 
   it('starts game when clicking start game', async () => {
-    act(() => {
-      renderWithProviders(<App />, false)
-    })
+    vi.useFakeTimers()
+    renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
     await act(async () => {
-      await user.click(screen.getByText('Start Game'))
-      vi.runOnlyPendingTimers()
+      await user.click(screen.getByRole('button', { name: 'Start Game' }))
     })
+    vi.advanceTimersByTime(100)
     
     await waitFor(() => {
       expect(screen.getByText('Moves:')).toBeInTheDocument()
@@ -44,13 +41,15 @@ describe('<App />', () => {
   })
 
   it('updates time while game is in progress', async () => {
+    vi.useFakeTimers()
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
-    await user.click(screen.getByText('Start Game'))
-    vi.runOnlyPendingTimers()
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.advanceTimersByTimeAsync(100)
 
     await waitFor(() => {
+      vi.runOnlyPendingTimers()
       expect(screen.getByText('Time: 0:00')).toBeInTheDocument()
     })
 
@@ -70,11 +69,12 @@ describe('<App />', () => {
   })
 
   it('updates moves counter when making valid moves', async () => {
+    vi.useFakeTimers()
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
-    await user.click(screen.getByText('Start Game'))
-    vi.runOnlyPendingTimers()
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.advanceTimersByTimeAsync(100)
 
     await waitFor(() => {
       expect(screen.getByText('Moves: 0')).toBeInTheDocument()
@@ -82,7 +82,7 @@ describe('<App />', () => {
 
     const tiles = screen.getAllByRole('button', { name: /Tile/ })
     await user.click(tiles[0])
-    vi.runOnlyPendingTimers()
+    await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
       expect(screen.getByText('Moves: 1')).toBeInTheDocument()
@@ -90,20 +90,21 @@ describe('<App />', () => {
   })
 
   it('handles keyboard controls', async () => {
+    vi.useFakeTimers()
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
-    await user.click(screen.getByText('Start Game'))
-    vi.runOnlyPendingTimers()
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.advanceTimersByTimeAsync(100)
 
-    await user.keyboard('{ArrowUp}')
-    vi.runOnlyPendingTimers()
-    await user.keyboard('{ArrowDown}')
-    vi.runOnlyPendingTimers()
-    await user.keyboard('{ArrowLeft}')
-    vi.runOnlyPendingTimers()
-    await user.keyboard('{ArrowRight}')
-    vi.runOnlyPendingTimers()
+    for (const key of ['{ArrowUp}', '{ArrowDown}', '{ArrowLeft}', '{ArrowRight}']) {
+      await act(async () => {
+        await user.keyboard(key)
+        await vi.advanceTimersByTimeAsync(100)
+      })
+    }
+
+    await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
       const movesText = screen.getByText(/Moves:/)
@@ -112,15 +113,16 @@ describe('<App />', () => {
   })
 
   it('allows changing grid size during gameplay', async () => {
+    vi.useFakeTimers()
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
-    await user.click(screen.getByText('Start Game'))
-    vi.runOnlyPendingTimers()
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.runOnlyPendingTimersAsync()
     
     const sizeSelect = screen.getByLabelText('Grid Size')
     await user.selectOptions(sizeSelect, '3')
-    vi.runOnlyPendingTimers()
+    await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
       const tiles = screen.getAllByRole('button', { name: /Tile/ })
@@ -129,15 +131,16 @@ describe('<App />', () => {
   })
 
   it('allows changing difficulty during gameplay', async () => {
+    vi.useFakeTimers()
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
-    await user.click(screen.getByText('Start Game'))
-    vi.runOnlyPendingTimers()
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.runOnlyPendingTimersAsync()
 
     const difficultySelect = screen.getByLabelText('Difficulty')
     await user.selectOptions(difficultySelect, 'hard')
-    vi.runOnlyPendingTimers()
+    await vi.runOnlyPendingTimersAsync()
 
     await waitFor(() => {
       expect(screen.getByText('Moves: 0')).toBeInTheDocument()
@@ -146,21 +149,24 @@ describe('<App />', () => {
   })
 
   it('displays winning modal when winning state is achieved', async () => {
+    vi.useFakeTimers()
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
-    await user.click(screen.getByText('Start Game'))
-    vi.runOnlyPendingTimers()
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.runOnlyPendingTimersAsync()
     
     const tiles = screen.getAllByRole('button', { name: /Tile/ })
     await user.click(tiles[0])
-    vi.runOnlyPendingTimers()
+    await vi.runOnlyPendingTimersAsync()
 
-    const board = document.querySelector('.game-board')
-    if (board) {
-      board.dispatchEvent(new CustomEvent('win'))
-    }
-    vi.runOnlyPendingTimers()
+    await act(async () => {
+      const board = document.querySelector('.game-board')
+      if (board) {
+        board.dispatchEvent(new CustomEvent('win'))
+      }
+      await vi.runOnlyPendingTimersAsync()
+    })
 
     await waitFor(() => {
       expect(screen.getByText('🎉 Congratulations! 🎉')).toBeInTheDocument()
@@ -169,29 +175,33 @@ describe('<App />', () => {
   })
 
   it('starts new game when clicking Play Again in winning modal', async () => {
+    vi.useFakeTimers()
     renderWithProviders(<App />, false)
     const user = userEvent.setup({ delay: null })
 
-    await user.click(screen.getByText('Start Game'))
-    vi.runOnlyPendingTimers()
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.runOnlyPendingTimersAsync()
     
     const tiles = screen.getAllByRole('button', { name: /Tile/ })
     await user.click(tiles[0])
-    vi.runOnlyPendingTimers()
+    await vi.runOnlyPendingTimersAsync()
     
-    const board = document.querySelector('.game-board')
-    if (board) {
-      board.dispatchEvent(new CustomEvent('win'))
-    }
-    vi.runOnlyPendingTimers()
+    await act(async () => {
+      const board = document.querySelector('.game-board')
+      if (board) {
+        board.dispatchEvent(new CustomEvent('win'))
+      }
+      await vi.runOnlyPendingTimersAsync()
+    })
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Play Again' })).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: 'Play Again' }))
-    vi.runOnlyPendingTimers()
-
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: 'Play Again' }))
+      await vi.runOnlyPendingTimersAsync()
+    })
     await waitFor(() => {
       expect(screen.getByText('Moves: 0')).toBeInTheDocument()
       expect(screen.getByText('Time: 0:00')).toBeInTheDocument()

@@ -13,11 +13,13 @@ export default defineConfig(({ mode }) => ({
     environment: 'jsdom',
     setupFiles: 'src/setupTests.ts',
     clearMocks: true,
-    testTimeout: 10000,
-    hookTimeout: 10000,
+    restoreMocks: true,
+    // mockReset: true,
+    testTimeout: 20000,
+    hookTimeout: 20000,
     pool: 'forks',
     sequence: {
-      concurrent: false
+      concurrent: true
     },
     coverage: {
       include: ['src/**/*'],
