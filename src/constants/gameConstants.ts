@@ -17,6 +17,26 @@ export const GameConstants = {
   SPEED_ACHIEVEMENT_THRESHOLD: 30,
   /** Maximum recent games to store */
   MAX_RECENT_GAMES: 10,
+  /** Timer interval in milliseconds */
+  TIMER_INTERVAL: 1000,
+  /** Minimum grid index */
+  MIN_GRID_INDEX: 0,
+  /** Initial grid size */
+  INITIAL_GRID_SIZE: 4,
+  /** Seconds in a minute */
+  SECONDS_IN_MINUTE: 60,
+  /** Time display padding length */
+  TIME_DISPLAY_PAD_LENGTH: 2,
+  /** Time increment */
+  TIME_INCREMENT: 1,
+  /** Modal backdrop opacity */
+  MODAL_BACKDROP_OPACITY: 50,
+  /** Default spacing */
+  DEFAULT_SPACING: 8,
+  /** Move increment */
+  MOVE_INCREMENT: 1,
+  /** Single position offset */
+  SINGLE_POSITION_OFFSET: 1,
 } as const;
 
 /** Grid sizes configuration */

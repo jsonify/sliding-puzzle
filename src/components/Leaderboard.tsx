@@ -1,22 +1,25 @@
 import { useState } from 'react';
-import { Leaderboard as LeaderboardType, Achievement } from '../types/game';
-import { formatTime, loadLeaderboard } from '../utils/gameUtils';
+import { Leaderboard as LeaderboardType, Achievement, LeaderboardCategories, Difficulty, GridSize } from '../types/game';
+import { formatTime, loadLeaderboard } from '../utils/leaderboardUtils';
+import { GridSizes } from '../constants/gameConstants';
 
 type LeaderboardView = 'best' | 'recent' | 'achievements' | 'stats';
+type CategoryKey = keyof LeaderboardCategories;
+type CategoryEntry = [CategoryKey, LeaderboardCategories[CategoryKey]];
 
 export function Leaderboard(): JSX.Element {
   const [activeView, setActiveView] = useState<LeaderboardView>('best');
   const [selectedSize, setSelectedSize] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   
-  const leaderboard = loadLeaderboard();
+  const leaderboard: LeaderboardType = loadLeaderboard();
   
   // Filter categories based on selection
-  const filteredCategories = Object.entries(leaderboard.categories).filter(([key]) => {
+  const filteredCategories: CategoryEntry[] = Object.entries(leaderboard.categories).filter(([key]) => {
     const [size, difficulty] = key.split('-');
     return (selectedSize === 'all' || size === selectedSize) &&
            (selectedDifficulty === 'all' || difficulty === selectedDifficulty);
-  });
+  }) as CategoryEntry[];
 
   const renderBestScores = () => (
     <div className="space-y-6">
@@ -24,24 +27,24 @@ export function Leaderboard(): JSX.Element {
         <p className="text-gray-600 dark:text-gray-400">
           No high scores yet. Complete a puzzle to set a record!
         </p>
-      ) : filteredCategories.map(([key, data]) => (
+      ) : filteredCategories.map(([key, category]) => (
         <div key={key} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 transform transition hover:scale-102">
           <h3 className="text-lg font-bold mb-2">
-            {data.bestMoves.gridSize}x{data.bestMoves.gridSize} - {data.bestMoves.difficulty}
+            {category.bestMoves.gridSize}x{category.bestMoves.gridSize} - {category.bestMoves.difficulty}
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded">
               <h4 className="font-medium mb-2">Best Moves</h4>
-              <p className="text-lg">{data.bestMoves.moves} moves</p>
+              <p className="text-lg">{category.bestMoves.moves} moves</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Time: {formatTime(data.bestMoves.timeSeconds)}
+                Time: {formatTime(category.bestMoves.timeSeconds)}
               </p>
             </div>
             <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded">
               <h4 className="font-medium mb-2">Best Time</h4>
-              <p className="text-lg">{formatTime(data.bestTime.timeSeconds)}</p>
+              <p className="text-lg">{formatTime(category.bestTime.timeSeconds)}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Moves: {data.bestTime.moves}
+                Moves: {category.bestTime.moves}
               </p>
             </div>
           </div>
@@ -52,7 +55,7 @@ export function Leaderboard(): JSX.Element {
 
   const renderRecentGames = () => (
     <div className="space-y-4">
-      {filteredCategories.flatMap(([_, data]) => data.recentGames)
+      {filteredCategories.flatMap(([_, category]) => category.recentGames)
         .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
         .slice(0, 10)
         .map((game) => (
@@ -77,10 +80,10 @@ export function Leaderboard(): JSX.Element {
             </div>
             {game.achievementsUnlocked.length > 0 && (
               <div className="mt-2 flex gap-2">
-                {game.achievementsUnlocked.map(id => {
-                  const achievement = leaderboard.achievements.find(a => a.id === id);
+                {game.achievementsUnlocked.map((achievementId: string) => {
+                  const achievement = leaderboard.achievements.find((a: Achievement) => a.id === achievementId);
                   return achievement ? (
-                    <span key={id} className="inline-block bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs px-2 py-1 rounded">
+                    <span key={achievementId} className="inline-block bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs px-2 py-1 rounded">
                       🏆 {achievement.name}
                     </span>
                   ) : null;
@@ -154,7 +157,7 @@ export function Leaderboard(): JSX.Element {
             onChange={(e) => setSelectedSize(e.target.value)}
           >
             <option value="all">All Sizes</option>
-            {[3, 4, 5, 6, 7, 8, 9].map((size) => (
+            {GridSizes.SIZES.map((size) => (
               <option key={size} value={`${size}x${size}`}>
                 {size}x{size}
               </option>
@@ -166,54 +169,29 @@ export function Leaderboard(): JSX.Element {
             onChange={(e) => setSelectedDifficulty(e.target.value)}
           >
             <option value="all">All Difficulties</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
+            {['easy', 'medium', 'hard'].map((difficulty) => (
+              <option key={difficulty} value={difficulty}>
+                {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
       <div className="flex border-b mb-6">
-        <button
-          className={`px-4 py-2 font-medium ${
-            activeView === 'best'
-              ? 'border-b-2 border-blue-500 text-blue-500'
-              : 'text-gray-600 dark:text-gray-400'
-          }`}
-          onClick={() => setActiveView('best')}
-        >
-          Best Scores
-        </button>
-        <button
-          className={`px-4 py-2 font-medium ${
-            activeView === 'recent'
-              ? 'border-b-2 border-blue-500 text-blue-500'
-              : 'text-gray-600 dark:text-gray-400'
-          }`}
-          onClick={() => setActiveView('recent')}
-        >
-          Recent Games
-        </button>
-        <button
-          className={`px-4 py-2 font-medium ${
-            activeView === 'achievements'
-              ? 'border-b-2 border-blue-500 text-blue-500'
-              : 'text-gray-600 dark:text-gray-400'
-          }`}
-          onClick={() => setActiveView('achievements')}
-        >
-          Achievements
-        </button>
-        <button
-          className={`px-4 py-2 font-medium ${
-            activeView === 'stats'
-              ? 'border-b-2 border-blue-500 text-blue-500'
-              : 'text-gray-600 dark:text-gray-400'
-          }`}
-          onClick={() => setActiveView('stats')}
-        >
-          Statistics
-        </button>
+        {(['best', 'recent', 'achievements', 'stats'] as const).map((view) => (
+          <button
+            key={view}
+            className={`px-4 py-2 font-medium ${
+              activeView === view
+                ? 'border-b-2 border-blue-500 text-blue-500'
+                : 'text-gray-600 dark:text-gray-400'
+            }`}
+            onClick={() => setActiveView(view)}
+          >
+            {view.charAt(0).toUpperCase() + view.slice(1).replace(/([A-Z])/g, ' $1')}
+          </button>
+        ))}
       </div>
 
       {activeView === 'best' && renderBestScores()}
