@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { Leaderboard as LeaderboardType, Achievement, LeaderboardCategories, Difficulty, GridSize } from '../types/game';
+import { Leaderboard as LeaderboardType, Achievement, LeaderboardCategories } from '../types/game';
 import { formatTime, loadLeaderboard } from '../utils/leaderboardUtils';
 import { GridSizes } from '../constants/gameConstants';
+
+const RECENT_GAMES_LIMIT = 10;
+const FIRST_CHAR_INDEX = 0;
 
 type LeaderboardView = 'best' | 'recent' | 'achievements' | 'stats';
 type CategoryKey = keyof LeaderboardCategories;
 type CategoryEntry = [CategoryKey, LeaderboardCategories[CategoryKey]];
 
-export function Leaderboard(): JSX.Element {
+function Leaderboard(): JSX.Element {
   const [activeView, setActiveView] = useState<LeaderboardView>('best');
   const [selectedSize, setSelectedSize] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
@@ -21,7 +24,7 @@ export function Leaderboard(): JSX.Element {
            (selectedDifficulty === 'all' || difficulty === selectedDifficulty);
   }) as CategoryEntry[];
 
-  const renderBestScores = () => (
+  const renderBestScores = (): JSX.Element => (
     <div className="space-y-6">
       {filteredCategories.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-400">
@@ -53,11 +56,11 @@ export function Leaderboard(): JSX.Element {
     </div>
   );
 
-  const renderRecentGames = () => (
+  const renderRecentGames = (): JSX.Element => (
     <div className="space-y-4">
       {filteredCategories.flatMap(([_, category]) => category.recentGames)
         .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
-        .slice(0, 10)
+        .slice(0, RECENT_GAMES_LIMIT)
         .map((game) => (
           <div key={game.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex justify-between items-start mb-2">
@@ -86,7 +89,7 @@ export function Leaderboard(): JSX.Element {
                     <span key={achievementId} className="inline-block bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs px-2 py-1 rounded">
                       🏆 {achievement.name}
                     </span>
-                  ) : null;
+                  ) : undefined;
                 })}
               </div>
             )}
@@ -146,6 +149,16 @@ export function Leaderboard(): JSX.Element {
     );
   };
 
+  const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    setSelectedSize(event.target.value);
+  };
+
+  const handleDifficultyChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    setSelectedDifficulty(event.target.value);
+  };
+
+  const handleViewChange = (view: LeaderboardView): void => setActiveView(view);
+
   return (
     <div className="mt-8">
       <div className="flex justify-between items-center mb-6">
@@ -154,7 +167,7 @@ export function Leaderboard(): JSX.Element {
           <select
             className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
             value={selectedSize}
-            onChange={(e) => setSelectedSize(e.target.value)}
+            onChange={handleSizeChange}
           >
             <option value="all">All Sizes</option>
             {GridSizes.SIZES.map((size) => (
@@ -166,12 +179,12 @@ export function Leaderboard(): JSX.Element {
           <select
             className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
             value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
+            onChange={handleDifficultyChange}
           >
             <option value="all">All Difficulties</option>
             {['easy', 'medium', 'hard'].map((difficulty) => (
               <option key={difficulty} value={difficulty}>
-                {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                {difficulty.charAt(FIRST_CHAR_INDEX).toUpperCase() + difficulty.slice(1)}
               </option>
             ))}
           </select>
@@ -181,13 +194,14 @@ export function Leaderboard(): JSX.Element {
       <div className="flex border-b mb-6">
         {(['best', 'recent', 'achievements', 'stats'] as const).map((view) => (
           <button
+            type="button"
             key={view}
             className={`px-4 py-2 font-medium ${
               activeView === view
                 ? 'border-b-2 border-blue-500 text-blue-500'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
-            onClick={() => setActiveView(view)}
+            onClick={() => handleViewChange(view)}
           >
             {view.charAt(0).toUpperCase() + view.slice(1).replace(/([A-Z])/g, ' $1')}
           </button>
@@ -201,3 +215,5 @@ export function Leaderboard(): JSX.Element {
     </div>
   );
 }
+
+export default Leaderboard;

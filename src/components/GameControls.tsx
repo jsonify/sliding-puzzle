@@ -1,5 +1,5 @@
 import type { Difficulty, GameControlsProperties, GridSize } from '../types/game';
-import { type ChangeEvent, useCallback } from 'react';
+import { type ChangeEvent, onUseCallback } from 'react';
 import { GridSizes } from '../constants/gameConstants';
 import { formatTime } from '../utils/leaderboardUtils';
 
@@ -67,7 +67,7 @@ export default function GameControls({
         <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentSize}
-          onChange={useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+          onChange={onUseCallback((event: ChangeEvent<HTMLSelectElement>) => {
             const size = Number(event.target.value);
             if (gridSizeOptions.includes(size as GridSize))
               onSizeChange(size as GridSize);
@@ -84,7 +84,7 @@ export default function GameControls({
         <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentDifficulty}
-          onChange={useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+          onChange={onUseCallback((event: ChangeEvent<HTMLSelectElement>) => {
             handleDifficultyChange(event, onDifficultyChange);
           }, [onDifficultyChange])}
           aria-label="Difficulty"
