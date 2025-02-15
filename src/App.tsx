@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 // Components
 import Board from './components/Board'
-import { GameControls } from './components/GameControls'
+import GameControls from './components/GameControls'
 import { LevelSelect } from './components/LevelSelect'
 import { Leaderboard } from './components/Leaderboard'
 
