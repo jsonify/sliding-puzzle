@@ -38,7 +38,7 @@ export interface BoardProps {
   isWon: boolean;
 }
 
-export interface GameControlsProps {
+export interface GameControlsProperties {
   moves: number;
   time: number;
   onNewGame: () => void;

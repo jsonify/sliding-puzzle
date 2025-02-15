@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import { GameControls } from '../GameControls';
+import GameControls from '../GameControls';
 import type { Difficulty, GridSize } from '../../types/game';
 
 describe('GameControls', () => {

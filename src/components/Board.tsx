@@ -1,24 +1,14 @@
+import { useMemo, useCallback } from 'react';
 import type { BoardProps, Position } from '../types/game';
 import { getMovablePositions } from '../utils/gameUtils';
+import { BoardUI, BoardClassNames } from '../constants/boardUI';
 import Tile from './Tile';
 
-/** UI layout constants */
-const UI = {
-  /** Maximum board width in pixels */
-  MAX_WIDTH: 600,
-  /** Minimum padding from viewport edges */
-  MIN_PADDING: 32,
-  /** Grid gap size for larger screens */
-  MD_GAP: 2,
-  /** Default padding for board */
-  BOARD_PADDING: 4,
-  /** Minimum length for number padding */
-  NUM_PAD_LENGTH: 2,
-} as const;
+const PADDING_FACTOR = 2;
 
 /** Create a unique ID for a tile */
 const createTileId = (number: number, row: number, col: number): string => {
-  const padding = String(number).padStart(UI.NUM_PAD_LENGTH, '0');
+  const padding = String(number).padStart(BoardUI.TILE_NUMBER_MIN_LENGTH, '0');
   return `tile-${number === 0 ? 'empty' : padding}-${row}-${col}`;
 };
 
@@ -38,35 +28,52 @@ const isPositionMovable = (pos: Position, movablePositions: Position[]): boolean
 
 /** Get board CSS classes */
 const getBoardClasses = (isWon: boolean): string => [
-  'grid',
-  'gap-1',
-  `md:gap-${UI.MD_GAP}`,
-  `p-${UI.BOARD_PADDING}`,
-  'bg-gray-100',
-  'dark:bg-gray-800',
-  'rounded-lg',
-  'shadow-lg',
-  isWon && 'animate-win',
+  ...BoardClassNames.BASE,
+  BoardClassNames.RESPONSIVE_GAP(BoardUI.GRID_GAP_REM_MD),
+  BoardClassNames.PADDING(BoardUI.BOARD_PADDING_REM),
+  isWon && BoardClassNames.WIN_ANIMATION,
 ].filter(Boolean).join(' ');
+
+/** Calculate responsive board width based on viewport */
+const calculateBoardWidth = (): number => {
+  if (typeof window === 'undefined') return BoardUI.BOARD_MAX_WIDTH_PX;
+  
+  const viewportWidth = window.innerWidth;
+  const availableWidth = viewportWidth - (BoardUI.VIEWPORT_MIN_PADDING_PX * PADDING_FACTOR);
+  return Math.min(BoardUI.BOARD_MAX_WIDTH_PX, Math.max(availableWidth, 0));
+};
 
 /** Board component that displays and manages the puzzle grid */
 export default function Board({ gridSize, tiles, onTileClick, isWon }: BoardProps): JSX.Element {
-  const movablePositions = getMovablePositions(tiles);
-  const boardClasses = getBoardClasses(isWon);
+  // Memoize expensive calculations
+  const movablePositions = useMemo(() => getMovablePositions(tiles), [tiles]);
+  const boardClasses = useMemo(() => getBoardClasses(isWon), [isWon]);
+  const boardWidth = useMemo(() => calculateBoardWidth(), []);
+
+  // Memoize position check function to prevent unnecessary re-renders
+  const checkPositionMovable = useCallback(
+    (position: Position) => isPositionMovable(position, movablePositions),
+    [movablePositions]
+  );
 
   return (
     <div
       className={boardClasses}
       style={{
         gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
-        maxWidth: `${Math.min(UI.MAX_WIDTH, window.innerWidth - UI.MIN_PADDING)}px`,
+        maxWidth: `${boardWidth}px`,
         aspectRatio: '1 / 1',
       }}
       role="grid"
       aria-label="Sliding puzzle board"
+      data-testid="game-board"
     >
       {tiles.map((row, rowIndex) => (
-        <div key={createRowKey(gridSize, rowIndex)} className="contents">
+        <div 
+          key={createRowKey(gridSize, rowIndex)} 
+          className="contents" 
+          role="row"
+        >
           {row.map((number, colIndex) => {
             const position = createPosition(rowIndex, colIndex);
             return (
@@ -75,7 +82,7 @@ export default function Board({ gridSize, tiles, onTileClick, isWon }: BoardProp
                 number={number}
                 position={position}
                 size={gridSize}
-                isMovable={isPositionMovable(position, movablePositions)}
+                isMovable={checkPositionMovable(position)}
                 onClick={() => onTileClick(position)}
               />
             );

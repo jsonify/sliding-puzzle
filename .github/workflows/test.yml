@@ -13,6 +13,7 @@ concurrency:
 jobs:
   Test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -29,10 +30,46 @@ jobs:
       - name: Install dependencies
         run: pnpm i && pnpm cypress install
 
-      - name: Validate
-        run: pnpm run-p lint test:ci test:e2e:ci
+      - name: Type Check
+        run: pnpm run-tsc
+
+      - name: Lint
+        run: pnpm run-eslint && pnpm run-stylelint
+
+      - name: Unit Tests
+        id: unit
+        run: pnpm test:ci
+        
+      - name: Build
+        id: build
+        run: pnpm build
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+      - name: E2E Tests
+        id: e2e
+        run: pnpm test:e2e:ci
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+        
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage/
+            cypress/screenshots/
+            cypress/videos/
+          retention-days: 30
 
       - name: Upload coverage
+        if: success()
         uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true

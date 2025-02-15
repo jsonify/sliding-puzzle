@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 // Components
 import Board from './components/Board'
-import { GameControls } from './components/GameControls'
+import GameControls from './components/GameControls'
 import { LevelSelect } from './components/LevelSelect'
-import { Leaderboard } from './components/Leaderboard'
+import Leaderboard from './components/Leaderboard'
 
 // Types
 import type {
@@ -23,26 +23,9 @@ import {
   isWinningState,
   makeMove,
   shuffleBoard,
-  updateLeaderboard
 } from './utils/gameUtils'
-
-// Game configuration constants
-const TIMER_INTERVAL = 1000
-const MIN_GRID_INDEX = 0
-const INITIAL_GRID_SIZE = 4
-
-// Time formatting constants
-const SECONDS_IN_MINUTE = 60
-const TIME_DISPLAY_PAD_LENGTH = 2
-const TIME_INCREMENT = 1
-
-// UI constants
-const MODAL_BACKDROP_OPACITY = 50
-const DEFAULT_SPACING = 8 // For p-8 Tailwind class
-const MOVE_INCREMENT = 1
-
-// Offset for single position movement
-const SINGLE_POSITION_OFFSET = 1
+import { updateLeaderboard } from './utils/leaderboardUtils'
+import { GameConstants } from './constants/gameConstants'
 
 // Initial game state
 const initialGameState = {
@@ -54,7 +37,7 @@ const initialGameState = {
 
 function App(): ReactElement {
   // Game configuration state
-  const [gridSize, setGridSize] = useState<GridSize>(INITIAL_GRID_SIZE)
+  const [gridSize, setGridSize] = useState<GridSize>(GameConstants.INITIAL_GRID_SIZE)
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const [gameStarted, setGameStarted] = useState(false)
 
@@ -70,9 +53,9 @@ function App(): ReactElement {
       interval = window.setInterval(() => {
         setGameState(previous => ({
           ...previous,
-          time: previous.time + TIME_INCREMENT
+          time: previous.time + GameConstants.TIME_INCREMENT
         }))
-      }, TIMER_INTERVAL)
+      }, GameConstants.TIMER_INTERVAL)
     }
 
     return function cleanup() {
@@ -99,23 +82,23 @@ function App(): ReactElement {
     if (isValidMove(position, emptyPos)) {
       const updatedBoard = makeMove(board, position, emptyPos)
       const won = isWinningState(updatedBoard)
-      const newMoves = gameState.moves + MOVE_INCREMENT
+      const updatedMoves = gameState.moves + GameConstants.MOVE_INCREMENT
 
       setBoard(updatedBoard)
       setGameState(previous => ({
         ...previous,
-        moves: newMoves,
+        moves: updatedMoves,
         isWon: won,
         isPlaying: !won
       }))
 
       if (won) {
-        updateLeaderboard(
+        updateLeaderboard({
           gridSize,
           difficulty,
-          newMoves,
-          gameState.time
-        )
+          moves: updatedMoves,
+          timeSeconds: gameState.time
+        })
       }
     }
   }, [board, gameState.isWon, gameState.moves, gridSize, difficulty, gameState.time])
@@ -132,37 +115,37 @@ function App(): ReactElement {
 
       switch (event.key) {
         case 'ArrowUp': {
-          if (emptyPos.row < board.length - SINGLE_POSITION_OFFSET) {
+          if (emptyPos.row < board.length - GameConstants.SINGLE_POSITION_OFFSET) {
             targetPosition = {
-              row: emptyPos.row + SINGLE_POSITION_OFFSET,
+              row: emptyPos.row + GameConstants.SINGLE_POSITION_OFFSET,
               col: emptyPos.col
             }
           }
           break
         }
         case 'ArrowDown': {
-          if (emptyPos.row > MIN_GRID_INDEX) {
+          if (emptyPos.row > GameConstants.MIN_GRID_INDEX) {
             targetPosition = {
-              row: emptyPos.row - SINGLE_POSITION_OFFSET,
+              row: emptyPos.row - GameConstants.SINGLE_POSITION_OFFSET,
               col: emptyPos.col
             }
           }
           break
         }
         case 'ArrowLeft': {
-          if (emptyPos.col < board.length - SINGLE_POSITION_OFFSET) {
+          if (emptyPos.col < board.length - GameConstants.SINGLE_POSITION_OFFSET) {
             targetPosition = {
               row: emptyPos.row,
-              col: emptyPos.col + SINGLE_POSITION_OFFSET
+              col: emptyPos.col + GameConstants.SINGLE_POSITION_OFFSET
             }
           }
           break
         }
         case 'ArrowRight': {
-          if (emptyPos.col > MIN_GRID_INDEX) {
+          if (emptyPos.col > GameConstants.MIN_GRID_INDEX) {
             targetPosition = {
               row: emptyPos.row,
-              col: emptyPos.col - SINGLE_POSITION_OFFSET
+              col: emptyPos.col - GameConstants.SINGLE_POSITION_OFFSET
             }
           }
           break
@@ -214,18 +197,18 @@ function App(): ReactElement {
 
   const renderWinningModal = (): ReactElement => (
     <div
-      className={`fixed inset-0 bg-black bg-opacity-${MODAL_BACKDROP_OPACITY} flex items-center justify-center`}
+      className={`fixed inset-0 bg-black bg-opacity-${GameConstants.MODAL_BACKDROP_OPACITY} flex items-center justify-center`}
     >
       <div
-        className={`bg-white dark:bg-gray-800 p-${DEFAULT_SPACING} rounded-lg text-center`}
+        className={`bg-white dark:bg-gray-800 p-${GameConstants.DEFAULT_SPACING} rounded-lg text-center`}
       >
         <h2 className='mb-4 text-2xl font-bold'>🎉 Congratulations! 🎉</h2>
         <p className='mb-2 text-lg'>You solved the puzzle!</p>
         <p className='mb-4'>
-          Moves: {gameState.moves} | Time: {Math.floor(gameState.time / SECONDS_IN_MINUTE)}:
-          {(gameState.time % SECONDS_IN_MINUTE)
+          Moves: {gameState.moves} | Time: {Math.floor(gameState.time / GameConstants.SECONDS_IN_MINUTE)}:
+          {(gameState.time % GameConstants.SECONDS_IN_MINUTE)
             .toString()
-            .padStart(TIME_DISPLAY_PAD_LENGTH, '0')}
+            .padStart(GameConstants.TIME_DISPLAY_PAD_LENGTH, '0')}
         </p>
         <button
           type="button"
