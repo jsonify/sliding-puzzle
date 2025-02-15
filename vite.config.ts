@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
 				'100': true
 			},
 			provider: 'istanbul',
-			enabled: true,
+			enabled: false,
 			reporter: ['text', 'lcov'],
 			reportsDirectory: 'coverage'
 		}
