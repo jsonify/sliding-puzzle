@@ -1,4 +1,4 @@
-import { Board, Difficulty, GridSize, Position } from '../types/game';
+import { Board, Difficulty, GridSize, Position, LeaderboardEntry, Leaderboard } from '../types/game';
 
 /**
  * Creates a solved board of the specified size
@@ -183,4 +183,71 @@ export function getMovablePositions(board: Board): Position[] {
   }
   
   return movable;
+}
+
+/**
+ * Generate a unique key for leaderboard entries
+ */
+function getLeaderboardKey(gridSize: GridSize, difficulty: Difficulty): string {
+  return `${gridSize}x${gridSize}-${difficulty}`;
+}
+
+/**
+ * Load leaderboard data from localStorage
+ */
+export function loadLeaderboard(): Leaderboard {
+  const data = localStorage.getItem('sliding-puzzle-leaderboard');
+  return data ? JSON.parse(data) : {};
+}
+
+/**
+ * Save leaderboard data to localStorage
+ */
+function saveLeaderboard(leaderboard: Leaderboard): void {
+  localStorage.setItem('sliding-puzzle-leaderboard', JSON.stringify(leaderboard));
+}
+
+/**
+ * Format time in seconds to mm:ss
+ */
+export function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Update leaderboard with a new game result
+ */
+export function updateLeaderboard(
+  gridSize: GridSize,
+  difficulty: Difficulty,
+  moves: number,
+  timeSeconds: number
+): void {
+  const leaderboard = loadLeaderboard();
+  const key = getLeaderboardKey(gridSize, difficulty);
+  const entry: LeaderboardEntry = {
+    moves,
+    timeSeconds,
+    completedAt: new Date().toISOString(),
+    difficulty,
+    gridSize,
+  };
+
+  if (!leaderboard[key]) {
+    leaderboard[key] = {
+      bestMoves: entry,
+      bestTime: entry,
+    };
+  } else {
+    if (moves < leaderboard[key].bestMoves.moves) {
+      leaderboard[key].bestMoves = entry;
+    }
+    if (timeSeconds < leaderboard[key].bestTime.timeSeconds) {
+      leaderboard[key].bestTime = entry;
+    }
+  }
+
+  saveLeaderboard(leaderboard);
 }

@@ -53,3 +53,18 @@ export interface LevelSelectProps {
   currentSize: GridSize;
   currentDifficulty: Difficulty;
 }
+
+export interface LeaderboardEntry {
+  moves: number;
+  timeSeconds: number;
+  completedAt: string;
+  difficulty: Difficulty;
+  gridSize: GridSize;
+}
+
+export interface Leaderboard {
+  [key: string]: {
+    bestMoves: LeaderboardEntry;
+    bestTime: LeaderboardEntry;
+  };
+}
