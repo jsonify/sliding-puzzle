@@ -5,6 +5,9 @@ import { GridSizes } from '../constants/gameConstants';
 
 const RECENT_GAMES_LIMIT = 10;
 const FIRST_CHAR_INDEX = 0;
+const CATEGORY_INDEX = 1;
+const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
+const INITIAL_SLICE_INDEX = 1;
 
 type LeaderboardView = 'best' | 'recent' | 'achievements' | 'stats';
 type CategoryKey = keyof LeaderboardCategories;
@@ -59,7 +62,7 @@ function Leaderboard(): JSX.Element {
   const renderRecentGames = (): JSX.Element => (
     <div className="space-y-4">
       {filteredCategories
-        .flatMap(({ 1: category }) => category.recentGames)
+        .flatMap(({ [CATEGORY_INDEX]: category }) => category.recentGames)
         .sort((a, b) => {
           const dateA = new Date(a.completedAt).getTime();
           const dateB = new Date(b.completedAt).getTime();
@@ -106,7 +109,7 @@ function Leaderboard(): JSX.Element {
     </div>
   );
 
-  const renderAchievements = () => (
+  const renderAchievements = (): JSX.Element => (
     <div className="grid gap-4 sm:grid-cols-2">
       {leaderboard.achievements.map((achievement: Achievement) => (
         <div
@@ -123,7 +126,7 @@ function Leaderboard(): JSX.Element {
           </p>
           {achievement.unlockedAt && (
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Unlocked: {new Date(achievement.unlockedAt).toLocaleDateString()}
+              Unlocked: {new Date(achievement.unlockedAt).toLocaleDateString() || undefined}
             </p>
           )}
         </div>
@@ -131,7 +134,7 @@ function Leaderboard(): JSX.Element {
     </div>
   );
 
-  const renderStats = () => {
+  const renderStats = (): JSX.Element => {
     const { global } = leaderboard;
     return (
       <div className="space-y-6">
@@ -157,15 +160,15 @@ function Leaderboard(): JSX.Element {
     );
   };
 
-  const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+  const onSizeChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     setSelectedSize(event.target.value);
   };
 
-  const handleDifficultyChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+  const onDifficultyChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     setSelectedDifficulty(event.target.value);
   };
 
-  const handleViewChange = (view: LeaderboardView): void => setActiveView(view);
+  const onViewChange = (view: LeaderboardView): void => setActiveView(view);
 
   return (
     <div className="mt-8">
@@ -175,7 +178,7 @@ function Leaderboard(): JSX.Element {
           <select
             className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
             value={selectedSize}
-            onChange={handleSizeChange}
+            onChange={onSizeChange}
           >
             <option value="all">All Sizes</option>
             {GridSizes.SIZES.map((size) => (
@@ -187,12 +190,12 @@ function Leaderboard(): JSX.Element {
           <select
             className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
             value={selectedDifficulty}
-            onChange={handleDifficultyChange}
+            onChange={onDifficultyChange}
           >
             <option value="all">All Difficulties</option>
-            {['easy', 'medium', 'hard'].map((difficulty) => (
+            {DIFFICULTIES.map((difficulty) => (
               <option key={difficulty} value={difficulty}>
-                {difficulty.charAt(FIRST_CHAR_INDEX).toUpperCase() + difficulty.slice(1)}
+                {difficulty.charAt(FIRST_CHAR_INDEX).toUpperCase() + difficulty.slice(INITIAL_SLICE_INDEX)}
               </option>
             ))}
           </select>
@@ -209,9 +212,9 @@ function Leaderboard(): JSX.Element {
                 ? 'border-b-2 border-blue-500 text-blue-500'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
-            onClick={() => handleViewChange(view)}
+            onClick={() => onViewChange(view)}
           >
-            {view.charAt(0).toUpperCase() + view.slice(1).replace(/([A-Z])/g, ' $1')}
+            {view.charAt(FIRST_CHAR_INDEX).toUpperCase() + view.slice(INITIAL_SLICE_INDEX).replace(/([A-Z])/g, ' $1')}
           </button>
         ))}
       </div>
