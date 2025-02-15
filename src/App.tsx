@@ -99,12 +99,12 @@ function App(): ReactElement {
     if (isValidMove(position, emptyPos)) {
       const updatedBoard = makeMove(board, position, emptyPos)
       const won = isWinningState(updatedBoard)
-      const newMoves = gameState.moves + MOVE_INCREMENT
+      const updatedMoves = gameState.moves + MOVE_INCREMENT
 
       setBoard(updatedBoard)
       setGameState(previous => ({
         ...previous,
-        moves: newMoves,
+        moves: updatedMoves,
         isWon: won,
         isPlaying: !won
       }))
@@ -113,7 +113,7 @@ function App(): ReactElement {
         updateLeaderboard(
           gridSize,
           difficulty,
-          newMoves,
+          updatedMoves,
           gameState.time
         )
       }

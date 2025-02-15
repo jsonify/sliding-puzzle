@@ -1,5 +1,8 @@
 import { defineConfig } from 'cypress'
 
+const RUNMODE = 2
+const OPENMODE = 0
+
 export default defineConfig({
   fileServerFolder: 'dist',
   fixturesFolder: false,
@@ -8,8 +11,8 @@ export default defineConfig({
     baseUrl: 'http://localhost:4173/',
     specPattern: 'cypress/e2e/**/*.ts',
     retries: {
-      runMode: 2,
-      openMode: 0
+      runMode: RUNMODE,
+      openMode: OPENMODE
     },
     screenshotOnRunFailure: true,
     video: true,
