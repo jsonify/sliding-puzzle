@@ -49,7 +49,7 @@ export default function GameControls({
     }
   }, [onSizeChange]);
 
-  const handleDifficultySelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+  const onHandleDifficultySelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     handleDifficultyChange(event, onDifficultyChange);
   }, [onDifficultyChange]);
 
@@ -91,7 +91,7 @@ export default function GameControls({
         <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentDifficulty}
-          onChange={handleDifficultySelect}
+          onChange={onHandleDifficultySelect}
           aria-label="Difficulty"
         >
           {difficultyOptions.map((diff) => (

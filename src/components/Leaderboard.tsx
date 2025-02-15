@@ -58,43 +58,51 @@ function Leaderboard(): JSX.Element {
 
   const renderRecentGames = (): JSX.Element => (
     <div className="space-y-4">
-      {filteredCategories.flatMap(([_, category]) => category.recentGames)
-        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+      {filteredCategories
+        .flatMap(({ 1: category }) => category.recentGames)
+        .sort((a, b) => {
+          const dateA = new Date(a.completedAt).getTime();
+          const dateB = new Date(b.completedAt).getTime();
+          return dateB - dateA;
+        })
         .slice(0, RECENT_GAMES_LIMIT)
-        .map((game) => (
-          <div key={game.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-semibold">
-                {game.gridSize}x{game.gridSize} - {game.difficulty}
-              </h3>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {new Date(game.completedAt).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">Moves:</span>
-                <span className="ml-2">{game.moves}</span>
+        .map((game) => {
+          const achievements = game.achievementsUnlocked
+            .map(achievementId => leaderboard.achievements.find(a => a.id === achievementId))
+            .filter((achievement): achievement is Achievement => achievement !== undefined);
+
+          return (
+            <div key={game.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-lg font-semibold">
+                  {game.gridSize}x{game.gridSize} - {game.difficulty}
+                </h3>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {new Date(game.completedAt).toLocaleDateString()}
+                </span>
               </div>
-              <div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">Time:</span>
-                <span className="ml-2">{formatTime(game.timeSeconds)}</span>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Moves:</span>
+                  <span className="ml-2">{game.moves}</span>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Time:</span>
+                  <span className="ml-2">{formatTime(game.timeSeconds)}</span>
+                </div>
               </div>
-            </div>
-            {game.achievementsUnlocked.length > 0 && (
-              <div className="mt-2 flex gap-2">
-                {game.achievementsUnlocked.map((achievementId: string) => {
-                  const achievement = leaderboard.achievements.find((a: Achievement) => a.id === achievementId);
-                  return achievement ? (
-                    <span key={achievementId} className="inline-block bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs px-2 py-1 rounded">
+              {achievements.length > 0 && (
+                <div className="mt-2 flex gap-2">
+                  {achievements.map(achievement => (
+                    <span key={achievement.id} className="inline-block bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs px-2 py-1 rounded">
                       🏆 {achievement.name}
                     </span>
-                  ) : undefined;
-                })}
-              </div>
-            )}
-          </div>
-        ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
     </div>
   );
 
