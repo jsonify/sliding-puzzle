@@ -32,7 +32,8 @@ const initialGameState = {
   moves: 0,
   time: 0,
   isWon: false,
-  isPlaying: false
+  isPlaying: false,
+  hasStarted: false
 }
 
 function App(): ReactElement {
@@ -49,7 +50,7 @@ function App(): ReactElement {
   useEffect(() => {
     let interval: number | undefined
 
-    if (gameState.isPlaying && !gameState.isWon) {
+    if (gameState.hasStarted && !gameState.isWon) {
       interval = window.setInterval(() => {
         setGameState(previous => ({
           ...previous,
@@ -63,18 +64,27 @@ function App(): ReactElement {
         clearInterval(interval)
       }
     }
-  }, [gameState.isPlaying, gameState.isWon])
+  }, [gameState.hasStarted, gameState.isWon])
 
   // Start new game
   const onStartNewGame = useCallback((): void => {
     const updatedBoard = createBoard(gridSize)
     setBoard(shuffleBoard(updatedBoard, difficulty))
-    setGameState({ ...initialGameState, isPlaying: true })
+    setGameState(initialGameState)
   }, [gridSize, difficulty])
 
   // Handle tile click
   const onHandleTileClick = useCallback((position: Position): void => {
     if (gameState.isWon) return
+
+    // Start the game on first move
+    if (!gameState.hasStarted) {
+      setGameState(previous => ({
+        ...previous,
+        hasStarted: true,
+        isPlaying: true
+      }))
+    }
 
     const emptyPos = findEmptyPosition(board)
     if (emptyPos.row < 0 || emptyPos.col < 0) return // Safety check for invalid coordinates
@@ -101,12 +111,12 @@ function App(): ReactElement {
         })
       }
     }
-  }, [board, gameState.isWon, gameState.moves, gridSize, difficulty, gameState.time])
+  }, [board, gameState, gridSize, difficulty])
 
   // Handle keyboard controls
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent): void => {
-      if (gameState.isWon || !gameState.isPlaying) return
+      if (gameState.isWon) return
 
       const emptyPos = findEmptyPosition(board)
       if (emptyPos.row < 0 || emptyPos.col < 0) return // Safety check for invalid coordinates
@@ -162,37 +172,37 @@ function App(): ReactElement {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [board, onHandleTileClick, gameState])
+  }, [board, onHandleTileClick, gameState.isWon])
 
   // Handle grid size change
   const onHandleSizeChange = useCallback((size: GridSize): void => {
     setGridSize(size)
-    // Auto-start new game when changing size during gameplay
-    if (gameState.isPlaying) {
-      setBoard(shuffleBoard(createBoard(size), difficulty))
-      setGameState({ ...initialGameState, isPlaying: true })
-    }
-  }, [difficulty, gameState.isPlaying])
+    const updatedBoard = createBoard(size)
+    setBoard(shuffleBoard(updatedBoard, difficulty))
+    setGameState(initialGameState)
+  }, [difficulty])
 
   // Handle difficulty change
   const onHandleDifficultyChange = useCallback((updatedDifficulty: Difficulty): void => {
     setDifficulty(updatedDifficulty)
-    // Auto-start new game when changing difficulty during gameplay
-    if (gameState.isPlaying) {
-      setBoard(shuffleBoard(createBoard(gridSize), updatedDifficulty))
-      setGameState({ ...initialGameState, isPlaying: true })
-    }
-  }, [gridSize, gameState.isPlaying])
+    const updatedBoard = createBoard(gridSize)
+    setBoard(shuffleBoard(updatedBoard, updatedDifficulty))
+    setGameState(initialGameState)
+  }, [gridSize])
 
   // Handle level selection
   const onHandleLevelSelect = useCallback((size: GridSize, diff: Difficulty): void => {
     setGridSize(size)
     setDifficulty(diff)
     setGameStarted(true)
-    // Start new game after selecting level
     const updatedBoard = createBoard(size)
     setBoard(shuffleBoard(updatedBoard, diff))
-    setGameState({ ...initialGameState, isPlaying: true })
+    setGameState(initialGameState)
+  }, [])
+
+  const onBackToMain = useCallback((): void => {
+    setGameStarted(false)
+    setGameState(initialGameState)
   }, [])
 
   const renderWinningModal = (): ReactElement => (
@@ -247,6 +257,7 @@ function App(): ReactElement {
           onDifficultyChange={onHandleDifficultyChange}
           currentSize={gridSize}
           currentDifficulty={difficulty}
+          onBackToMain={onBackToMain}
         />
 
         <Board
@@ -255,6 +266,7 @@ function App(): ReactElement {
           onTileClick={onHandleTileClick}
           tileSize={gridSize}
           isWon={gameState.isWon}
+          onBackToMain={onBackToMain}
         />
 
         <Leaderboard />
