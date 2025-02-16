@@ -31,7 +31,7 @@ const getBoardClasses = (isWon: boolean): string => [
   ...BoardClassNames.BASE,
   BoardClassNames.RESPONSIVE_GAP(BoardUI.GRID_GAP_REM_MD),
   BoardClassNames.PADDING(BoardUI.BOARD_PADDING_REM),
-  isWon && BoardClassNames.WIN_ANIMATION,
+  isWon ? BoardClassNames.WIN_ANIMATION : '',
 ].filter(Boolean).join(' ');
 
 /** Calculate responsive board width based on viewport */
@@ -73,7 +73,7 @@ export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMai
         {tiles.map((row: number[], rowIndex: number) => (
           <div 
             key={createRowKey(gridSize, rowIndex)} 
-            className="contents" 
+            className="grid-row" 
             role="row"
           >
             {row.map((number: number, colIndex: number) => {

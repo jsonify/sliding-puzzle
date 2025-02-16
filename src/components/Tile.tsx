@@ -55,7 +55,13 @@ export default function Tile({
 
   // Skip rendering for empty tile (number 0)
   if (number === 0) {
-    return <div className="bg-gray-100 dark:bg-gray-800 rounded" />;
+    return (
+      <div 
+        className="bg-gray-100 dark:bg-gray-800 rounded" 
+        data-testid="tile-empty"
+        aria-label="Empty space"
+      />
+    );
   }
 
   const tilePosition: Position = position;
