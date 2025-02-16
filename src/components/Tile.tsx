@@ -38,6 +38,8 @@ export default function Tile({
     'focus:outline-none',
     'focus:ring-2',
     'focus:ring-blue-500',
+    'w-full',
+    'aspect-square',
   ].join(' ');
 
   const sizeClasses = {
@@ -46,7 +48,7 @@ export default function Tile({
       : (size <= GRID_SIZE.MEDIUM ? 'text-2xl' : 'text-xl'),
     padding: size <= (GRID_SIZE.SMALL + PADDING_SIZE)
       ? 'p-4'
-      : (size <= GRID_SIZE.LARGE ? 'p-3' : 'p-2'),
+      : (size <= GRID_SIZE.MEDIUM ? 'p-3' : 'p-2'),
   };
 
   const stateClasses = isMovable
@@ -57,7 +59,7 @@ export default function Tile({
   if (number === 0) {
     return (
       <div 
-        className="bg-gray-100 dark:bg-gray-800 rounded" 
+        className="bg-gray-100 dark:bg-gray-800 rounded w-full aspect-square" 
         data-testid="tile-empty"
         aria-label="Empty space"
       />

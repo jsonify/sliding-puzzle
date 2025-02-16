@@ -29,7 +29,6 @@ const isPositionMovable = (pos: Position, movablePositions: Position[]): boolean
 /** Get board CSS classes */
 const getBoardClasses = (isWon: boolean): string => [
   ...BoardClassNames.BASE,
-  BoardClassNames.RESPONSIVE_GAP(BoardUI.GRID_GAP_REM_MD),
   BoardClassNames.PADDING(BoardUI.BOARD_PADDING_REM),
   isWon ? BoardClassNames.WIN_ANIMATION : '',
 ].filter(Boolean).join(' ');
@@ -62,8 +61,9 @@ export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMai
       <div
         className={boardClasses}
         style={{
-          gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
           maxWidth: `${boardWidth}px`,
+          gap: '1px',
           aspectRatio: '1 / 1',
         }}
         role="grid"
@@ -73,7 +73,7 @@ export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMai
         {tiles.map((row: number[], rowIndex: number) => (
           <div 
             key={createRowKey(gridSize, rowIndex)} 
-            className="grid-row" 
+            className="contents" 
             role="row"
           >
             {row.map((number: number, colIndex: number) => {
