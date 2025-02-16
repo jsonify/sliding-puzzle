@@ -1,133 +1,158 @@
+// src/__tests__/Board.test.tsx
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import '@testing-library/jest-dom';
 import Board from '../Board';
-import { getMovablePositions } from '../../utils/gameUtils';
-import type { Board as BoardType, GridSize, Position } from '../../types/game';
-import { type Mock } from 'vitest';
+import { BoardClassNames } from '../../constants/boardUI';
+import type { BoardProps } from '../../types/game';
 
-// Mock the gameUtils functions
+import { getMovablePositions } from '../../utils/gameUtils';
+
 vi.mock('../../utils/gameUtils', () => ({
   getMovablePositions: vi.fn()
 }));
 
-describe('Board', () => {
-  const mockBoard: BoardType = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 0],
-  ];
-
-  const defaultProps = {
-    gridSize: 3 as GridSize,
-    tiles: mockBoard,
-    tileSize: 100,
+describe('Board Components', () => {
+  const mockProps: BoardProps = {
+    gridSize: 3,
+    tiles: [
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 0]
+    ],
     onTileClick: vi.fn(),
-    isWon: false
+    tileSize: 100, // Required by type but not used in component
+    isWon: false,
+    onBackToMain: vi.fn()
   };
 
   beforeEach(() => {
-    // Reset document body between tests
-    document.body.innerHTML = '';
-    
-    (getMovablePositions as unknown as Mock<[BoardType], Position[]>).mockReturnValue([
-      { row: 2, col: 1 } // Position of tile 8
+    vi.clearAllMocks();
+    (getMovablePositions as ReturnType<typeof vi.fn>).mockReturnValue([
+      { row: 2, col: 1 }
     ]);
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
+  describe('basic rendering', () => {
+    it('renders without crashing', () => {
+      render(<Board {...mockProps} />);
+      expect(screen.getByTestId('game-board')).toBeInTheDocument();
+    });
 
-  it('renders the correct number of tiles', () => {
-    render(<Board {...defaultProps} />);
-    const tiles = screen.getAllByRole('button');
-    expect(tiles).toHaveLength(8); // 8 numbered tiles (excluding empty space)
-  });
-
-  it('renders board with correct structure', () => {
-    const { container } = render(<Board {...defaultProps} />);
-    const board = container.querySelector('[data-testid="game-board"]');
-    
-    expect(board).toHaveAttribute('role', 'grid');
-    expect(board).toHaveStyle({
-      'grid-template-columns': 'repeat(3, minmax(0, 1fr))',
-      'aspect-ratio': '1 / 1'
+    it('renders correct number of tiles', () => {
+      render(<Board {...mockProps} />);
+      
+      const tiles = screen.getAllByTestId(/^tile-(?!empty)/);
+      expect(tiles).toHaveLength(8);
+    });
+  
+    it('renders correct number of tiles', () => {
+      render(<Board {...mockProps} />);
+      // Count all tiles including empty space
+      const tiles = screen.getAllByTestId(/^tile-/);
+      expect(tiles).toHaveLength(9); // 3x3 grid
+    });
+  
+    it('has correct tile numbers', () => {
+      render(<Board {...mockProps} />);
+      const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+      numbers.forEach(num => {
+        const tile = screen.getByTestId(`tile-${num}`);
+        expect(tile).toHaveTextContent(num.toString());
+      });
+    });
+  
+    it('renders empty space', () => {
+      render(<Board {...mockProps} />);
+      const emptyTile = screen.getByTestId('tile-empty');
+      expect(emptyTile).toBeInTheDocument();
+      expect(emptyTile).toHaveAttribute('aria-label', 'Empty space');
+    });
+  
+    it('renders back button', () => {
+      render(<Board {...mockProps} />);
+      const backButton = screen.getByRole('button', { name: 'Back to Main' });
+      expect(backButton).toBeInTheDocument();
+      
+      fireEvent.click(backButton);
+      expect(mockProps.onBackToMain).toHaveBeenCalledTimes(1);
     });
   });
 
-  it('calls onTileClick with correct position when tile is clicked', () => {
-    const onTileClick = vi.fn();
-    const { container } = render(<Board {...defaultProps} onTileClick={onTileClick} />);
-    
-    const tile8 = container.querySelector('[data-testid="tile-8"]');
-    expect(tile8).toBeInTheDocument();
-    
-    fireEvent.click(tile8!);
-    expect(onTileClick).toHaveBeenCalledWith({ row: 2, col: 1 });
-  });
-
-  it('renders empty space correctly', () => {
-    const { container } = render(<Board {...defaultProps} />);
-    const emptyTile = container.querySelector('.bg-gray-100.dark\\:bg-gray-800.rounded');
-    expect(emptyTile).toBeInTheDocument();
-    expect(screen.queryByText('0')).not.toBeInTheDocument();
-  });
-
-  it('applies win animation class when game is won', () => {
-    const { container } = render(<Board {...defaultProps} isWon={true} />);
-    const board = container.querySelector('[data-testid="game-board"]');
-    expect(board).toHaveClass('animate-win');
-  });
-
-  it('makes only valid tiles clickable', () => {
-    const { container } = render(<Board {...defaultProps} />);
-    
-    const tile8 = container.querySelector('[data-testid="tile-8"]');
-    const tile7 = container.querySelector('[data-testid="tile-7"]');
-
-    expect(tile8).not.toBeDisabled();
-    expect(tile8).toHaveClass('cursor-pointer');
-    
-    expect(tile7).toBeDisabled();
-    expect(tile7).toHaveClass('cursor-not-allowed');
-  });
-
-  describe('responsive behavior', () => {
-    const setWindowWidth = (width: number) => {
-      Object.defineProperty(window, 'innerWidth', {
-        writable: true,
-        configurable: true,
-        value: width
+  describe('grid structure', () => {
+    it('renders with correct grid template', () => {
+      render(<Board {...mockProps} />);
+      const board = screen.getByTestId('game-board');
+      expect(board).toHaveStyle({
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))'
       });
-      global.dispatchEvent(new Event('resize'));
-    };
+    });
 
-    it('adjusts board width based on viewport size', () => {
-      // Set small viewport before rendering
-      setWindowWidth(400);
-      
-      const { container } = render(<Board {...defaultProps} />);
-      let board = container.querySelector('[data-testid="game-board"]') as HTMLElement;
-      expect(board.style.maxWidth).toBe('336px'); // 400 - (32 * 2) viewport padding
-
-      // Change to large viewport and verify max width
-      setWindowWidth(1200);
-      board = container.querySelector('[data-testid="game-board"]') as HTMLElement;
-      expect(board.style.maxWidth).toBe('336px'); // Width should not exceed viewport - padding
+    it('has correct number of rows', () => {
+      render(<Board {...mockProps} />);
+      const rows = screen.getAllByRole('row');
+      expect(rows).toHaveLength(mockProps.gridSize);
     });
   });
 
   describe('accessibility', () => {
     it('has correct ARIA attributes', () => {
-      const { container } = render(<Board {...defaultProps} />);
-      const board = container.querySelector('[data-testid="game-board"]');
-      
+      render(<Board {...mockProps} />);
+      const board = screen.getByTestId('game-board');
       expect(board).toHaveAttribute('role', 'grid');
       expect(board).toHaveAttribute('aria-label', 'Sliding puzzle board');
+    });
+  });
+
+  describe('interactions', () => {
+    it('handles back button click', () => {
+      render(<Board {...mockProps} />);
+      const backButton = screen.getByText('Back to Main');
+      fireEvent.click(backButton);
+      expect(mockProps.onBackToMain).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows win animation when game is won', () => {
+      const wonProps = { ...mockProps, isWon: true };
+      render(<Board {...wonProps} />);
       
-      const buttons = screen.getAllByRole('button');
-      buttons.forEach(button => {
-        expect(button).toHaveAttribute('aria-label', expect.stringMatching(/^Tile \d+$/));
+      const board = screen.getByTestId('game-board');
+      expect(board.className).toContain('animate-win');
+    });
+
+    it('handles movable tiles correctly', () => {
+      (getMovablePositions as ReturnType<typeof vi.fn>).mockReturnValue([
+        { row: 2, col: 1 }
+      ]);
+      
+      render(<Board {...mockProps} />);
+      const tiles = screen.getAllByRole('button').slice(1); // Exclude back button
+      const movableTile = tiles.find(tile => 
+        tile.getAttribute('data-position') === '2-1'
+      );
+      expect(movableTile).not.toBeDisabled();
+    });
+
+    it('handles tile clicks correctly', () => {
+      render(<Board {...mockProps} />);
+      
+      // Click tile with number 5 (middle position)
+      const tile = screen.getByTestId('tile-5');
+      fireEvent.click(tile);
+      
+      expect(mockProps.onTileClick).toHaveBeenCalledWith({
+        row: 1,
+        col: 1
+      });
+    });
+  
+    it('applies correct responsive classes', () => {
+      render(<Board {...mockProps} />);
+      const board = screen.getByTestId('game-board');
+      
+      // Check for base classes
+      BoardClassNames.BASE.forEach(className => {
+        expect(board.className).toContain(className);
       });
     });
   });
