@@ -1,4 +1,5 @@
-import type { Position } from '../types/game';
+import type { Position, GameMode } from '../types/game';
+import { COLORS, isValidColor, type TileColor } from '../constants/colorMode';
 
 /** Grid size breakpoints for styling */
 const SMALL_SIZE = 3;
@@ -12,15 +13,23 @@ const GRID_SIZE = {
 
 const PADDING_SIZE = 1;
 
+/** Get background color for a colored tile */
+const getColorStyle = (color: TileColor | 0) => {
+  if (color === 0) return 'bg-gray-100 dark:bg-gray-800';
+  return `bg-[${COLORS[color]}] hover:opacity-90`;
+};
+
 /** Single tile in the puzzle grid */
 export default function Tile({ 
-  number, 
+  value,
+  mode, 
   position,
   size, 
   isMovable, 
   onClick 
 }: {
-  number: number;
+  value: number | TileColor | 0;
+  mode: GameMode;
   position: Position;
   size: number;
   isMovable: boolean;
@@ -51,12 +60,19 @@ export default function Tile({
       : (size <= GRID_SIZE.MEDIUM ? 'p-3' : 'p-2'),
   };
 
-  const stateClasses = isMovable
-    ? 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 cursor-pointer'
-    : 'bg-white dark:bg-gray-700 cursor-not-allowed';
+  let stateClasses = '';
+  if (mode === 'classic') {
+    stateClasses = isMovable
+      ? 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 cursor-pointer'
+      : 'bg-white dark:bg-gray-700 cursor-not-allowed';
+  } else {
+    // Color mode
+    const colorValue = value as TileColor | 0;
+    stateClasses = `${getColorStyle(colorValue)} ${isMovable ? 'cursor-pointer' : 'cursor-not-allowed'}`;
+  }
 
   // Skip rendering for empty tile (number 0)
-  if (number === 0) {
+  if (value === 0) {
     return (
       <div 
         className="bg-gray-100 dark:bg-gray-800 rounded w-full aspect-square" 
@@ -67,6 +83,10 @@ export default function Tile({
   }
 
   const tilePosition: Position = position;
+  const displayValue = mode === 'classic' ? value : '';
+  const ariaLabel = mode === 'classic' 
+    ? `Tile ${value}` 
+    : `${isValidColor(value) ? value : 'Unknown'} colored tile`;
 
   return (
     <button
@@ -74,11 +94,11 @@ export default function Tile({
       className={`${baseClasses} ${sizeClasses.text} ${sizeClasses.padding} ${stateClasses}`}
       onClick={onClick}
       disabled={!isMovable}
-      aria-label={`Tile ${number}`}
-      data-testid={`tile-${number}`}
+      aria-label={ariaLabel}
+      data-testid={`tile-${value}`}
       data-position={`${tilePosition.row}-${tilePosition.col}`}
     >
-      {number}
+      {displayValue}
     </button>
   );
 }

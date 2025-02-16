@@ -1,7 +1,9 @@
-import type { Difficulty, GameControlsProperties, GridSize } from '../types/game';
+import type { Difficulty, GameControlsProperties, GridSize, GameMode } from '../types/game';
 import { type ChangeEvent, useCallback } from 'react';
 import { GridSizes } from '../constants/gameConstants';
 import { formatTime } from '../utils/leaderboardUtils';
+import { COLOR_MODE, PATTERN_TYPES } from '../constants/colorMode';
+import { GAME_MODES } from '../constants/gameConfig';
 
 /** Grid size options */
 const gridSizeOptions: readonly GridSize[] = GridSizes.SIZES;
@@ -35,20 +37,33 @@ const handleDifficultyChange = (
  */
 export default function GameControls({ 
   moves,
+  mode,
   time,
   onNewGame,
   onSizeChange,
   onDifficultyChange,
+  onPatternTypeChange,
   currentSize,
   currentDifficulty,
   onBackToMain,
 }: GameControlsProperties): JSX.Element {
   const onHandleSizeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const size = Number(event.target.value);
-    if (gridSizeOptions.includes(size as GridSize)) {
+    // Color mode only supports 5x5 grid
+    if (mode === GAME_MODES.COLOR && size !== COLOR_MODE.GRID_SIZE) {
+      console.warn('Color mode only supports 5x5 grid');
+      return;
+    } else if (gridSizeOptions.includes(size as GridSize)) {
       onSizeChange(size as GridSize);
     }
   }, [onSizeChange]);
+
+  const onHandlePatternTypeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const type = event.target.value;
+    if (onPatternTypeChange && type in PATTERN_TYPES) {
+      onPatternTypeChange(type as typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]);
+    }
+  }, [onPatternTypeChange]);
 
   const onHandleDifficultySelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     handleDifficultyChange(event, onDifficultyChange);
@@ -76,6 +91,19 @@ export default function GameControls({
           New Game
         </button>
 
+        {/* Pattern Type selector for Color Mode */}
+        {mode === GAME_MODES.COLOR && (
+          <select
+            className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+            defaultValue="random"
+            onChange={onHandlePatternTypeChange}
+            aria-label="Pattern Type"
+          >
+            <option value="random">Random Pattern</option>
+            <option value="column_stack">Column Stack</option>
+          </select>
+        )}
+
         <button
           type="button"
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
@@ -84,7 +112,8 @@ export default function GameControls({
           Back to Main
         </button>
 
-        <select
+        {/* Grid size selector - Only show for classic mode */}
+        {mode === GAME_MODES.CLASSIC && <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentSize}
           onChange={onHandleSizeChange}
@@ -95,9 +124,10 @@ export default function GameControls({
               {size}x{size}
             </option>
           ))}
-        </select>
+        </select>}
 
-        <select
+        {/* Difficulty selector - Only show for classic mode */}
+        {mode === GAME_MODES.CLASSIC && <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentDifficulty}
           onChange={onHandleDifficultySelect}
@@ -108,7 +138,7 @@ export default function GameControls({
               {formatDifficulty(diff)}
             </option>
           ))}
-        </select>
+        </select>}
       </div>
     </div>
   );

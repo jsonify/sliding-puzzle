@@ -1,14 +1,15 @@
 import { useCallback, useMemo } from 'react';
 import { BoardClassNames, BoardUI } from '../constants/boardUI';
-import type { BoardProps, Position } from '../types/game';
+import type { BoardProps, Position, GameMode, ClassicBoard, ColorBoard } from '../types/game';
+import { isValidColor } from '../constants/colorMode';
 import { getMovablePositions } from '../utils/gameUtils';
 import Tile from './Tile';
 
 const PADDING_FACTOR = 2;
 
 /** Create a unique ID for a tile */
-const createTileId = (number: number, row: number, col: number): string => {
-  const padding = String(number).padStart(BoardUI.TILE_NUMBER_MIN_LENGTH, '0');
+const createTileId = (number: number | string, row: number, col: number, mode: GameMode): string => {
+  const padding = mode === 'classic' ? String(number).padStart(BoardUI.TILE_NUMBER_MIN_LENGTH, '0') : String(number);
   return `tile-${number === 0 ? 'empty' : padding}-${row}-${col}`;
 };
 
@@ -42,8 +43,36 @@ const calculateBoardWidth = (): number => {
   return Math.min(BoardUI.BOARD_MAX_WIDTH_PX, Math.max(availableWidth, 0));
 };
 
+/** Type guard to check if board is a classic board */
+const isClassicBoard = (board: ClassicBoard | ColorBoard, mode: GameMode): board is ClassicBoard => {
+  return mode === 'classic';
+};
+
+/** Type guard to check if board is a color board */
+const isColorBoard = (board: ClassicBoard | ColorBoard, mode: GameMode): board is ColorBoard => {
+  return mode === 'color';
+};
+
 /** Board component that displays and manages the puzzle grid */
-export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMain }: BoardProps): JSX.Element {
+export default function Board({ 
+  mode,
+  gridSize, 
+  tiles, 
+  onTileClick, 
+  isWon, 
+  onBackToMain 
+}: BoardProps): JSX.Element {
+  // Validate board type matches mode
+  if (mode === 'classic' && !isClassicBoard(tiles, mode)) {
+    throw new Error('Invalid board type for classic mode');
+  }
+  if (mode === 'color' && !isColorBoard(tiles, mode)) {
+    throw new Error('Invalid board type for color mode');
+  }
+
+  // Get the correct board type based on mode
+  const typedTiles = mode === 'classic' ? tiles as ClassicBoard : tiles as ColorBoard;
+
   // Memoize expensive calculations
   const movablePositions = useMemo(() => getMovablePositions(tiles), [tiles]);
   const boardClasses = useMemo(() => getBoardClasses(isWon), [isWon]);
@@ -70,19 +99,20 @@ export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMai
         aria-label="Sliding puzzle board"
         data-testid="game-board"
       >
-        {tiles.map((row: number[], rowIndex: number) => (
+        {typedTiles.map((row, rowIndex) => (
           <div 
             key={createRowKey(gridSize, rowIndex)} 
             className="contents" 
             role="row"
           >
-            {row.map((number: number, colIndex: number) => {
+            {row.map((value, colIndex) => {
               const position = createPosition(rowIndex, colIndex);
               return (
                 <Tile
-                  key={createTileId(number, position.row, position.col)}
-                  number={number}
+                  key={createTileId(value, position.row, position.col, mode)}
+                  value={value}
                   position={position}
+                  mode={mode}
                   size={gridSize}
                   isMovable={checkPositionMovable(position)}
                   onClick={() => onTileClick(position)}
