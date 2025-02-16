@@ -51,11 +51,11 @@ function initializeGlobalStats(): GlobalStats {
     totalGamesPlayed: 0,
     totalTimePlayed: 0,
     totalMoves: 0,
-    gamesPerDifficulty: {
-      easy: 0,
-      medium: 0,
-      hard: 0
+    gamesPerMode: {
+      classic: 0,
+      color: 0
     },
+    
     gamesPerSize: GridSizes.SIZES.reduce((acc, size) => ({
       ...acc,
       [size]: 0
@@ -133,8 +133,8 @@ function migrateLeaderboardData(oldData: Record<string, unknown>): LeaderboardDa
  * Format time in seconds to mm:ss
  */
 export function formatTime(seconds: number): string {
-  const minutes = Math.floor(seconds / GameConstants.SPEED_ACHIEVEMENT_THRESHOLD * 2);
-  const remainingSeconds = seconds % GameConstants.SPEED_ACHIEVEMENT_THRESHOLD * 2;
+  const minutes = Math.floor(seconds / GameConstants.SECONDS_IN_MINUTE);
+  const remainingSeconds = seconds % GameConstants.SECONDS_IN_MINUTE;
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
@@ -272,7 +272,7 @@ export function updateLeaderboard(result: GameResult): void {
   leaderboard.global.totalGamesPlayed += GameConstants.GRID_INCREMENT;
   leaderboard.global.totalTimePlayed += result.timeSeconds;
   leaderboard.global.totalMoves += result.moves;
-  leaderboard.global.gamesPerDifficulty[result.difficulty] += GameConstants.GRID_INCREMENT;
+  leaderboard.global.gamesPerMode.classic += GameConstants.GRID_INCREMENT;
   leaderboard.global.gamesPerSize[result.gridSize] += GameConstants.GRID_INCREMENT;
 
   // Check for achievements
