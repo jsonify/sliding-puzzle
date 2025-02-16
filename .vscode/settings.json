@@ -11,15 +11,14 @@
 	"editor.formatOnSave": true,
 	"editor.tabSize": 2,
 	"files.exclude": {
-		"**/.stylelintcache": true,
 		"**/.eslintcache": true,
-		"**/.gitignore": true,
 		"**/.nyc_output": true,
+		"**/.stylelintcache": true,
 		"**/.vscode": true,
+		"**/coverage": true,
 		"**/dist": true,
 		"**/node_modules": true,
-		"**/yarn.lock": true,
-		"**/coverage": true
+		"**/yarn.lock": true
 	},
 	"files.watcherExclude": {
 		"**/dist": true

@@ -7,22 +7,46 @@ dist
 build
 .cache
 
+# Environment files
+.env
+.env.local
+.env.*.local
+
 # IDE and editor files
 .idea
 .vscode
 *.swp
 *.swo
 .DS_Store
+
+# Build directories
 dist
 dist-ssr
+
+# Local files
 *.local
-.eslintcache
+
+# Coverage
 coverage
 .nyc_output
-.stylelintcache
+
+# Lockfiles (keep pnpm-lock.yaml, but ignore others)
+package-lock.json
+yarn.lock
+
+# Cypress 
 cypress/videos
 cypress/downloads
 
 # Github Workflows
 .github/workflows
 codebase.md
+
+# Vercel
+.vercel
+
+# Cache
+.eslintcache
+.stylelintcache
+
+.aidigestignore
