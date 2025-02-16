@@ -195,6 +195,10 @@ function App(): ReactElement {
     setGameState({ ...initialGameState, isPlaying: true })
   }, [])
 
+  const onBackToMain = useCallback((): void => {
+    setGameStarted(false)
+  }, [])
+
   const renderWinningModal = (): ReactElement => (
     <div
       className={`fixed inset-0 bg-black bg-opacity-${GameConstants.MODAL_BACKDROP_OPACITY} flex items-center justify-center`}
@@ -247,6 +251,7 @@ function App(): ReactElement {
           onDifficultyChange={onHandleDifficultyChange}
           currentSize={gridSize}
           currentDifficulty={difficulty}
+          onBackToMain={onBackToMain}
         />
 
         <Board
@@ -255,6 +260,7 @@ function App(): ReactElement {
           onTileClick={onHandleTileClick}
           tileSize={gridSize}
           isWon={gameState.isWon}
+          onBackToMain={onBackToMain}
         />
 
         <Leaderboard />

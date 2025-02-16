@@ -41,6 +41,7 @@ export default function GameControls({
   onDifficultyChange,
   currentSize,
   currentDifficulty,
+  onBackToMain,
 }: GameControlsProperties): JSX.Element {
   const onHandleSizeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const size = Number(event.target.value);
@@ -73,6 +74,14 @@ export default function GameControls({
           onClick={onNewGame}
         >
           New Game
+        </button>
+
+        <button
+          type="button"
+          className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+          onClick={onBackToMain}
+        >
+          Back to Main
         </button>
 
         <select

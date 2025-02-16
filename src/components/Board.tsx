@@ -1,7 +1,7 @@
-import { useMemo, useCallback } from 'react';
-import type { BoardProps, Position } from '../types/game';
+import { useCallback, useMemo } from 'react';
+import { BoardClassNames, BoardUI } from '../constants/boardUI';
+import type { BoardProperties, Position } from '../types/game';
 import { getMovablePositions } from '../utils/gameUtils';
-import { BoardUI, BoardClassNames } from '../constants/boardUI';
 import Tile from './Tile';
 
 const PADDING_FACTOR = 2;
@@ -44,7 +44,7 @@ const calculateBoardWidth = (): number => {
 };
 
 /** Board component that displays and manages the puzzle grid */
-export default function Board({ gridSize, tiles, onTileClick, isWon }: BoardProps): JSX.Element {
+export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMain }: BoardProperties): JSX.Element {
   // Memoize expensive calculations
   const movablePositions = useMemo(() => getMovablePositions(tiles), [tiles]);
   const boardClasses = useMemo(() => getBoardClasses(isWon), [isWon]);
@@ -57,38 +57,40 @@ export default function Board({ gridSize, tiles, onTileClick, isWon }: BoardProp
   );
 
   return (
-    <div
-      className={boardClasses}
-      style={{
-        gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
-        maxWidth: `${boardWidth}px`,
-        aspectRatio: '1 / 1',
-      }}
-      role="grid"
-      aria-label="Sliding puzzle board"
-      data-testid="game-board"
-    >
-      {tiles.map((row, rowIndex) => (
-        <div 
-          key={createRowKey(gridSize, rowIndex)} 
-          className="contents" 
-          role="row"
-        >
-          {row.map((number, colIndex) => {
-            const position = createPosition(rowIndex, colIndex);
-            return (
-              <Tile
-                key={createTileId(number, position.row, position.col)}
-                number={number}
-                position={position}
-                size={gridSize}
-                isMovable={checkPositionMovable(position)}
-                onClick={() => onTileClick(position)}
-              />
-            );
-          })}
-        </div>
-      ))}
+    <div className="board-container">
+      <div
+        className={boardClasses}
+        style={{
+          gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
+          maxWidth: `${boardWidth}px`,
+          aspectRatio: '1 / 1',
+        }}
+        role="grid"
+        aria-label="Sliding puzzle board"
+        data-testid="game-board"
+      >
+        {tiles.map((row, rowIndex) => (
+          <div 
+            key={createRowKey(gridSize, rowIndex)} 
+            className="contents" 
+            role="row"
+          >
+            {row.map((number, colIndex) => {
+              const position = createPosition(rowIndex, colIndex);
+              return (
+                <Tile
+                  key={createTileId(number, position.row, position.col)}
+                  number={number}
+                  position={position}
+                  size={gridSize}
+                  isMovable={checkPositionMovable(position)}
+                  onClick={() => onTileClick(position)}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
