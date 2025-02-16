@@ -1,0 +1,160 @@
+/* Mobile-specific styles */
+
+/* Safe area insets */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 20px);
+  --header-height: 4rem;
+}
+
+/* Mobile container */
+.mobile-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+/* Game container spacing */
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: calc(var(--safe-area-inset-top) + var(--header-height));
+  padding-bottom: calc(var(--safe-area-inset-bottom) + 1rem);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Hide scrollbars but keep functionality */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent overscroll bounce */
+html {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
+}
+
+/* Menu sheet animations */
+.sheet-enter {
+  transform: translateY(100%);
+}
+
+.sheet-enter-active {
+  transform: translateY(0);
+  transition: transform 200ms ease-out;
+}
+
+.sheet-exit {
+  transform: translateY(0);
+}
+
+.sheet-exit-active {
+  transform: translateY(100%);
+  transition: transform 200ms ease-out;
+}
+
+/* Backdrop blur */
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .tap-highlight {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .active-state:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease-out;
+  }
+}
+
+/* Grid responsiveness */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Media queries */
+@media (width <= 640px) {
+  .mobile-only {
+    display: block;
+  }
+  
+  .desktop-only {
+    display: none;
+  }
+
+  /* Mobile-specific board styles */
+  .board-container {
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgb(30 41 59 / 50%);
+  }
+
+  /* Custom transitions */
+  .slide-up {
+    transform: translateY(100%);
+    transition: transform 200ms ease-out;
+  }
+
+  .slide-up.active {
+    transform: translateY(0);
+  }
+}
+
+/* Bottom sheet safe area padding */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Ensure buttons are large enough for touch */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile loading transitions */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease-in;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}

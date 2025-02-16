@@ -1,11 +1,19 @@
 import type { Position, GameMode } from '../types/game';
-import { COLORS, isValidColor, type TileColor } from '../constants/colorMode';
-import { BoardUI } from '../constants/boardUI';
+import { isValidColor, TileColor } from '../constants/colorMode';
 
-/** Get background color for a colored tile */
+interface TileProps {
+  value: number | TileColor | 0;
+  mode: GameMode;
+  position: Position;
+  size: number;
+  tileSize: number;
+  isMovable: boolean;
+  onClick: () => void;
+}
+
 const getColorStyle = (color: TileColor | 0) => {
   if (color === 0) return '';
-  // Map colors to Tailwind classes
+  
   const colorMap: Record<TileColor, string> = {
     WHITE: 'bg-white hover:opacity-90',
     RED: 'bg-red-600 hover:opacity-90',
@@ -15,35 +23,26 @@ const getColorStyle = (color: TileColor | 0) => {
     YELLOW: 'bg-yellow-400 hover:opacity-90',
   };
   
-  return colorMap[color] || 'bg-gray-400';
+  return colorMap[color as TileColor] || 'bg-gray-400';
 };
 
-/** Single tile in the puzzle grid */
+/**
+ * Single tile in the puzzle grid with enhanced mobile support
+ */
 export default function Tile({ 
   value,
   mode, 
   position,
   size, 
   isMovable, 
-  tileSize,
   onClick 
-}: {
-  value: number | TileColor | 0;
-  mode: GameMode;
-  position: Position;
-  size: number;
-  isMovable: boolean;
-  tileSize: number;
-  onClick: () => void;
-}): JSX.Element {
+}: TileProps): JSX.Element {
   const baseClasses = [
     'flex',
     'items-center',
     'justify-center',
     'font-bold',
-    'transition-all',
-    'duration-150',
-    'rounded',
+    'rounded-lg',
     'select-none',
     'focus:outline-none',
     'focus:ring-2',
@@ -52,24 +51,23 @@ export default function Tile({
     'h-full',
     'aspect-square',
     'text-2xl',
+    'transition-all',
+    'duration-200',
+    'touch-target', // Mobile-specific class
+    'active-state', // Mobile animation class
   ].join(' ');
 
-  let stateClasses = '';
-  if (mode === 'classic') {
-    stateClasses = isMovable
+  const stateClasses = mode === 'classic'
+    ? isMovable
       ? 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 cursor-pointer'
-      : 'bg-white dark:bg-gray-700 cursor-not-allowed';
-  } else {
-    // Color mode
-    const colorValue = value as TileColor | 0;
-    stateClasses = `${getColorStyle(colorValue)} ${isMovable ? 'cursor-pointer' : 'cursor-not-allowed'}`;
-  }
+      : 'bg-white dark:bg-gray-700 cursor-not-allowed opacity-90'
+    : `${getColorStyle(value as TileColor | 0)} ${isMovable ? 'cursor-pointer' : 'cursor-not-allowed opacity-90'}`;
 
   // Skip rendering for empty tile (number 0)
   if (value === 0) {
     return (
       <div
-        className={`${baseClasses}`}
+        className={baseClasses}
         style={{ visibility: 'hidden' }}
         aria-hidden="true"
         data-testid="tile-empty"
@@ -77,6 +75,17 @@ export default function Tile({
       />
     );
   }
+
+  const handleClick = () => {
+    if (!isMovable) return;
+    
+    // Try to trigger haptic feedback if available
+    if (navigator.vibrate) {
+      navigator.vibrate(5);
+    }
+    
+    onClick();
+  };
 
   const tilePosition: Position = position;
   const displayValue = mode === 'classic' ? value : '';
@@ -88,11 +97,7 @@ export default function Tile({
     <button
       type="button"
       className={`${baseClasses} ${stateClasses}`}
-      style={{
-        width: `${tileSize}px`,
-        height: `${tileSize}px`,
-      }}
-      onClick={onClick}
+      onClick={handleClick}
       disabled={!isMovable}
       aria-label={ariaLabel}
       data-testid={`tile-${value}`}
