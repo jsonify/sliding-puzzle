@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { BoardClassNames, BoardUI } from '../constants/boardUI';
-import type { BoardProperties, Position } from '../types/game';
+import type { BoardProps, Position } from '../types/game';
 import { getMovablePositions } from '../utils/gameUtils';
 import Tile from './Tile';
 
@@ -44,7 +44,7 @@ const calculateBoardWidth = (): number => {
 };
 
 /** Board component that displays and manages the puzzle grid */
-export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMain }: BoardProperties): JSX.Element {
+export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMain }: BoardProps): JSX.Element {
   // Memoize expensive calculations
   const movablePositions = useMemo(() => getMovablePositions(tiles), [tiles]);
   const boardClasses = useMemo(() => getBoardClasses(isWon), [isWon]);
@@ -58,6 +58,7 @@ export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMai
 
   return (
     <div className="board-container">
+      <button onClick={onBackToMain} className="back-button">Back to Main</button>
       <div
         className={boardClasses}
         style={{
@@ -69,13 +70,13 @@ export default function Board({ gridSize, tiles, onTileClick, isWon, onBackToMai
         aria-label="Sliding puzzle board"
         data-testid="game-board"
       >
-        {tiles.map((row, rowIndex) => (
+        {tiles.map((row: number[], rowIndex: number) => (
           <div 
             key={createRowKey(gridSize, rowIndex)} 
             className="contents" 
             role="row"
           >
-            {row.map((number, colIndex) => {
+            {row.map((number: number, colIndex: number) => {
               const position = createPosition(rowIndex, colIndex);
               return (
                 <Tile

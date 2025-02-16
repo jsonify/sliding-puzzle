@@ -39,6 +39,15 @@ export interface BoardProps {
   onBackToMain: () => void;
 }
 
+export interface BoardProperties {
+  gridSize: GridSize;
+  tiles: Board;
+  onTileClick: (position: Position) => void;
+  tileSize: number;
+  isWon: boolean;
+  onBackToMain: () => void;
+}
+
 export interface GameControlsProperties {
   moves: number;
   time: number;
