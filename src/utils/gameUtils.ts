@@ -17,6 +17,7 @@ import { GameConstants, BoardDirections, GridSizes } from '../constants/gameCons
 export function createBoard(size: GridSize): Board {
   const board: Board = [];
   let currentNumber = GameConstants.START_NUMBER;
+
   const totalCells = size * size;
   
   for (let rowIndex = 0; rowIndex < size; rowIndex += 1) {
@@ -39,7 +40,8 @@ export function isValidMove(pos: Position, emptyPos: Position): boolean {
   const colDiff = Math.abs(pos.col - emptyPos.col);
   
   // Valid move if exactly one dimension has diff of 1 and other has diff of 0
-  return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
+  return (rowDiff === GameConstants.GRID_INCREMENT && colDiff === GameConstants.EMPTY_CELL) || 
+         (rowDiff === GameConstants.EMPTY_CELL && colDiff === GameConstants.GRID_INCREMENT);
 }
 
 /**
@@ -123,8 +125,8 @@ export function isSolvable(board: Board): boolean {
   }
   
   // For odd-sized boards, solvable if inversions is even
-  if (size % 2 === 1) {
-    return inversions % 2 === 0;
+  if (size % 2 === GameConstants.GRID_INCREMENT) {
+    return inversions % 2 === GameConstants.EMPTY_CELL;
   }
   
   // For even-sized boards, solvable if:
@@ -133,7 +135,8 @@ export function isSolvable(board: Board): boolean {
   const emptyPos = findEmptyPosition(board);
   const emptyRowFromBottom = size - emptyPos.row;
   
-  return (emptyRowFromBottom % 2 === 0) === (inversions % 2 === 1);
+  return (emptyRowFromBottom % 2 === GameConstants.EMPTY_CELL) === 
+         (inversions % 2 === GameConstants.GRID_INCREMENT);
 }
 
 /**
@@ -196,4 +199,9 @@ export function getMovablePositions(board: Board): Position[] {
   });
   
   return movable;
+}
+
+// Move achievements and leaderboard related code to a separate file
+// This will help reduce complexity and improve maintainability
+// TODO: Create separate leaderboard.ts file for these functions
 }

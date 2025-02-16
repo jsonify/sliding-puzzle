@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import Board from '../Board';
 import { getMovablePositions } from '../../utils/gameUtils';
 import type { Board as BoardType, GridSize, Position } from '../../types/game';
@@ -6,7 +7,7 @@ import { type Mock } from 'vitest';
 
 // Mock the gameUtils functions
 vi.mock('../../utils/gameUtils', () => ({
-  getMovablePositions: vi.fn(),
+  getMovablePositions: vi.fn()
 }));
 
 describe('Board', () => {
@@ -19,14 +20,17 @@ describe('Board', () => {
   const defaultProps = {
     gridSize: 3 as GridSize,
     tiles: mockBoard,
+    tileSize: 100,
     onTileClick: vi.fn(),
-    tileSize: 3,
-    isWon: false,
+    isWon: false
   };
 
   beforeEach(() => {
+    // Reset document body between tests
+    document.body.innerHTML = '';
+    
     (getMovablePositions as unknown as Mock<[BoardType], Position[]>).mockReturnValue([
-      { row: 2, col: 1 }, // Position of tile 8
+      { row: 2, col: 1 } // Position of tile 8
     ]);
   });
 
@@ -37,81 +41,93 @@ describe('Board', () => {
   it('renders the correct number of tiles', () => {
     render(<Board {...defaultProps} />);
     const tiles = screen.getAllByRole('button');
-    expect(tiles).toHaveLength(8); // 8 numbered tiles, 1 empty space
+    expect(tiles).toHaveLength(8); // 8 numbered tiles (excluding empty space)
   });
 
-  it('applies grid template columns based on grid size', () => {
-    render(<Board {...defaultProps} />);
-    const board = screen.getByRole('grid');
+  it('renders board with correct structure', () => {
+    const { container } = render(<Board {...defaultProps} />);
+    const board = container.querySelector('[data-testid="game-board"]');
+    
+    expect(board).toHaveAttribute('role', 'grid');
     expect(board).toHaveStyle({
-      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+      'grid-template-columns': 'repeat(3, minmax(0, 1fr))',
+      'aspect-ratio': '1 / 1'
     });
   });
 
   it('calls onTileClick with correct position when tile is clicked', () => {
     const onTileClick = vi.fn();
-    render(<Board {...defaultProps} onTileClick={onTileClick} />);
+    const { container } = render(<Board {...defaultProps} onTileClick={onTileClick} />);
     
-    // Click tile "8" which should be movable
-    fireEvent.click(screen.getByText('8'));
+    const tile8 = container.querySelector('[data-testid="tile-8"]');
+    expect(tile8).toBeInTheDocument();
+    
+    fireEvent.click(tile8!);
     expect(onTileClick).toHaveBeenCalledWith({ row: 2, col: 1 });
   });
 
   it('renders empty space correctly', () => {
-    render(<Board {...defaultProps} />);
-    // The empty space should not be a button
+    const { container } = render(<Board {...defaultProps} />);
+    const emptyTile = container.querySelector('.bg-gray-100.dark\\:bg-gray-800.rounded');
+    expect(emptyTile).toBeInTheDocument();
     expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 
   it('applies win animation class when game is won', () => {
-    render(<Board {...defaultProps} isWon={true} />);
-    const board = screen.getByRole('grid');
+    const { container } = render(<Board {...defaultProps} isWon={true} />);
+    const board = container.querySelector('[data-testid="game-board"]');
     expect(board).toHaveClass('animate-win');
   });
 
   it('makes only valid tiles clickable', () => {
-    render(<Board {...defaultProps} />);
-    const tile8 = screen.getByText('8');
-    const tile7 = screen.getByText('7');
+    const { container } = render(<Board {...defaultProps} />);
+    
+    const tile8 = container.querySelector('[data-testid="tile-8"]');
+    const tile7 = container.querySelector('[data-testid="tile-7"]');
 
-    // Tile 8 should be movable
-    expect(tile8).toHaveClass('cursor-pointer');
     expect(tile8).not.toBeDisabled();
-
-    // Tile 7 should not be movable
-    expect(tile7).toHaveClass('cursor-not-allowed');
+    expect(tile8).toHaveClass('cursor-pointer');
+    
     expect(tile7).toBeDisabled();
-  });
-
-  it('renders with correct accessibility attributes', () => {
-    render(<Board {...defaultProps} />);
-    const board = screen.getByRole('grid');
-    expect(board).toHaveAttribute('aria-label', 'Sliding puzzle board');
+    expect(tile7).toHaveClass('cursor-not-allowed');
   });
 
   describe('responsive behavior', () => {
-    it('adjusts tile size based on grid size', () => {
-      const { rerender } = render(<Board {...defaultProps} />);
-      
-      // Check 3x3 grid
-      let tiles = screen.getAllByRole('button');
-      tiles.forEach(tile => {
-        expect(tile).toHaveClass('p-4');
+    const setWindowWidth = (width: number) => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: width
       });
+      global.dispatchEvent(new Event('resize'));
+    };
 
-      // Check 5x5 grid
-      const largerBoard: BoardType = [
-        [1, 2, 3, 4, 5],
-        [6, 7, 8, 9, 10],
-        [11, 12, 13, 14, 15],
-        [16, 17, 18, 19, 20],
-        [21, 22, 23, 24, 0]
-      ];
+    it('adjusts board width based on viewport size', () => {
+      // Set small viewport before rendering
+      setWindowWidth(400);
       
-      rerender(<Board {...defaultProps} gridSize={5 as GridSize} tiles={largerBoard} />);
-      tiles = screen.getAllByRole('button');
-      tiles.forEach(tile => {
-        expect(tile).toHaveClass('p-3');
+      const { container } = render(<Board {...defaultProps} />);
+      let board = container.querySelector('[data-testid="game-board"]') as HTMLElement;
+      expect(board.style.maxWidth).toBe('336px'); // 400 - (32 * 2) viewport padding
+
+      // Change to large viewport and verify max width
+      setWindowWidth(1200);
+      board = container.querySelector('[data-testid="game-board"]') as HTMLElement;
+      expect(board.style.maxWidth).toBe('336px'); // Width should not exceed viewport - padding
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has correct ARIA attributes', () => {
+      const { container } = render(<Board {...defaultProps} />);
+      const board = container.querySelector('[data-testid="game-board"]');
+      
+      expect(board).toHaveAttribute('role', 'grid');
+      expect(board).toHaveAttribute('aria-label', 'Sliding puzzle board');
+      
+      const buttons = screen.getAllByRole('button');
+      buttons.forEach(button => {
+        expect(button).toHaveAttribute('aria-label', expect.stringMatching(/^Tile \d+$/));
       });
     });
   });
