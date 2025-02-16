@@ -36,6 +36,16 @@ export interface BoardProps {
   onTileClick: (position: Position) => void;
   tileSize: number;
   isWon: boolean;
+  onBackToMain: () => void;
+}
+
+export interface BoardProperties {
+  gridSize: GridSize;
+  tiles: Board;
+  onTileClick: (position: Position) => void;
+  tileSize: number;
+  isWon: boolean;
+  onBackToMain: () => void;
 }
 
 export interface GameControlsProperties {
@@ -46,6 +56,7 @@ export interface GameControlsProperties {
   onDifficultyChange: (level: Difficulty) => void;
   currentSize: GridSize;
   currentDifficulty: Difficulty;
+  onBackToMain: () => void;
 }
 
 export interface LevelSelectProps {

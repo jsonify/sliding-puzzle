@@ -25,7 +25,8 @@ export function createBoard(size: GridSize): Board {
       board[rowIndex][colIndex] = rowIndex === size - GameConstants.GRID_INCREMENT && 
                                  colIndex === size - GameConstants.GRID_INCREMENT ? 
                                  GameConstants.EMPTY_CELL : 
-                                 currentNumber += GameConstants.GRID_INCREMENT;
+                                 currentNumber;
+      currentNumber += GameConstants.GRID_INCREMENT;
     }
   }
   

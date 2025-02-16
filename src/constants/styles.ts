@@ -1,11 +1,11 @@
 export const LEVEL_SELECT_STYLES = {
   BASE_BUTTON: 'transition-all duration-200',
-  BASE_DIFFICULTY: 'px-6 py-3 rounded-lg capitalize font-medium transition-all duration-200',
+  BASE_DIFFICULTY: 'px-4 py-2 rounded-lg capitalize font-medium transition-all duration-200',
   SELECTED_BUTTON: 'ring-2 ring-blue-500 bg-blue-50 dark:bg-gray-700',
   HOVER_BUTTON: 'hover:bg-gray-50 dark:hover:bg-gray-700',
   SELECTED_DIFFICULTY: 'bg-blue-500 text-white',
   DEFAULT_DIFFICULTY: 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600',
-  START_BUTTON: 'px-8 py-4 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold text-lg transition-colors duration-200 shadow-lg hover:shadow-xl',
+  START_BUTTON: 'px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold text-lg transition-colors duration-200 shadow-lg hover:shadow-xl',
   CONTAINER: 'w-full max-w-2xl mx-auto p-6 space-y-8',
   TITLE: 'text-3xl font-bold text-center text-gray-900 dark:text-white mb-8',
   SECTION: 'space-y-4',
