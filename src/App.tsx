@@ -98,11 +98,13 @@ function App(): ReactElement {
       setColorModeStarted(true)
     }
     setGameState(initialGameState)
+    setShowMenu(false)
   }, [gridSize, difficulty, patternType, mode])
 
   // Handle pattern type change
   const handlePatternTypeChange = useCallback((type: typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]) => {
     setPatternType(type)
+    setShowMenu(false)
   }, [])
 
   // Handle tile click
@@ -224,6 +226,7 @@ function App(): ReactElement {
       onStartNewGame()
     }
     setGameState(initialGameState)
+    setShowMenu(false)
   }, [difficulty, mode, onStartNewGame])
 
   // Handle difficulty change
@@ -232,6 +235,7 @@ function App(): ReactElement {
     const updatedBoard = createBoard(gridSize)
     setBoard(shuffleBoard(updatedBoard, updatedDifficulty))
     setGameState(initialGameState)
+    setShowMenu(false)
   }, [gridSize])
 
   // Handle mode selection
@@ -262,6 +266,7 @@ function App(): ReactElement {
     setModeSelected(false)
     setGameState(initialGameState)
     setColorModeStarted(false)
+    setShowMenu(false)
   }, [])
 
   // Handle menu button click
@@ -271,7 +276,7 @@ function App(): ReactElement {
 
   const renderWinningModal = (): ReactElement => (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30"
     >
       <div
         className="bg-white dark:bg-gray-800 p-6 rounded-lg text-center"
@@ -324,6 +329,7 @@ function App(): ReactElement {
         score={gameState.moves}
         targetPattern={targetPattern || generatePattern('random')}
         onMenuClick={onMenuClick}
+        showMenu={showMenu}
         mode={mode}
         gridSize={gridSize}
         tiles={board}
