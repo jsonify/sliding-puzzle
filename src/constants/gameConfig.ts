@@ -1,4 +1,5 @@
-import type { GridSize } from '../types/game';
+import type { GridSize, GameMode } from '../types/game';
+import { COLOR_MODE, PATTERN_TYPES } from './colorMode';
 
 /** Type guard to check if a value is a number */
 const isNumber = (value: unknown): value is number => {
@@ -96,6 +97,14 @@ const generateGridSizes = (): readonly GridSize[] => {
 };
 
 /**
+ * Available game modes
+ */
+export const GAME_MODES = {
+  CLASSIC: 'classic',
+  COLOR: 'color',
+} as const;
+
+/**
  * Available difficulty levels for the game
  * Difficulty level configuration with literal types
  */
@@ -112,6 +121,11 @@ export const GAME_CONFIG = {
   /** Programmatically generated array of valid grid sizes */
   GRID_SIZES: generateGridSizes(),
 
+  /** Available game modes */
+  MODES: [
+    GAME_MODES.CLASSIC,
+    GAME_MODES.COLOR,
+  ] as const,
   /** Available difficulty levels */
   DIFFICULTIES: [
     DIFFICULTY.EASY,
@@ -124,6 +138,7 @@ export const GAME_CONFIG = {
   EMPTY_TILE_OFFSET: EMPTY_POSITION_OFFSET_VALUE,
 
   /** Default settings */
+  DEFAULT_MODE: GAME_MODES.CLASSIC as GameMode,
   DEFAULT_SIZE: GRID.SIZE_3X3,
   DEFAULT_DIFFICULTY: DIFFICULTY.EASY,
 } as const;
@@ -132,8 +147,9 @@ export const GAME_CONFIG = {
  * Default game configuration
  */
 export const DEFAULT_CONFIG = {
+  mode: GAME_CONFIG.DEFAULT_MODE,
   size: GAME_CONFIG.DEFAULT_SIZE,
-  difficulty: GAME_CONFIG.DEFAULT_DIFFICULTY,
+  difficulty: GAME_CONFIG.DEFAULT_DIFFICULTY
 } as const;
 
 type ValidationError = {

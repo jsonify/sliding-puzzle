@@ -1,3 +1,5 @@
+import { TileColor, PatternType, PATTERN_TYPES } from '../constants/colorMode';
+
 export type GridSize = 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 export type Position = {
@@ -5,13 +7,36 @@ export type Position = {
   col: number;
 };
 
-export type Board = number[][];
+export type GameMode = 'classic' | 'color';
+
+export type ClassicBoard = number[][];
+export type ColorBoard = (TileColor | 0)[][];
+export type Board = ClassicBoard | ColorBoard;
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameConfig {
+  mode: GameMode;
   gridSize: GridSize;
   difficulty: Difficulty;
+  patternType?: PatternType; // Only used in color mode
+}
+
+export interface ColorModeState {
+  targetPattern: ColorBoard;
+  currentPattern: ColorBoard;
+  emptyPosition: Position;
+  moves: number;
+  startTime: number;
+  isWon: boolean;
+}
+
+export interface ClassicModeState {
+  board: ClassicBoard;
+  emptyPosition: Position;
+  moves: number;
+  startTime: number;
+  isWon: boolean;
 }
 
 export interface GameState {
@@ -31,6 +56,7 @@ export interface TileProperties {
 }
 
 export interface BoardProps {
+  mode: GameMode;
   gridSize: GridSize;
   tiles: Board;
   onTileClick: (position: Position) => void;
@@ -38,19 +64,14 @@ export interface BoardProps {
   isWon: boolean;
   onBackToMain: () => void;
 }
-export interface BoardProperties {
-  gridSize: GridSize;
-  tiles: Board;
-  onTileClick: (position: Position) => void;
-  tileSize: number;
-  isWon: boolean;
-  onBackToMain: () => void;
-}
+
 export interface GameControlsProperties {
   moves: number;
+  mode: GameMode;
   time: number;
   onNewGame: () => void;
   onSizeChange: (size: GridSize) => void;
+  onPatternTypeChange?: (type: typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]) => void;
   onDifficultyChange: (level: Difficulty) => void;
   currentSize: GridSize;
   currentDifficulty: Difficulty;
@@ -91,7 +112,7 @@ export interface GlobalStats {
   totalGamesPlayed: number;
   totalTimePlayed: number;
   totalMoves: number;
-  gamesPerDifficulty: Record<Difficulty, number>;
+  gamesPerMode: Record<GameMode, number>;
   gamesPerSize: Record<GridSize, number>;
 }
 

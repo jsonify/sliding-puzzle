@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 // Components
 import Board from './components/Board'
 import GameControls from './components/GameControls'
+import ModeSelect from './components/ModeSelect'
+import SolutionPreview from './components/SolutionPreview/SolutionPreview'
 import { LevelSelect } from './components/LevelSelect'
 import Leaderboard from './components/Leaderboard'
 
@@ -11,6 +13,7 @@ import Leaderboard from './components/Leaderboard'
 import type {
   Board as BoardType,
   Difficulty,
+  GameMode,
   GridSize,
   Position
 } from './types/game'
@@ -22,9 +25,16 @@ import {
   isValidMove,
   isWinningState,
   makeMove,
-  shuffleBoard,
+  shuffleBoard
 } from './utils/gameUtils'
+import {
+  generatePattern,
+  isPatternMatched
+} from './utils/colorPatternUtils'
 import { updateLeaderboard } from './utils/leaderboardUtils'
+import { GAME_MODES } from './constants/gameConfig'
+import { COLOR_MODE, PATTERN_TYPES } from './constants/colorMode'
+import type { ColorBoard } from './types/game'
 import { GameConstants } from './constants/gameConstants'
 
 // Initial game state
@@ -38,13 +48,18 @@ const initialGameState = {
 
 function App(): ReactElement {
   // Game configuration state
+  const [mode, setMode] = useState<GameMode>(GAME_MODES.CLASSIC)
   const [gridSize, setGridSize] = useState<GridSize>(GameConstants.INITIAL_GRID_SIZE)
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
+  const [patternType, setPatternType] = useState<typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]>(PATTERN_TYPES.RANDOM)
+  const [modeSelected, setModeSelected] = useState(false)
   const [gameStarted, setGameStarted] = useState(false)
 
   // Game state
   const [board, setBoard] = useState<BoardType>(() => createBoard(gridSize))
+  const [targetPattern, setTargetPattern] = useState<ColorBoard | null>(null)
   const [gameState, setGameState] = useState(initialGameState)
+  const [colorModeStarted, setColorModeStarted] = useState(false)
 
   // Timer effect
   useEffect(() => {
@@ -68,10 +83,25 @@ function App(): ReactElement {
 
   // Start new game
   const onStartNewGame = useCallback((): void => {
-    const updatedBoard = createBoard(gridSize)
-    setBoard(shuffleBoard(updatedBoard, difficulty))
+    if (mode === GAME_MODES.CLASSIC) {
+      const updatedBoard = createBoard(gridSize)
+      setBoard(shuffleBoard(updatedBoard, difficulty))
+    } else {
+      // Color mode: generate new target pattern
+      const newTarget = generatePattern(patternType)
+      setTargetPattern(newTarget)
+      // Create a shuffled version of the target pattern
+      const shuffled = shuffleBoard(newTarget, difficulty) as ColorBoard
+      setBoard(shuffled)
+      setColorModeStarted(true)
+    }
     setGameState(initialGameState)
-  }, [gridSize, difficulty])
+  }, [gridSize, difficulty, patternType, mode])
+
+  // Handle pattern type change
+  const handlePatternTypeChange = useCallback((type: typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]) => {
+    setPatternType(type)
+  }, [])
 
   // Handle tile click
   const onHandleTileClick = useCallback((position: Position): void => {
@@ -91,7 +121,11 @@ function App(): ReactElement {
 
     if (isValidMove(position, emptyPos)) {
       const updatedBoard = makeMove(board, position, emptyPos)
-      const won = isWinningState(updatedBoard)
+      const won = mode === GAME_MODES.CLASSIC
+        ? isWinningState(updatedBoard)
+        : targetPattern !== null && isPatternMatched(
+            updatedBoard as ColorBoard, 
+            targetPattern)
       const updatedMoves = gameState.moves + GameConstants.MOVE_INCREMENT
 
       setBoard(updatedBoard)
@@ -111,7 +145,7 @@ function App(): ReactElement {
         })
       }
     }
-  }, [board, gameState, gridSize, difficulty])
+  }, [board, gameState, gridSize, difficulty, mode, targetPattern])
 
   // Handle keyboard controls
   useEffect(() => {
@@ -177,8 +211,17 @@ function App(): ReactElement {
   // Handle grid size change
   const onHandleSizeChange = useCallback((size: GridSize): void => {
     setGridSize(size)
-    const updatedBoard = createBoard(size)
-    setBoard(shuffleBoard(updatedBoard, difficulty))
+    if (mode === GAME_MODES.CLASSIC) {
+      const updatedBoard = createBoard(size)
+      setBoard(shuffleBoard(updatedBoard, difficulty))
+    } else {
+      // Color mode always uses 5x5 grid
+      if (size !== COLOR_MODE.GRID_SIZE) {
+        console.warn('Color mode only supports 5x5 grid')
+        return
+      }
+      onStartNewGame()
+    }
     setGameState(initialGameState)
   }, [difficulty])
 
@@ -190,19 +233,34 @@ function App(): ReactElement {
     setGameState(initialGameState)
   }, [gridSize])
 
-  // Handle level selection
-  const onHandleLevelSelect = useCallback((size: GridSize, diff: Difficulty): void => {
-    setGridSize(size)
-    setDifficulty(diff)
+  // Handle mode selection
+  const onHandleModeSelect = useCallback((selectedMode: GameMode): void => {
+    setMode(selectedMode)
+    setModeSelected(true)
+    if (selectedMode === GAME_MODES.COLOR) {
+      setGridSize(COLOR_MODE.GRID_SIZE)
+      const newTarget = generatePattern(patternType)
+      setTargetPattern(newTarget)
+      setBoard(shuffleBoard(newTarget, difficulty) as ColorBoard)
+    }
+  }, [difficulty])
+
+  // Handle level selection (only for classic mode)
+  const onHandleLevelSelect = useCallback((selectedSize: GridSize, selectedDiff: Difficulty): void => {
+    if (mode !== GAME_MODES.CLASSIC) return
+    setGridSize(selectedSize)
+    setDifficulty(selectedDiff)
     setGameStarted(true)
-    const updatedBoard = createBoard(size)
-    setBoard(shuffleBoard(updatedBoard, diff))
+    const updatedBoard = createBoard(selectedSize)
+    setBoard(shuffleBoard(updatedBoard, selectedDiff))
     setGameState(initialGameState)
-  }, [])
+  }, [mode])
 
   const onBackToMain = useCallback((): void => {
     setGameStarted(false)
+    setModeSelected(false)
     setGameState(initialGameState)
+    setColorModeStarted(false)
   }, [])
 
   const renderWinningModal = (): ReactElement => (
@@ -232,7 +290,17 @@ function App(): ReactElement {
     </div>
   )
 
-  if (!gameStarted) {
+  if (!modeSelected) {
+    return (
+      <div className='game-container'>
+        <ModeSelect onModeSelect={onHandleModeSelect} />
+      </div>
+    )
+  }
+
+  if (!gameStarted && mode === GAME_MODES.CLASSIC) {
+    // Only show level select for classic mode
+    // Color mode uses fixed grid size and skips this screen
     return (
       <div className='game-container'>
         <LevelSelect
@@ -251,6 +319,7 @@ function App(): ReactElement {
       <div className='mx-auto w-full max-w-4xl space-y-6'>
         <GameControls
           moves={gameState.moves}
+          mode={mode}
           time={gameState.time}
           onNewGame={onStartNewGame}
           onSizeChange={onHandleSizeChange}
@@ -258,16 +327,29 @@ function App(): ReactElement {
           currentSize={gridSize}
           currentDifficulty={difficulty}
           onBackToMain={onBackToMain}
+          onPatternTypeChange={mode === GAME_MODES.COLOR ? handlePatternTypeChange : undefined}
         />
+        
+        <div className="flex gap-8 items-start justify-center">
+          <Board
+            mode={mode}
+            gridSize={gridSize}
+            tiles={board}
+            onTileClick={onHandleTileClick}
+            tileSize={gridSize}
+            isWon={gameState.isWon}
+            onBackToMain={onBackToMain}
+          />
 
-        <Board
-          gridSize={gridSize}
-          tiles={board}
-          onTileClick={onHandleTileClick}
-          tileSize={gridSize}
-          isWon={gameState.isWon}
-          onBackToMain={onBackToMain}
-        />
+          {/* Show solution preview only in color mode */}
+          {mode === GAME_MODES.COLOR && targetPattern && colorModeStarted && (
+            <div className="flex-shrink-0">
+              <SolutionPreview 
+                targetPattern={targetPattern}
+              />
+            </div>
+          )}
+        </div>
 
         <Leaderboard />
       </div>

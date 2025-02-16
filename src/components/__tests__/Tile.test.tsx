@@ -1,116 +1,158 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import Tile from '../Tile';
-import type { Position } from '../../types/game';
+import { COLORS } from '../../constants/colorMode';
 
 describe('Tile', () => {
+  const mockOnClick = vi.fn();
   const defaultProps = {
-    number: 1,
-    position: { row: 0, col: 0 } as Position,
-    size: 4,
+    position: { row: 0, col: 0 },
+    size: 3,
     isMovable: true,
-    onClick: vi.fn(),
+    onClick: mockOnClick,
   };
 
-  beforeEach(() => {
-    cleanup();
+  describe('Classic Mode', () => {
+    test('renders numbered tile correctly', () => {
+      render(
+        <Tile
+          {...defaultProps}
+          mode="classic"
+          value={5}
+        />
+      );
+
+      const tile = screen.getByRole('button');
+      expect(tile).toHaveTextContent('5');
+      expect(tile).toHaveAttribute('aria-label', 'Tile 5');
+    });
+
+    test('renders empty tile correctly in classic mode', () => {
+      render(
+        <Tile
+          {...defaultProps}
+          mode="classic"
+          value={0}
+        />
+      );
+
+      const emptyTile = screen.getByTestId('tile-empty');
+      expect(emptyTile).toBeInTheDocument();
+      expect(emptyTile).toHaveAttribute('aria-label', 'Empty space');
+    });
+
+    test('handles click events when movable', async () => {
+      const user = userEvent.setup();
+      render(
+        <Tile
+          {...defaultProps}
+          mode="classic"
+          value={1}
+        />
+      );
+
+      const tile = screen.getByRole('button');
+      await user.click(tile);
+      expect(mockOnClick).toHaveBeenCalled();
+    });
+
+    test('disables click when not movable', () => {
+      render(
+        <Tile
+          {...defaultProps}
+          mode="classic"
+          value={1}
+          isMovable={false}
+        />
+      );
+
+      const tile = screen.getByRole('button');
+      expect(tile).toBeDisabled();
+    });
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
+  describe('Color Mode', () => {
+    test('renders colored tile correctly', () => {
+      render(
+        <Tile
+          {...defaultProps}
+          mode="color"
+          value="RED"
+        />
+      );
+
+      const tile = screen.getByRole('button');
+      expect(tile).toHaveAttribute('aria-label', 'RED colored tile');
+      // Check if the background color is set correctly
+      expect(tile.className).toContain(`bg-[${COLORS.RED}]`);
+    });
+
+    test('renders empty tile correctly in color mode', () => {
+      render(
+        <Tile
+          {...defaultProps}
+          mode="color"
+          value={0}
+        />
+      );
+
+      const emptyTile = screen.getByTestId('tile-empty');
+      expect(emptyTile).toBeInTheDocument();
+      expect(emptyTile).toHaveAttribute('aria-label', 'Empty space');
+    });
+
+    test('handles click events for colored tiles', async () => {
+      const user = userEvent.setup();
+      render(
+        <Tile
+          {...defaultProps}
+          mode="color"
+          value="BLUE"
+        />
+      );
+
+      const tile = screen.getByRole('button');
+      await user.click(tile);
+      expect(mockOnClick).toHaveBeenCalled();
+    });
+
+    test('applies hover effect on movable colored tiles', () => {
+      render(
+        <Tile
+          {...defaultProps}
+          mode="color"
+          value="GREEN"
+          isMovable={true}
+        />
+      );
+
+      const tile = screen.getByRole('button');
+      expect(tile.className).toContain('hover:opacity-90');
+    });
   });
 
-  it('renders the tile number', () => {
-    render(<Tile {...defaultProps} />);
-    expect(screen.getByText('1')).toBeInTheDocument();
-  });
+  describe('Accessibility', () => {
+    test('provides appropriate aria labels for both modes', () => {
+      const { rerender } = render(
+        <Tile
+          {...defaultProps}
+          mode="classic"
+          value={3}
+        />
+      );
 
-  it('renders empty tile (number 0) with correct styling', () => {
-    const { container } = render(<Tile {...defaultProps} number={0} />);
-    const emptyTile = container.querySelector('.bg-gray-100');
-    expect(emptyTile).toHaveClass('bg-gray-100', 'dark:bg-gray-800', 'rounded');
-  });
+      expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Tile 3');
 
-  it('applies correct styles for movable tiles', () => {
-    const { container } = render(<Tile {...defaultProps} />);
-    const tile = container.querySelector('button');
-    expect(tile).toHaveClass(
-      'cursor-pointer',
-      'bg-white',
-      'dark:bg-gray-700',
-      'hover:bg-blue-50',
-      'dark:hover:bg-gray-600'
-    );
-    expect(tile).not.toHaveClass('cursor-not-allowed');
-  });
+      rerender(
+        <Tile
+          {...defaultProps}
+          mode="color"
+          value="YELLOW"
+        />
+      );
 
-  it('applies correct styles for non-movable tiles', () => {
-    const { container } = render(<Tile {...defaultProps} isMovable={false} />);
-    const tile = container.querySelector('button');
-    expect(tile).toHaveClass('cursor-not-allowed', 'bg-white', 'dark:bg-gray-700');
-    expect(tile).not.toHaveClass('cursor-pointer', 'hover:bg-blue-50', 'dark:hover:bg-gray-600');
-  });
-
-  it('calls onClick when clicked and tile is movable', () => {
-    const onClick = vi.fn();
-    const { container } = render(<Tile {...defaultProps} onClick={onClick} />);
-    const tile = container.querySelector('button');
-    if (tile) {
-      fireEvent.click(tile);
-    }
-    expect(onClick).toHaveBeenCalled();
-  });
-
-  it('does not call onClick when clicked and tile is not movable', () => {
-    const onClick = vi.fn();
-    const { container } = render(<Tile {...defaultProps} isMovable={false} onClick={onClick} />);
-    const tile = container.querySelector('button');
-    if (tile) {
-      fireEvent.click(tile);
-    }
-    expect(onClick).not.toHaveBeenCalled();
-  });
-
-  it('applies different text sizes based on grid size', () => {
-    // Test small grid (3x3)
-    const { container, rerender } = render(<Tile {...defaultProps} size={3} />);
-    const smallTile = container.querySelector('button');
-    expect(smallTile).toHaveClass('text-3xl', 'p-4');
-
-    // Test medium grid (5x5)
-    rerender(<Tile {...defaultProps} size={5} />);
-    const mediumTile = container.querySelector('button');
-    expect(mediumTile).toHaveClass('text-2xl', 'p-3');
-
-    // Test large grid (7x7)
-    rerender(<Tile {...defaultProps} size={7} />);
-    const largeTile = container.querySelector('button');
-    expect(largeTile).toHaveClass('text-xl', 'p-2');
-  });
-
-  it('has correct accessibility attributes', () => {
-    const { container } = render(<Tile {...defaultProps} />);
-    const tile = container.querySelector('button');
-    expect(tile).toHaveAttribute('aria-label', 'Tile 1');
-    expect(tile).toHaveAttribute('type', 'button');
-    expect(tile).not.toBeDisabled();
-  });
-
-  it('includes base styling classes', () => {
-    const { container } = render(<Tile {...defaultProps} />);
-    const tile = container.querySelector('button');
-    expect(tile).toHaveClass(
-      'flex',
-      'items-center',
-      'justify-center',
-      'font-bold',
-      'transition-all',
-      'duration-150',
-      'rounded',
-      'select-none',
-      'focus:outline-none',
-      'focus:ring-2',
-      'focus:ring-blue-500'
-    );
+      expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'YELLOW colored tile');
+    });
   });
 });
