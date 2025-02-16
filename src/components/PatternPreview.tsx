@@ -22,7 +22,7 @@ export default function PatternPreview({
     }
 
     // Color mode
-    if (value === 0) return 'bg-transparent';
+    if (value === 0) return 'bg-slate-700';
     const colorMap: Record<string, string> = {
       'WHITE': 'bg-white',
       'RED': 'bg-red-600',

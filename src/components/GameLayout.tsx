@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react';
 import type { GameLayoutProps } from '../types/layout';
 import { MOBILE_LAYOUT_STYLES } from '../constants/mobileLayout';
 import { useOrientation } from '../hooks/useOrientation';
+import { generateRandomPattern } from '../utils/colorPatternUtils';
 import ScoreBar from './ScoreBar';
 import PatternPreview from './PatternPreview';
 import MenuSheet from './MenuSheet';
 import LoadingIndicator from './LoadingIndicator';
+import type { ColorBoard } from '../types/game';
 
-type Pattern = number[][] | string[][];
+/**
+ * Pattern can be either a number[][] for classic mode or a ColorBoard for color mode
+ */
+type Pattern = number[][] | ColorBoard;
 
 /**
  * Main layout component for the game screen with orientation support
@@ -43,17 +48,8 @@ export default function GameLayout({
       }
       setTargetPattern(pattern);
     } else {
-      // Create color pattern (6 colors repeated 4 times each)
-      const colors: string[] = ['WHITE', 'RED', 'BLUE', 'ORANGE', 'GREEN', 'YELLOW'];
-      const pattern: string[][] = [];
-      let colorIndex = 0;
-      for (let i = 0; i < 5; i++) {
-        const row: string[] = [];
-        for (let j = 0; j < 5; j++) {
-          row.push(i === 2 && j === 2 ? '0' : colors[Math.floor(colorIndex++ / 4)]);
-        }
-        pattern.push(row);
-      }
+      // Use a random but solvable pattern for color mode
+      const pattern = generateRandomPattern();
       setTargetPattern(pattern);
     }
     setIsLoading(false);
@@ -87,7 +83,10 @@ export default function GameLayout({
               {/* Pattern Preview - conditionally rendered based on orientation */}
               {orientation === 'portrait' && (
                 <div className={previewClasses}>
-                  <PatternPreview mode={mode} pattern={targetPattern} />
+                  <PatternPreview 
+                    mode={mode} 
+                    pattern={targetPattern as (number[][] | string[][])} 
+                  />
                 </div>
               )}
 
@@ -101,7 +100,10 @@ export default function GameLayout({
               {/* Pattern Preview for landscape - positioned on the right */}
               {orientation === 'landscape' && (
                 <div className={previewClasses}>
-                  <PatternPreview mode={mode} pattern={targetPattern} />
+                  <PatternPreview 
+                    mode={mode} 
+                    pattern={targetPattern as (number[][] | string[][])} 
+                  />
                 </div>
               )}
             </>
