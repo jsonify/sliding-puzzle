@@ -17,16 +17,14 @@ import { GameConstants, BoardDirections, GridSizes } from '../constants/gameCons
 export function createBoard(size: GridSize): Board {
   const board: Board = [];
   let currentNumber = GameConstants.START_NUMBER;
+  const totalCells = size * size;
   
   for (let rowIndex = 0; rowIndex < size; rowIndex += 1) {
     board[rowIndex] = [];
     for (let colIndex = 0; colIndex < size; colIndex += 1) {
-      // Last cell should be empty
-      board[rowIndex][colIndex] = rowIndex === size - 1 && 
-                                 colIndex === size - 1 ? 
-                                 GameConstants.EMPTY_CELL : 
-                                 currentNumber;
-      currentNumber += 1; // Use consecutive numbers instead of GRID_INCREMENT
+      const isLastCell = currentNumber === totalCells;
+      board[rowIndex][colIndex] = isLastCell ? GameConstants.EMPTY_CELL : currentNumber;
+      currentNumber += 1;
     }
   }
   
@@ -64,18 +62,22 @@ export function makeMove(board: Board, pos: Position, emptyPos: Position): Board
 export function isWinningState(board: Board): boolean {
   const size = board.length;
   let expectedNumber = GameConstants.START_NUMBER;
+  const totalCells = size * size;
   
   for (let rowIndex = 0; rowIndex < size; rowIndex += 1) {
     for (let colIndex = 0; colIndex < size; colIndex += 1) {
-      // Skip checking the last cell (should be empty)
-      if (rowIndex === size - 1 && colIndex === size - 1) {
-        return board[rowIndex][colIndex] === GameConstants.EMPTY_CELL;
+      const currentCell = board[rowIndex][colIndex];
+      const isLastCell = expectedNumber === totalCells;
+
+      if (isLastCell) {
+        return currentCell === GameConstants.EMPTY_CELL;
       }
       
-      if (board[rowIndex][colIndex] !== expectedNumber) {
+      if (currentCell !== expectedNumber) {
         return false;
       }
-      expectedNumber += 1; // Use consecutive numbers instead of GRID_INCREMENT
+
+      expectedNumber += 1;
     }
   }
   
@@ -195,7 +197,3 @@ export function getMovablePositions(board: Board): Position[] {
   
   return movable;
 }
-
-// Move achievements and leaderboard related code to a separate file
-// This will help reduce complexity and improve maintainability
-// TODO: Create separate leaderboard.ts file for these functions
