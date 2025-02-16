@@ -85,6 +85,10 @@
 		"workbox-build": "7.0.0",
 		"workbox-window": "7.0.0"
 	},
+	"engines": {
+		"node": ">=16",
+		"pnpm": ">=8"
+	},
 	"browserslist": {
 		"production": "Edge >= 18, Firefox >= 60, Chrome >= 61, Safari >= 11, Opera >= 48",
 		"development": [
