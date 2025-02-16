@@ -35,27 +35,41 @@ export default function PatternPreview({
   };
 
   return (
-    <div className={CONTAINER} role="complementary" aria-label="Target pattern">
+    <div 
+      className={CONTAINER} 
+      role="complementary" 
+      aria-label="Target pattern"
+    >
       <div className="p-4">
         <h2 className={HEADER}>Target Pattern</h2>
         
         <div className={GRID_CONTAINER}>
-          <div className={GRID}>
-            {pattern.flat().map((value, index) => (
-              <div
-                key={index}
-                className={`
-                  aspect-square rounded-sm shadow-sm
-                  ${getItemStyle(value)}
-                  transition-all duration-200 hover:scale-105
-                `}
-                role="presentation"
-              />
+          <div 
+            className="grid grid-cols-5 gap-1 bg-slate-700 p-2 rounded w-fit mx-auto"
+            style={{ 
+              gridTemplateRows: 'repeat(5, 1fr)',
+              aspectRatio: '1/1',
+              width: '160px', // This will make each tile ~30px with gaps
+            }}
+          >
+            {pattern.map((row, rowIndex) => (
+              row.map((value, colIndex) => (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className={`
+                    aspect-square w-full rounded-sm
+                    ${getItemStyle(value)}
+                    transition-all duration-200
+                  `}
+                  role="presentation"
+                />
+              ))
             ))}
           </div>
         </div>
 
-        <p className={HELPER_TEXT}>
+        {/* Helper text - only show on larger screens or landscape */}
+        <p className={`${HELPER_TEXT} hidden sm:block`}>
           Arrange the tiles to match this pattern
         </p>
       </div>

@@ -1,6 +1,3 @@
-/**
- * Style constants for mobile layout components
- */
 export const MOBILE_LAYOUT_STYLES = {
   // Core layout
   CONTAINER: 'min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-4 flex flex-col items-center',
@@ -16,23 +13,23 @@ export const MOBILE_LAYOUT_STYLES = {
 
   // Pattern preview
   PATTERN_PREVIEW: {
-    CONTAINER: 'w-full max-w-md mb-8 bg-slate-800/50 backdrop-blur-sm border-slate-700',
-    HEADER: 'text-center text-xl font-bold text-slate-200 mb-4',
-    GRID: 'grid grid-cols-5 gap-[2px]',
-    GRID_CONTAINER: 'w-1/3 mx-auto',
-    HELPER_TEXT: 'text-center text-sm text-slate-400 mt-4',
+    CONTAINER: 'bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-lg border border-slate-700',
+    HEADER: 'text-sm font-medium text-slate-200 mb-2',
+    GRID_CONTAINER: 'flex justify-center items-center p-2',
+    GRID: 'grid grid-cols-5 w-fit mx-auto bg-slate-700/50 p-1 rounded',
+    HELPER_TEXT: 'text-xs text-slate-400 mt-2 text-center',
   },
 
   // Game board
   BOARD: {
-    CONTAINER: 'w-full max-w-md bg-slate-800/50 backdrop-blur-sm border-slate-700',
+    CONTAINER: 'w-full bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-lg',
     GRID: 'grid grid-cols-5 gap-2 p-4',
   },
 
   // Menu button
   MENU_BUTTON: {
     CONTAINER: 'mt-8',
-    BUTTON: 'p-4 rounded-full bg-slate-700 text-slate-200 shadow-lg',
+    BUTTON: 'p-4 rounded-full bg-slate-700 text-slate-200 shadow-lg hover:bg-slate-600',
   },
 
   // Bottom sheet

@@ -59,9 +59,15 @@ export default function GameLayout({
     setIsLoading(false);
   }, [mode]);
 
+  // Layout classes based on orientation
   const layoutClasses = orientation === 'landscape'
     ? 'flex-row items-center justify-center gap-8 px-4'
-    : 'flex-col items-stretch pt-24 pb-safe px-4';
+    : 'flex-col items-stretch pt-20 pb-safe px-4';
+
+  // Preview size classes based on orientation
+  const previewClasses = orientation === 'landscape'
+    ? 'w-[200px] flex-shrink-0' // Larger size in landscape
+    : 'w-[200px] mx-auto mb-4'; // Consistent size in portrait
 
   return (
     <div className="mobile-container">
@@ -80,7 +86,7 @@ export default function GameLayout({
             <>
               {/* Pattern Preview - conditionally rendered based on orientation */}
               {orientation === 'portrait' && (
-                <div className="w-full max-w-md mx-auto">
+                <div className={previewClasses}>
                   <PatternPreview mode={mode} pattern={targetPattern} />
                 </div>
               )}
@@ -94,7 +100,7 @@ export default function GameLayout({
 
               {/* Pattern Preview for landscape - positioned on the right */}
               {orientation === 'landscape' && (
-                <div className="w-full max-w-[200px]">
+                <div className={previewClasses}>
                   <PatternPreview mode={mode} pattern={targetPattern} />
                 </div>
               )}
@@ -102,7 +108,7 @@ export default function GameLayout({
           )}
         </div>
 
-        {/* Menu Button */}
+        {/* Menu Button - fixed position at bottom left with safe area padding */}
         <button
           type="button"
           onClick={() => setIsMenuOpen(true)}
@@ -110,7 +116,7 @@ export default function GameLayout({
             ${MOBILE_LAYOUT_STYLES.MENU_BUTTON.BUTTON}
             ${MOBILE_LAYOUT_STYLES.ANIMATION.HOVER}
             ${MOBILE_LAYOUT_STYLES.ANIMATION.PRESS}
-            fixed bottom-safe right-4
+            fixed bottom-8 left-4 z-50
           `}
           aria-label="Open game menu"
         >
