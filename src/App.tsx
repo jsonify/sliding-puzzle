@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 
 // Components
 import Board from './components/Board'
@@ -61,22 +61,31 @@ function App(): ReactElement {
   const [gameState, setGameState] = useState(initialGameState)
   const [colorModeStarted, setColorModeStarted] = useState(false)
 
+  // Timer ref to prevent multiple intervals
+  const timerRef = useRef<number>()
+
   // Timer effect
   useEffect(() => {
-    let interval: number | undefined
-
-    if (gameState.hasStarted && !gameState.isWon) {
-      interval = window.setInterval(() => {
-        setGameState(previous => ({
-          ...previous,
-          time: previous.time + GameConstants.TIME_INCREMENT
-        }))
-      }, GameConstants.TIMER_INTERVAL)
+    // Always clear existing interval first
+    if (timerRef.current !== undefined) {
+      clearInterval(timerRef.current)
+      timerRef.current = undefined
     }
 
-    return function cleanup() {
-      if (interval) {
-        clearInterval(interval)
+    // Only start a new timer if the game is active
+    if (gameState.hasStarted && !gameState.isWon) {
+      timerRef.current = window.setInterval(() => {
+        setGameState(prev => ({
+          ...prev,
+          time: prev.time + GameConstants.TIME_INCREMENT
+        }))
+      }, GameConstants.TIMER_INTERVAL) as unknown as number
+    }
+
+    // Cleanup function
+    return () => {
+      if (timerRef.current !== undefined) {
+        clearInterval(timerRef.current)
       }
     }
   }, [gameState.hasStarted, gameState.isWon])
