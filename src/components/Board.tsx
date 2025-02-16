@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react';
 import { BoardClassNames, BoardUI } from '../constants/boardUI';
 import type { BoardProps, Position } from '../types/game';
 import { getMovablePositions } from '../utils/gameUtils';
-import { BoardUI, BoardClassNames } from '../constants/boardUI';
 import Tile from './Tile';
 
 const PADDING_FACTOR = 2;

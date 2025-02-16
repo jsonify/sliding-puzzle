@@ -204,4 +204,3 @@ export function getMovablePositions(board: Board): Position[] {
 // Move achievements and leaderboard related code to a separate file
 // This will help reduce complexity and improve maintainability
 // TODO: Create separate leaderboard.ts file for these functions
-}
