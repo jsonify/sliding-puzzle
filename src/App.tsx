@@ -258,7 +258,9 @@ function App(): ReactElement {
 
   const onBackToMain = useCallback((): void => {
     setGameStarted(false)
+    setModeSelected(false)
     setGameState(initialGameState)
+    setColorModeStarted(false)
   }, [])
 
   const renderWinningModal = (): ReactElement => (

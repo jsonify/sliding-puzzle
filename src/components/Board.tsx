@@ -83,7 +83,11 @@ export default function Board({
 
   return (
     <div className="board-container">
-      <button onClick={onBackToMain} className="back-button">Back to Main</button>
+      <button 
+        onClick={onBackToMain} 
+        className="back-button py-2 px-4 mb-4 rounded bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        type="button"
+      >← Back to Main</button>
       <div
         className={boardClasses}
         style={{
