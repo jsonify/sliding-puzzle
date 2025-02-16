@@ -1,22 +1,21 @@
 import type { Position, GameMode } from '../types/game';
 import { COLORS, isValidColor, type TileColor } from '../constants/colorMode';
-
-/** Grid size breakpoints for styling */
-const SMALL_SIZE = 3;
-const MEDIUM_SIZE = 5;
-const LARGE_SIZE = 6;
-const GRID_SIZE = {
-  SMALL: SMALL_SIZE,
-  MEDIUM: MEDIUM_SIZE,
-  LARGE: LARGE_SIZE,
-} as const;
-
-const PADDING_SIZE = 1;
+import { BoardUI } from '../constants/boardUI';
 
 /** Get background color for a colored tile */
 const getColorStyle = (color: TileColor | 0) => {
-  if (color === 0) return 'bg-gray-100 dark:bg-gray-800';
-  return `bg-[${COLORS[color]}] hover:opacity-90`;
+  if (color === 0) return '';
+  // Map colors to Tailwind classes
+  const colorMap: Record<TileColor, string> = {
+    WHITE: 'bg-white hover:opacity-90',
+    RED: 'bg-red-600 hover:opacity-90',
+    BLUE: 'bg-blue-600 hover:opacity-90',
+    ORANGE: 'bg-orange-500 hover:opacity-90',
+    GREEN: 'bg-green-600 hover:opacity-90',
+    YELLOW: 'bg-yellow-400 hover:opacity-90',
+  };
+  
+  return colorMap[color] || 'bg-gray-400';
 };
 
 /** Single tile in the puzzle grid */
@@ -26,6 +25,7 @@ export default function Tile({
   position,
   size, 
   isMovable, 
+  tileSize,
   onClick 
 }: {
   value: number | TileColor | 0;
@@ -33,6 +33,7 @@ export default function Tile({
   position: Position;
   size: number;
   isMovable: boolean;
+  tileSize: number;
   onClick: () => void;
 }): JSX.Element {
   const baseClasses = [
@@ -48,17 +49,10 @@ export default function Tile({
     'focus:ring-2',
     'focus:ring-blue-500',
     'w-full',
+    'h-full',
     'aspect-square',
+    'text-2xl',
   ].join(' ');
-
-  const sizeClasses = {
-    text: size <= GRID_SIZE.SMALL 
-      ? 'text-3xl'
-      : (size <= GRID_SIZE.MEDIUM ? 'text-2xl' : 'text-xl'),
-    padding: size <= (GRID_SIZE.SMALL + PADDING_SIZE)
-      ? 'p-4'
-      : (size <= GRID_SIZE.MEDIUM ? 'p-3' : 'p-2'),
-  };
 
   let stateClasses = '';
   if (mode === 'classic') {
@@ -74,8 +68,10 @@ export default function Tile({
   // Skip rendering for empty tile (number 0)
   if (value === 0) {
     return (
-      <div 
-        className="bg-gray-100 dark:bg-gray-800 rounded w-full aspect-square" 
+      <div
+        className={`${baseClasses}`}
+        style={{ visibility: 'hidden' }}
+        aria-hidden="true"
         data-testid="tile-empty"
         aria-label="Empty space"
       />
@@ -91,7 +87,11 @@ export default function Tile({
   return (
     <button
       type="button"
-      className={`${baseClasses} ${sizeClasses.text} ${sizeClasses.padding} ${stateClasses}`}
+      className={`${baseClasses} ${stateClasses}`}
+      style={{
+        width: `${tileSize}px`,
+        height: `${tileSize}px`,
+      }}
       onClick={onClick}
       disabled={!isMovable}
       aria-label={ariaLabel}

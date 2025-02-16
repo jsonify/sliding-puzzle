@@ -2,6 +2,12 @@
 export const BoardUI = {
   /** Maximum board width in pixels to ensure readability on large screens */
   BOARD_MAX_WIDTH_PX: 500,
+  
+  /** Gap between tiles in pixels */
+  TILE_GAP_PX: 2,
+  
+  /** Number of gaps in each row/column (gridSize - 1) */
+  GAPS_PER_DIMENSION: 4,
 
   /** Minimum viewport padding in pixels to prevent board from touching screen edges */
   VIEWPORT_MIN_PADDING_PX: 32,

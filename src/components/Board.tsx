@@ -34,13 +34,10 @@ const getBoardClasses = (isWon: boolean): string => [
   isWon ? BoardClassNames.WIN_ANIMATION : '',
 ].filter(Boolean).join(' ');
 
-/** Calculate responsive board width based on viewport */
-const calculateBoardWidth = (): number => {
-  if (typeof window === 'undefined') return BoardUI.BOARD_MAX_WIDTH_PX;
-  
-  const viewportWidth = window.innerWidth;
-  const availableWidth = viewportWidth - (BoardUI.VIEWPORT_MIN_PADDING_PX * PADDING_FACTOR);
-  return Math.min(BoardUI.BOARD_MAX_WIDTH_PX, Math.max(availableWidth, 0));
+/** Calculate tile size to fit board with gaps */
+const calculateTileSize = (): number => {
+  const totalGapSpace = BoardUI.TILE_GAP_PX * BoardUI.GAPS_PER_DIMENSION;
+  return (BoardUI.BOARD_MAX_WIDTH_PX - totalGapSpace) / 5;
 };
 
 /** Type guard to check if board is a classic board */
@@ -76,7 +73,7 @@ export default function Board({
   // Memoize expensive calculations
   const movablePositions = useMemo(() => getMovablePositions(tiles), [tiles]);
   const boardClasses = useMemo(() => getBoardClasses(isWon), [isWon]);
-  const boardWidth = useMemo(() => calculateBoardWidth(), []);
+  const tileSize = useMemo(() => calculateTileSize(), []);
 
   // Memoize position check function to prevent unnecessary re-renders
   const checkPositionMovable = useCallback(
@@ -91,9 +88,10 @@ export default function Board({
         className={boardClasses}
         style={{
           gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-          maxWidth: `${boardWidth}px`,
-          gap: '1px',
-          aspectRatio: '1 / 1',
+          width: `${BoardUI.BOARD_MAX_WIDTH_PX}px`,
+          height: `${BoardUI.BOARD_MAX_WIDTH_PX}px`,
+          margin: '0 auto',
+          gap: `${BoardUI.TILE_GAP_PX}px`,
         }}
         role="grid"
         aria-label="Sliding puzzle board"
@@ -114,6 +112,7 @@ export default function Board({
                   position={position}
                   mode={mode}
                   size={gridSize}
+                  tileSize={tileSize}
                   isMovable={checkPositionMovable(position)}
                   onClick={() => onTileClick(position)}
                 />
