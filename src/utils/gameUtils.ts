@@ -22,11 +22,11 @@ export function createBoard(size: GridSize): Board {
     board[rowIndex] = [];
     for (let colIndex = 0; colIndex < size; colIndex += 1) {
       // Last cell should be empty
-      board[rowIndex][colIndex] = rowIndex === size - GameConstants.GRID_INCREMENT && 
-                                 colIndex === size - GameConstants.GRID_INCREMENT ? 
+      board[rowIndex][colIndex] = rowIndex === size - 1 && 
+                                 colIndex === size - 1 ? 
                                  GameConstants.EMPTY_CELL : 
                                  currentNumber;
-      currentNumber += GameConstants.GRID_INCREMENT;
+      currentNumber += 1; // Use consecutive numbers instead of GRID_INCREMENT
     }
   }
   
@@ -41,8 +41,7 @@ export function isValidMove(pos: Position, emptyPos: Position): boolean {
   const colDiff = Math.abs(pos.col - emptyPos.col);
   
   // Valid move if exactly one dimension has diff of 1 and other has diff of 0
-  return (rowDiff === GameConstants.GRID_INCREMENT && colDiff === GameConstants.EMPTY_CELL) || 
-         (rowDiff === GameConstants.EMPTY_CELL && colDiff === GameConstants.GRID_INCREMENT);
+  return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
 }
 
 /**
@@ -69,15 +68,14 @@ export function isWinningState(board: Board): boolean {
   for (let rowIndex = 0; rowIndex < size; rowIndex += 1) {
     for (let colIndex = 0; colIndex < size; colIndex += 1) {
       // Skip checking the last cell (should be empty)
-      if (rowIndex === size - GameConstants.GRID_INCREMENT && 
-          colIndex === size - GameConstants.GRID_INCREMENT) {
+      if (rowIndex === size - 1 && colIndex === size - 1) {
         return board[rowIndex][colIndex] === GameConstants.EMPTY_CELL;
       }
       
       if (board[rowIndex][colIndex] !== expectedNumber) {
         return false;
       }
-      expectedNumber += GameConstants.GRID_INCREMENT;
+      expectedNumber += 1; // Use consecutive numbers instead of GRID_INCREMENT
     }
   }
   
@@ -111,20 +109,20 @@ export function isSolvable(board: Board): boolean {
   let inversions = 0;
   
   // Count inversions
-  for (let i = 0; i < flatBoard.length - GameConstants.GRID_INCREMENT; i += 1) {
+  for (let i = 0; i < flatBoard.length - 1; i += 1) {
     if (flatBoard[i] === GameConstants.EMPTY_CELL) continue;
     
-    for (let j = i + GameConstants.GRID_INCREMENT; j < flatBoard.length; j += 1) {
+    for (let j = i + 1; j < flatBoard.length; j += 1) {
       if (flatBoard[j] === GameConstants.EMPTY_CELL) continue;
       if (flatBoard[i] > flatBoard[j]) {
-        inversions += GameConstants.GRID_INCREMENT;
+        inversions += 1;
       }
     }
   }
   
   // For odd-sized boards, solvable if inversions is even
-  if (size % 2 === GameConstants.GRID_INCREMENT) {
-    return inversions % 2 === GameConstants.EMPTY_CELL;
+  if (size % 2 === 1) {
+    return inversions % 2 === 0;
   }
   
   // For even-sized boards, solvable if:
@@ -133,8 +131,7 @@ export function isSolvable(board: Board): boolean {
   const emptyPos = findEmptyPosition(board);
   const emptyRowFromBottom = size - emptyPos.row;
   
-  return (emptyRowFromBottom % 2 === GameConstants.EMPTY_CELL) === 
-         (inversions % 2 === GameConstants.GRID_INCREMENT);
+  return (emptyRowFromBottom % 2 === 0) === (inversions % 2 === 1);
 }
 
 /**
