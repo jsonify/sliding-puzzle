@@ -34,12 +34,6 @@ const getBoardClasses = (isWon: boolean): string => [
   isWon ? BoardClassNames.WIN_ANIMATION : '',
 ].filter(Boolean).join(' ');
 
-/** Calculate tile size to fit board with gaps */
-const calculateTileSize = (): number => {
-  const totalGapSpace = BoardUI.TILE_GAP_PX * BoardUI.GAPS_PER_DIMENSION;
-  return (BoardUI.BOARD_MAX_WIDTH_PX - totalGapSpace) / 5;
-};
-
 /** Type guard to check if board is a classic board */
 const isClassicBoard = (board: ClassicBoard | ColorBoard, mode: GameMode): board is ClassicBoard => {
   return mode === 'classic';
@@ -73,7 +67,6 @@ export default function Board({
   // Memoize expensive calculations
   const movablePositions = useMemo(() => getMovablePositions(tiles), [tiles]);
   const boardClasses = useMemo(() => getBoardClasses(isWon), [isWon]);
-  const tileSize = useMemo(() => calculateTileSize(), []);
 
   // Memoize position check function to prevent unnecessary re-renders
   const checkPositionMovable = useCallback(
@@ -82,13 +75,12 @@ export default function Board({
   );
 
   return (
-    <div className="board-container">
+    <div className="board-container w-full max-w-[95vw] sm:max-w-[500px] px-2 sm:px-0">
       <div
         className={boardClasses}
         style={{
           gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-          width: `${BoardUI.BOARD_MAX_WIDTH_PX}px`,
-          height: `${BoardUI.BOARD_MAX_WIDTH_PX}px`,
+          aspectRatio: '1 / 1',
           margin: '0 auto',
           gap: `${BoardUI.TILE_GAP_PX}px`,
         }}
@@ -110,8 +102,6 @@ export default function Board({
                   value={value}
                   position={position}
                   mode={mode}
-                  size={gridSize}
-                  tileSize={tileSize}
                   isMovable={checkPositionMovable(position)}
                   onClick={() => onTileClick(position)}
                 />

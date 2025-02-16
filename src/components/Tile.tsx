@@ -23,17 +23,13 @@ export default function Tile({
   value,
   mode, 
   position,
-  size, 
   isMovable, 
-  tileSize,
   onClick 
 }: {
   value: number | TileColor | 0;
   mode: GameMode;
   position: Position;
-  size: number;
   isMovable: boolean;
-  tileSize: number;
   onClick: () => void;
 }): JSX.Element {
   const baseClasses = [
@@ -51,7 +47,6 @@ export default function Tile({
     'w-full',
     'h-full',
     'aspect-square',
-    'text-2xl',
   ].join(' ');
 
   let stateClasses = '';
@@ -69,7 +64,7 @@ export default function Tile({
   if (value === 0) {
     return (
       <div
-        className={`${baseClasses}`}
+        className={baseClasses}
         style={{ visibility: 'hidden' }}
         aria-hidden="true"
         data-testid="tile-empty"
@@ -87,11 +82,7 @@ export default function Tile({
   return (
     <button
       type="button"
-      className={`${baseClasses} ${stateClasses}`}
-      style={{
-        width: `${tileSize}px`,
-        height: `${tileSize}px`,
-      }}
+      className={`${baseClasses} ${stateClasses} text-base sm:text-xl lg:text-2xl`}
       onClick={onClick}
       disabled={!isMovable}
       aria-label={ariaLabel}

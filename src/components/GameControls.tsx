@@ -70,19 +70,19 @@ export default function GameControls({
   }, [onDifficultyChange]);
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-      <div className="flex space-x-4">
+    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center space-y-4 sm:space-y-0">
+      <div className="flex justify-center sm:justify-start space-x-4">
         <div className="text-xl">
           <span className="font-medium">Moves: </span>
           <span>{moves}</span>
         </div>
-        <div className="text-xl">
+        <div className="text-xl border-l pl-4">
           <span className="font-medium">Time: </span>
           <span>{formatTime(time)}</span>
         </div>
       </div>
 
-      <div className="flex space-x-4">
+      <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-4">
         <button
           type="button"
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
@@ -94,7 +94,7 @@ export default function GameControls({
         {/* Pattern Type selector for Color Mode */}
         {mode === GAME_MODES.COLOR && (
           <select
-            className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+            className="min-w-[120px] px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
             defaultValue="random"
             onChange={onHandlePatternTypeChange}
             aria-label="Pattern Type"
@@ -106,7 +106,7 @@ export default function GameControls({
 
         <button
           type="button"
-          className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+          className="px-3 py-1.5 rounded border dark:bg-gray-700 dark:border-gray-600"
           onClick={onBackToMain}
         >
           Back to Main
@@ -114,7 +114,7 @@ export default function GameControls({
 
         {/* Grid size selector - Only show for classic mode */}
         {mode === GAME_MODES.CLASSIC && <select
-          className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+          className="min-w-[80px] px-2 py-1.5 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentSize}
           onChange={onHandleSizeChange}
           aria-label="Grid Size"
@@ -128,7 +128,7 @@ export default function GameControls({
 
         {/* Difficulty selector - Only show for classic mode */}
         {mode === GAME_MODES.CLASSIC && <select
-          className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
+          className="min-w-[100px] px-2 py-1.5 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentDifficulty}
           onChange={onHandleDifficultySelect}
           aria-label="Difficulty"
