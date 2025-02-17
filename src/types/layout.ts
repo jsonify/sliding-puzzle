@@ -1,14 +1,42 @@
-import type { GameMode } from './game';
+import type { GameMode, Board, GridSize } from './game';
 import type { PatternType } from '../constants/colorMode';
+import type { ReactNode } from 'react';
 
-export interface GameLayoutProps {
+export interface GameControlsPanelProps {
   mode: GameMode;
-  children: React.ReactNode;
   score: number;
   time: number;
   onNewGame: () => void;
-  onModeChange: (mode: GameMode) => void;
   onBackToMain: () => void;
+  gridSize: GridSize;
+  onSizeChange: (size: GridSize) => void;
+  targetPattern: Board;
+}
+
+export interface LeaderboardPanelProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+export interface GameBoardContainerProps {
+  children: ReactNode;
+  isLandscape?: boolean;
+}
+
+export interface DesktopLayoutProps {
+  mode: GameMode;
+  score: number;
+  time: number;
+  onNewGame: () => void;
+  onBackToMain: () => void;
+  targetPattern: Board;
+  children: ReactNode;
+  gridSize: GridSize;
+  onSizeChange: (size: GridSize) => void;
+}
+
+export interface GameLayoutProps extends DesktopLayoutProps {
+  onModeChange: (mode: GameMode) => void;
 }
 
 export interface ScoreBarProps {
@@ -29,5 +57,19 @@ export interface MenuSheetProps {
 
 export interface PatternPreviewProps {
   mode: GameMode;
-  pattern: number[][] | string[][];
+  pattern: Board;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+export interface TabProps {
+  value: string;
+  label: string;
+  children: ReactNode;
+}
+
+export interface TabsContainerProps {
+  defaultTab: string;
+  children: ReactNode;
+  className?: string;
 }

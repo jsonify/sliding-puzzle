@@ -6,7 +6,6 @@ import { GridSizes } from '../constants/gameConstants';
 const RECENT_GAMES_LIMIT = 10;
 const FIRST_CHAR_INDEX = 0;
 const CATEGORY_INDEX = 1;
-const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 const INITIAL_SLICE_INDEX = 1;
 
 type LeaderboardView = 'best' | 'recent' | 'achievements' | 'stats';
@@ -16,15 +15,13 @@ type CategoryEntry = [CategoryKey, LeaderboardCategories[CategoryKey]];
 function Leaderboard(): JSX.Element {
   const [activeView, setActiveView] = useState<LeaderboardView>('best');
   const [selectedSize, setSelectedSize] = useState<string>('all');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   
   const leaderboard: LeaderboardType = loadLeaderboard();
   
   // Filter categories based on selection
   const filteredCategories: CategoryEntry[] = Object.entries(leaderboard.categories).filter(([key]) => {
-    const [size, difficulty] = key.split('-');
-    return (selectedSize === 'all' || size === selectedSize) &&
-           (selectedDifficulty === 'all' || difficulty === selectedDifficulty);
+    const size = key;
+    return selectedSize === 'all' || size === selectedSize;
   }) as CategoryEntry[];
 
   const renderBestScores = (): JSX.Element => (
@@ -36,7 +33,7 @@ function Leaderboard(): JSX.Element {
       ) : filteredCategories.map(([key, category]) => (
         <div key={key} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 transform transition hover:scale-102">
           <h3 className="text-lg font-bold mb-2">
-            {category.bestMoves.gridSize}x{category.bestMoves.gridSize} - {category.bestMoves.difficulty}
+            {category.bestMoves.gridSize}x{category.bestMoves.gridSize}
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded">
@@ -78,7 +75,7 @@ function Leaderboard(): JSX.Element {
             <div key={game.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold">
-                  {game.gridSize}x{game.gridSize} - {game.difficulty}
+                  {game.gridSize}x{game.gridSize}
                 </h3>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {new Date(game.completedAt).toLocaleDateString()}
@@ -148,11 +145,11 @@ function Leaderboard(): JSX.Element {
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <h3 className="font-bold mb-2">Games by Difficulty</h3>
+            <h3 className="font-bold mb-2">Games by Size</h3>
             <div className="space-y-2">
-              <p>Easy: {global.gamesPerDifficulty.easy}</p>
-              <p>Medium: {global.gamesPerDifficulty.medium}</p>
-              <p>Hard: {global.gamesPerDifficulty.hard}</p>
+              {Object.entries(global.gamesPerSize).map(([size, count]) => (
+                <p key={size}>{size}x{size}: {count}</p>
+              ))}
             </div>
           </div>
         </div>
@@ -162,10 +159,6 @@ function Leaderboard(): JSX.Element {
 
   const onSizeChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     setSelectedSize(event.target.value);
-  };
-
-  const onDifficultyChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    setSelectedDifficulty(event.target.value);
   };
 
   const onViewChange = (view: LeaderboardView): void => setActiveView(view);
@@ -184,18 +177,6 @@ function Leaderboard(): JSX.Element {
             {GridSizes.SIZES.map((size) => (
               <option key={size} value={`${size}x${size}`}>
                 {size}x{size}
-              </option>
-            ))}
-          </select>
-          <select
-            className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
-            value={selectedDifficulty}
-            onChange={onDifficultyChange}
-          >
-            <option value="all">All Difficulties</option>
-            {DIFFICULTIES.map((difficulty) => (
-              <option key={difficulty} value={difficulty}>
-                {difficulty.charAt(FIRST_CHAR_INDEX).toUpperCase() + difficulty.slice(INITIAL_SLICE_INDEX)}
               </option>
             ))}
           </select>

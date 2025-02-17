@@ -13,12 +13,9 @@ export type ClassicBoard = number[][];
 export type ColorBoard = (TileColor | 0)[][];
 export type Board = ClassicBoard | ColorBoard;
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
-
 export interface GameConfig {
   mode: GameMode;
   gridSize: GridSize;
-  difficulty: Difficulty;
   patternType?: PatternType; // Only used in color mode
 }
 
@@ -72,24 +69,25 @@ export interface GameControlsProperties {
   onNewGame: () => void;
   onSizeChange: (size: GridSize) => void;
   onPatternTypeChange?: (type: typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]) => void;
-  onDifficultyChange: (level: Difficulty) => void;
   currentSize: GridSize;
-  currentDifficulty: Difficulty;
   onBackToMain: () => void;
 }
 
 export interface LevelSelectProps {
-  onLevelSelect: (size: GridSize, difficulty: Difficulty) => void;
+  onLevelSelect: (size: GridSize) => void;
   currentSize: GridSize;
-  currentDifficulty: Difficulty;
+  unlockedSizes: Set<GridSize>;
+  onBackToMain: () => void;
 }
 
-export interface LeaderboardEntry {
+export interface GameResult {
+  gridSize: GridSize;
   moves: number;
   timeSeconds: number;
+}
+
+export interface LeaderboardEntry extends GameResult {
   completedAt: string;
-  difficulty: Difficulty;
-  gridSize: GridSize;
 }
 
 export interface Achievement {

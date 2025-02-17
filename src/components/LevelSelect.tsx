@@ -1,64 +1,46 @@
-import React, { useCallback, useState } from 'react';
-import { Difficulty, GridSize, LevelSelectProps } from '../types/game';
-import { GAME_CONFIG, DEFAULT_CONFIG } from '../constants/gameConfig';
+import React, { useCallback } from 'react';
+import { GridSize, LevelSelectProps } from '../types/game';
+import { GAME_CONFIG } from '../constants/gameConfig';
 import { LEVEL_SELECT_STYLES as styles } from '../constants/styles';
 import { PreviewGrid } from './PreviewGrid/PreviewGrid';
+import { ClassicMenuIcon } from './MenuIcons';
 
-// Define button style variants
-const getButtonStyles = (isSelected: boolean): string => 
-  isSelected
-    ? `${styles.BASE_BUTTON} ${styles.SELECTED_BUTTON}`
-    : `${styles.BASE_BUTTON} ${styles.HOVER_BUTTON}`;
-
-const getDifficultyStyles = (isSelected: boolean): string => 
-  isSelected
-    ? `${styles.BASE_DIFFICULTY} ${styles.SELECTED_DIFFICULTY}`
-    : `${styles.BASE_DIFFICULTY} ${styles.DEFAULT_DIFFICULTY}`;
-
-// Button components with memoization
+// Button component with memoization
 const SizeButton = React.memo(function SizeButton({
   size,
   isSelected,
+  isUnlocked,
   onClick,
 }: {
   size: GridSize;
   isSelected: boolean;
+  isUnlocked: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={`p-2 rounded-lg ${getButtonStyles(isSelected)}`}
-      aria-label={`Select ${size}x${size} grid`}
+      onClick={isUnlocked ? onClick : undefined}
+      className={`
+        relative p-2 rounded-lg
+        ${isUnlocked ? styles.BASE_BUTTON : 'cursor-not-allowed opacity-75'}
+        ${isSelected ? styles.SELECTED_BUTTON : isUnlocked ? styles.HOVER_BUTTON : ''}
+      `}
+      aria-label={`${isUnlocked ? 'Select' : 'Locked'} ${size}x${size} grid`}
       aria-pressed={isSelected}
+      disabled={!isUnlocked}
     >
       <div className="text-center mb-2 font-medium">
         {size}x{size}
       </div>
-      <PreviewGrid size={size} />
-    </button>
-  );
-});
-
-const DifficultyButton = React.memo(function DifficultyButton({
-  difficulty,
-  isSelected,
-  onClick,
-}: {
-  difficulty: Difficulty;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={getDifficultyStyles(isSelected)}
-      aria-label={`Select ${difficulty} difficulty`}
-      aria-pressed={isSelected}
-    >
-      {difficulty}
+      <div className="relative">
+        <PreviewGrid size={size} />
+        {!isUnlocked && (
+          <div className={styles.LOCK_OVERLAY}>
+            <span className="text-2xl" role="img" aria-label="Locked">🔒</span>
+          </div>
+        )}
+      </div>
     </button>
   );
 });
@@ -82,7 +64,8 @@ class LevelSelectErrorBoundary extends React.Component<
       return (
         <div className="text-center text-red-600 p-4">
           <h2>Something went wrong with the level selection.</h2>
-          <button type="button"
+          <button
+            type="button"
             onClick={(): void => this.setState({ hasError: false })}
             className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
           >
@@ -99,56 +82,25 @@ class LevelSelectErrorBoundary extends React.Component<
 // Main component
 export function LevelSelect({
   onLevelSelect,
-  currentSize = DEFAULT_CONFIG.size,
-  currentDifficulty = DEFAULT_CONFIG.difficulty,
+  currentSize = GAME_CONFIG.DEFAULT_SIZE,
+  unlockedSizes = new Set([GAME_CONFIG.DEFAULT_SIZE]),
+  onBackToMain,
 }: LevelSelectProps): JSX.Element {
-  // State for tracking loading and error states
-  const [isLoading, setIsLoading] = useState(false);
-
   // Validate input props with default fallbacks
   const validatedSize = React.useMemo(() => 
-    GAME_CONFIG.GRID_SIZES.includes(currentSize) ? currentSize : DEFAULT_CONFIG.size,
+    GAME_CONFIG.GRID_SIZES.includes(currentSize) ? currentSize : GAME_CONFIG.DEFAULT_SIZE,
     [currentSize]
   );
 
-  const validatedDifficulty = React.useMemo(() => 
-    GAME_CONFIG.DIFFICULTIES.includes(currentDifficulty) ? currentDifficulty : DEFAULT_CONFIG.difficulty,
-    [currentDifficulty]
-  );
-
-  // Memoized callback handlers
+  // Memoized callback handler
   const onHandleSizeSelect = useCallback(
     (size: GridSize) => {
-      setIsLoading(true);
-      try {
-        onLevelSelect(size, validatedDifficulty);
-      } finally {
-        setIsLoading(false);
+      if (unlockedSizes.has(size)) {
+        onLevelSelect(size);
       }
     },
-    [validatedDifficulty, onLevelSelect]
+    [unlockedSizes, onLevelSelect]
   );
-
-  const onHandleDifficultySelect = useCallback(
-    (difficulty: Difficulty) => {
-      setIsLoading(true);
-      try {
-        onLevelSelect(validatedSize, difficulty);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [validatedSize, onLevelSelect]
-  );
-
-  const onHandleStartGame = useCallback(() => {
-    setIsLoading(true);
-    try {
-      onLevelSelect(validatedSize, validatedDifficulty);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [validatedSize, validatedDifficulty, onLevelSelect]);
 
   return (
     <LevelSelectErrorBoundary>
@@ -168,47 +120,31 @@ export function LevelSelect({
                 key={`size-${size}`}
                 size={size}
                 isSelected={validatedSize === size}
+                isUnlocked={unlockedSizes.has(size)}
                 onClick={() => onHandleSizeSelect(size)}
               />
             ))}
           </div>
         </div>
 
-        {/* Difficulty Selection */}
-        <div className={styles.SECTION} role="group" aria-labelledby="difficulty-label">
-          <h2 id="difficulty-label" className={styles.SECTION_TITLE}>
-            Select Difficulty
-          </h2>
-          <div className={styles.DIFFICULTY_CONTAINER}>
-            {GAME_CONFIG.DIFFICULTIES.map(difficulty => (
-              <DifficultyButton
-                key={`difficulty-${difficulty}`}
-                difficulty={difficulty}
-                isSelected={validatedDifficulty === difficulty}
-                onClick={() => onHandleDifficultySelect(difficulty)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Start Button */}
-        <div className="text-center pt-4">
-          <button
-            type="button"
-            onClick={onHandleStartGame}
-            className={styles.START_BUTTON}
-            aria-label="Start game with selected settings"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Starting...' : 'Start Game'}
-          </button>
-        </div>
-
         {/* Instructions */}
         <div className={styles.INSTRUCTIONS}>
           <p>Click or use arrow keys to move tiles</p>
           <p>Arrange the numbers in order with the empty space in the bottom right</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Complete each puzzle to unlock the next size
+          </p>
         </div>
+
+        {/* Menu Button */}
+        <button
+          type="button"
+          onClick={onBackToMain}
+          className={styles.MENU_BUTTON}
+          aria-label="Back to main menu"
+        >
+          <ClassicMenuIcon />
+        </button>
       </div>
     </LevelSelectErrorBoundary>
   );

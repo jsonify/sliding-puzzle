@@ -1,176 +1,159 @@
-# Sliding Puzzle Game UI Layout
+# Desktop Layout Implementation Plan
 
-## Level Selection Screen
+## Layout Structure
+
 ```
-┌────────────────────────────────────────┐
-│         Select Puzzle Size             │
-├────────────────────────────────────────┤
-│                                        │
-│    ┌────┐  ┌────┐  ┌────┐  ┌────┐    │
-│    │3x3 │  │4x4 │  │5x5 │  │6x6 │    │
-│    └────┘  └────┘  └────┘  └────┘    │
-│                                        │
-│    ┌────┐  ┌────┐  ┌────┐            │
-│    │7x7 │  │8x8 │  │9x9 │            │
-│    └────┘  └────┘  └────┘            │
-│                                        │
-│    Select Difficulty:                  │
-│    ┌────────┐ ┌────────┐ ┌────────┐   │
-│    │ Easy   │ │ Medium │ │ Hard   │   │
-│    └────────┘ └────────┘ └────────┘   │
-│                                        │
-└────────────────────────────────────────┘
++----------------+------------------+----------------+
+|                |                  |                |
+|   Side Panel   |   Game Board     |  Leaderboard  |
+|    (320px)     |   (flex-grow)    |    (320px)    |
+|                |                  |                |
+|  Game Controls |     Puzzle       |  High Scores  |
+|  Target Grid   |     Grid         |    Stats      |
+|                |                  |                |
++----------------+------------------+----------------+
 ```
 
-## Game Board (Various Sizes)
+## Components Structure
 
-### 3x3 Grid
-```
-┌────────────────────┐
-│    ┌───┬───┬───┐  │
-│    │ 1 │ 2 │ 3 │  │
-│    ├───┼───┼───┤  │
-│    │ 4 │ 5 │ 6 │  │
-│    ├───┼───┼───┤  │
-│    │ 7 │ 8 │   │  │
-│    └───┴───┴───┘  │
-└────────────────────┘
-```
+### 1. Side Panel (GameControls.tsx)
+- Fixed width (w-80)
+- Card container with blur effect
+- Components:
+  ```
+  - Header
+    - Game Title
+    - Home Button
+  - Stats Row
+    - Moves Counter
+    - Timer
+  - Grid Size Selector
+  - New Game Button
+  - Target Pattern
+  ```
 
-### 4x4 Grid (Classic)
-```
-┌────────────────────────┐
-│  ┌────┬────┬────┬────┐ │
-│  │ 1  │ 2  │ 3  │ 4  │ │
-│  ├────┼────┼────┼────┤ │
-│  │ 5  │ 6  │ 7  │ 8  │ │
-│  ├────┼────┼────┼────┤ │
-│  │ 9  │ 10 │ 11 │ 12 │ │
-│  ├────┼────┼────┼────┤ │
-│  │ 13 │ 14 │ 15 │    │ │
-│  └────┴────┴────┴────┘ │
-└────────────────────────┘
-```
+### 2. Main Game Area (Board.tsx)
+- Flex grow layout
+- Card container with blur effect
+- Centered grid layout
+- Components:
+  ```
+  - Game Grid
+    - Interactive Tiles
+    - Empty Space
+  ```
 
-### 5x5 Grid (Preview)
-```
-┌──────────────────────────┐
-│ ┌───┬───┬───┬───┬───┐   │
-│ │ 1 │ 2 │ 3 │ 4 │ 5 │   │
-│ ├───┼───┼───┼───┼───┤   │
-│ │ 6 │ 7 │ 8 │ 9 │10 │   │
-│ ├───┼───┼───┼───┼───┤   │
-│ │11 │12 │13 │14 │15 │   │
-│ ├───┼───┼───┼───┼───┤   │
-│ │16 │17 │18 │19 │20 │   │
-│ ├───┼───┼───┼───┼───┤   │
-│ │21 │22 │23 │24 │   │   │
-│ └───┴───┴───┴───┴───┘   │
-└──────────────────────────┘
-```
+### 3. Leaderboard Panel (Leaderboard.tsx)
+- Fixed width (w-80)
+- Collapsible card with blur effect
+- Components:
+  ```
+  - Header with Toggle
+  - Tab Navigation
+    - By Score
+    - By Time
+  - Scores List
+  ```
 
-## Game Controls
+## Styling Guidelines
+
+### Colors
 ```
-┌────────────────────────────────────────┐
-│ Moves: 42    Time: 01:23              │
-│                                        │
-│ Grid Size: 4x4  Difficulty: Medium    │
-│                                        │
-│ ┌──────────┐  ┌─────────┐  ┌────────┐ │
-│ │New Game  │  │Change   │  │Back to │ │
-│ │          │  │Size     │  │Menu    │ │
-│ └──────────┘  └─────────┘  └────────┘ │
-└────────────────────────────────────────┘
+Background:
+- Main: bg-gradient-to-b from-slate-900 to-slate-800
+- Cards: bg-slate-800/50 backdrop-blur-sm
+- Borders: border-slate-700
+
+Text:
+- Primary: text-slate-200
+- Secondary: text-slate-400
+
+Accents:
+- Primary: bg-blue-600
+- Score: text-yellow-400
 ```
 
-## Win State Overlay
+### Layout Classes
 ```
-┌────────────────────────┐
-│                        │
-│    🎉 You Won! 🎉     │
-│                        │
-│    Grid Size: 4x4      │
-│    Difficulty: Medium  │
-│    Moves: 127          │
-│    Time: 03:45        │
-│                        │
-│   ┌──────────────┐    │
-│   │  Play Again  │    │
-│   └──────────────┘    │
-│                        │
-│   ┌──────────────┐    │
-│   │ Try 5x5 Next │    │
-│   └──────────────┘    │
-│                        │
-└────────────────────────┘
-```
+Container:
+- min-h-screen
+- flex flex-col lg:flex-row
+- items-start
+- p-4 lg:p-8
 
-## Mobile Layout Adaptations
+Panels:
+- w-80
+- mb-8 lg:mb-0
+- lg:mr-8 (left panel)
+- lg:ml-8 (right panel)
 
-### Level Selection (Mobile)
-```
-┌──────────────────┐
-│  Select Size     │
-├──────────────────┤
-│ ┌───┐ ┌───┐ ┌───┐│
-│ │3x3│ │4x4│ │5x5││
-│ └───┘ └───┘ └───┘│
-│ ┌───┐ ┌───┐ ┌───┐│
-│ │6x6│ │7x7│ │8x8││
-│ └───┘ └───┘ └───┘│
-│     ┌───┐        │
-│     │9x9│        │
-│     └───┘        │
-│                  │
-│ Difficulty:      │
-│ ┌────┐┌────┐┌───┐│
-│ │Easy││Med ││Hard││
-│ └────┘└────┘└───┘│
-└──────────────────┘
+Cards:
+- bg-slate-800/50
+- backdrop-blur-sm
+- border-slate-700
+- p-6
 ```
 
-## Design Specifications
+## Component Updates Needed
 
-### Colors (Tailwind Classes)
-- Background: `bg-gray-100 dark:bg-gray-800`
-- Level Select Buttons: `bg-white dark:bg-gray-700`
-- Active Level: `ring-2 ring-blue-500`
-- Tiles: 
-  - Normal: `bg-white dark:bg-gray-700`
-  - Movable: `hover:bg-blue-50 dark:hover:bg-gray-600`
-- Text: `text-gray-900 dark:text-gray-100`
+1. GameLayout.tsx:
+   - Add responsive breakpoints
+   - Implement three-column layout
+   - Add blur effects and gradients
 
-### Typography
-- Title: `text-2xl md:text-3xl font-bold`
-- Grid Size Text: `text-lg font-medium`
-- Tile Numbers: 
-  - 3x3: `text-3xl`
-  - 4x4: `text-2xl`
-  - 5x5+: `text-xl`
-- Stats: `text-sm font-medium`
+2. GameControls.tsx:
+   - Reposition as left sidebar
+   - Add target pattern display
+   - Update styling to match design
 
-### Spacing & Sizing
-- Grid gaps: `gap-1 md:gap-2`
-- Tile padding: 
-  - 3x3: `p-6`
-  - 4x4: `p-4`
-  - 5x5+: `p-2`
-- Container margin: `m-4`
-- Level buttons: `p-3 md:p-4`
+3. Board.tsx:
+   - Center in main area
+   - Update tile styling
+   - Add hover/animation effects
 
-### Animations
-- Tile Movement: `transition-transform duration-150`
-- Size Change: `transition-all duration-300`
-- Win Overlay: `animate-fade-in`
+4. Leaderboard.tsx:
+   - Add collapse functionality
+   - Implement tabs
+   - Update styling to match design
 
-### Responsive Behavior
-- Grid size adjusts based on viewport
-- Minimum touch target size: 44px
-- Maximum board size: 90vh
+## Implementation Steps
 
-### Accessibility
-- Keyboard navigation with arrow keys
-- Focus indicators
-- ARIA labels for tiles
-- Screen reader game state announcements
-- Color contrast compliance
+1. Update type definitions
+   - Add new props for layout controls
+   - Update existing interfaces
+
+2. Create new components
+   - DesktopLayout wrapper
+   - Implement panel components
+
+3. Update existing components
+   - Modify for desktop layout
+   - Add responsive breakpoints
+   - Implement new styling
+
+4. Add animations
+   - Tile movements
+   - Panel transitions
+   - Tab switches
+
+## Responsive Behavior
+
+- Desktop (lg: 1024px+):
+  ```
+  - Three-column layout
+  - Fixed-width sidebars
+  - Flexible center area
+  ```
+
+- Tablet (md: 768px - 1023px):
+  ```
+  - Stack panels vertically
+  - Full-width game board
+  - Collapsible panels
+  ```
+
+- Mobile (sm: < 768px):
+  ```
+  - Single column layout
+  - Modal/drawer for controls
+  - Collapsible leaderboard
