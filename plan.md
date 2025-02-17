@@ -1,82 +1,90 @@
-# Leaderboard Enhancement Plan
+# Menu and Pattern Selection Updates
 
-## Current State
-The leaderboard currently provides basic functionality:
-- Stores best moves and time per grid size/difficulty
-- Shows simple stats in a grid layout
-- Updates automatically when records are broken
-- Uses localStorage for data persistence
+## 1. Menu Icon Changes
 
-## Enhancement Goals
-1. **Improved Data Structure & Management**
-   - Add timestamp tracking for all attempts (not just best)
-   - Store recent games history
-   - Track global statistics (total games played, total time, etc.)
-   - Implement data migration strategy for existing records
+Create a new `MenuIcons` component that provides mode-specific icons:
 
-2. **Enhanced User Interface**
-   - Add sorting options (by grid size, difficulty, date)
-   - Implement filters for different achievement types
-   - Create an achievements system with badges
-   - Add animations for new records
-   - Improve mobile responsiveness
-   - Add tabs for different leaderboard views
+### Classic Mode Icon
+- Traditional hamburger menu (three lines)
+- Simple, clean look
+- Matches the numbered tile aesthetic
 
-3. **Engagement Features**
-   - Personal statistics dashboard
-   - Progress tracking over time
-   - Achievement badges for milestones:
-     * "Speed Demon" - Complete under 30 seconds
-     * "Efficiency Expert" - Complete in minimum moves
-     * "Grid Master" - Complete all difficulties
-     * "Perfect Score" - Best time and moves
-   - Recent achievements showcase
-   - Share buttons for social media
+### Color Mode Icon
+- Color palette or color wheel icon
+- More playful and colorful design
+- Represents the color-matching aspect
 
-4. **View Modes**
-   - Global Records: Best overall scores
-   - Recent Games: Latest completions
-   - Personal Bests: Individual achievements
-   - Statistics: Aggregate data visualization
+## 2. Pattern Type Selection
 
-## Implementation Phases
+### Color Mode
+- Remove mode switching (Classic/Color) from menu
+- Add pattern type selection with two options:
+  1. Random Pattern: Generates a random but solvable pattern
+  2. Column Stack: Shows the preset column-based pattern
+- Pattern selection should be prominent in the menu
+- Add visual preview of each pattern type
 
-### Phase 1: Data Structure Enhancement
-1. Update storage schema to include:
-   - Complete game history
-   - Achievement tracking
-   - Global statistics
-2. Create data migration utility
-3. Implement enhanced data management utilities
+### Classic Mode
+- Remove mode switching option
+- Hide pattern type selection entirely
+- Keep menu focused on core actions:
+  1. New Game
+  2. View Leaderboard
+  3. Back to Main
 
-### Phase 2: UI Improvements
-1. Design and implement new leaderboard layout
-2. Add sorting and filtering controls
-3. Create achievement badge system
-4. Implement animations for new records
-5. Add responsive design improvements
+## 3. Implementation Steps
 
-### Phase 3: Engagement Features
-1. Create personal statistics dashboard
-2. Implement achievement system logic
-3. Add progress tracking visualizations
-4. Integrate social sharing functionality
+1. Create MenuIcons Component:
+```typescript
+// src/components/MenuIcons.tsx
+- ClassicMenuIcon: Three-line hamburger menu
+- ColorMenuIcon: Color palette icon
+```
 
-### Phase 4: Testing & Polish
-1. Performance testing with large datasets
-2. Mobile device testing
-3. User feedback integration
-4. Final visual polish
+2. Update GameLayout:
+```typescript
+// src/components/GameLayout.tsx
+- Use mode prop to determine which icon to show
+- Pass additional props to MenuSheet
+```
 
-## Technical Considerations
-- Use CSS transitions/animations for smooth updates
-- Implement efficient data filtering/sorting
-- Ensure mobile-first responsive design
-- Maintain backward compatibility with existing data
-- Consider future scalability for new features
+3. Modify MenuSheet:
+```typescript
+// src/components/MenuSheet.tsx
+- Add patternType prop for Color mode
+- Add onPatternTypeChange handler
+- Conditionally render pattern selection
+- Remove mode switching
+```
 
-## Success Metrics
-- Increased game replay rate
-- Higher user engagement
-- Positive user feedback
-- Improved mobile usage statistics
+4. Update Types:
+```typescript
+// src/types/layout.ts
+interface MenuSheetProps {
+  patternType?: 'random' | 'column_stack';
+  onPatternTypeChange?: (type: 'random' | 'column_stack') => void;
+  // ... existing props
+}
+```
+
+## 4. UI/UX Considerations
+
+### Mobile View
+- Large, touch-friendly buttons
+- Clear visual hierarchy
+- Smooth animations for interactions
+- Easy-to-understand pattern previews
+
+### Desktop View
+- Hover states for interactive elements
+- Keyboard accessibility
+- Consistent styling with mobile
+- Potentially larger pattern previews
+
+## 5. Next Steps
+
+1. Switch to Code mode to implement MenuIcons component
+2. Update GameLayout with new icons
+3. Modify MenuSheet for pattern selection
+4. Add pattern preview visuals
+5. Test on both mobile and desktop views

@@ -1,42 +1,38 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('tailwindcss/base');
+@import url('tailwindcss/components');
+@import url('tailwindcss/utilities');
+@import url('./mobile.css');
 
-@layer utilities {
-  .animate-win {
-    animation: win 0.5s ease-in-out;
-  }
-
-  @keyframes win {
-    0% {
-      transform: scale(1);
-    }
-
-    50% {
-      transform: scale(1.05);
-    }
-
-    100% {
-      transform: scale(1);
-    }
-  }
+/* Base styles */
+:root {
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --background: #1e293b;
+  --text: #f8fafc;
 }
 
-/* Focus styles for better accessibility */
-@layer base {
-  :focus-visible {
-    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800;
-  }
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segue UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text);
 }
 
-/* Scrollbar styles */
-@layer utilities {
-  .custom-scrollbar {
-    @apply scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent;
-  }
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Game board container */
 .game-container {
-  @apply min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900;
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
