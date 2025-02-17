@@ -1,13 +1,13 @@
 import { 
   GridSize, 
-  Difficulty, 
   Leaderboard, 
   GameHistoryEntry, 
   LeaderboardEntry,
   Achievement,
   LeaderboardData,
   GlobalStats,
-  LeaderboardCategories 
+  LeaderboardCategories,
+  GameResult
 } from '../types/game';
 import { GameConstants, GridSizes } from '../constants/gameConstants';
 
@@ -30,7 +30,7 @@ const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'grid-master',
     name: 'Grid Master',
-    description: 'Complete puzzles on all difficulties',
+    description: 'Complete all grid sizes',
     unlockedAt: '',
     criteria: { type: 'special', value: 0 }
   }
@@ -55,7 +55,6 @@ function initializeGlobalStats(): GlobalStats {
       classic: 0,
       color: 0
     },
-    
     gamesPerSize: GridSizes.SIZES.reduce((acc, size) => ({
       ...acc,
       [size]: 0
@@ -66,8 +65,8 @@ function initializeGlobalStats(): GlobalStats {
 /**
  * Generate a unique key for leaderboard entries
  */
-function getLeaderboardKey(gridSize: GridSize, difficulty: Difficulty): string {
-  return `${gridSize}x${gridSize}-${difficulty}`;
+function getLeaderboardKey(gridSize: GridSize): string {
+  return `${gridSize}x${gridSize}`;
 }
 
 interface OldLeaderboardCategoryData {
@@ -84,7 +83,6 @@ function isLeaderboardEntry(entry: unknown): entry is LeaderboardEntry {
   return typeof e.moves === 'number' &&
          typeof e.timeSeconds === 'number' &&
          typeof e.completedAt === 'string' &&
-         typeof e.difficulty === 'string' &&
          typeof e.gridSize === 'number';
 }
 
@@ -199,13 +197,6 @@ function saveLeaderboard(leaderboard: Leaderboard): void {
   localStorage.setItem('sliding-puzzle-leaderboard', JSON.stringify(leaderboard));
 }
 
-interface GameResult {
-  gridSize: GridSize;
-  difficulty: Difficulty;
-  moves: number;
-  timeSeconds: number;
-}
-
 /**
  * Create a new GameHistoryEntry
  */
@@ -215,7 +206,6 @@ function createHistoryEntry(result: GameResult): GameHistoryEntry {
     moves: result.moves,
     timeSeconds: result.timeSeconds,
     completedAt: new Date().toISOString(),
-    difficulty: result.difficulty,
     gridSize: result.gridSize,
     achievementsUnlocked: []
   };
@@ -226,7 +216,7 @@ function createHistoryEntry(result: GameResult): GameHistoryEntry {
  */
 export function updateLeaderboard(result: GameResult): void {
   let leaderboard = loadLeaderboard();
-  const key = getLeaderboardKey(result.gridSize, result.difficulty);
+  const key = getLeaderboardKey(result.gridSize);
   const historyEntry = createHistoryEntry(result);
 
   // Initialize or update category
@@ -289,6 +279,15 @@ export function updateLeaderboard(result: GameResult): void {
   if (result.moves <= minMoves && 
       !leaderboard.achievements.find(a => a.id === 'efficiency-expert')?.unlockedAt) {
     unlockedAchievements.push('efficiency-expert');
+  }
+
+  // Grid Master achievement
+  const completedSizes = new Set(Object.keys(leaderboard.categories).map(key => 
+    parseInt(key.split('x')[0], 10) as GridSize
+  ));
+  if (completedSizes.size === GridSizes.SIZES.length &&
+      !leaderboard.achievements.find(a => a.id === 'grid-master')?.unlockedAt) {
+    unlockedAchievements.push('grid-master');
   }
 
   // Update achievements

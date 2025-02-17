@@ -87,7 +87,6 @@ const generateGridSizes = (): readonly GridSize[] => {
       throw new GameConfigError('Generated grid sizes are invalid');
     }
 
-
     return Object.freeze(sizes);
   } catch (error) {
     throw new GameConfigError(
@@ -105,16 +104,6 @@ export const GAME_MODES = {
 } as const;
 
 /**
- * Available difficulty levels for the game
- * Difficulty level configuration with literal types
- */
-export const DIFFICULTY = {
-  EASY: 'easy',
-  MEDIUM: 'medium',
-  HARD: 'hard',
-} as const;
-
-/**
  * Game configuration settings with strong type checking
  */
 export const GAME_CONFIG = {
@@ -126,12 +115,6 @@ export const GAME_CONFIG = {
     GAME_MODES.CLASSIC,
     GAME_MODES.COLOR,
   ] as const,
-  /** Available difficulty levels */
-  DIFFICULTIES: [
-    DIFFICULTY.EASY,
-    DIFFICULTY.MEDIUM,
-    DIFFICULTY.HARD,
-  ] as const,
 
   /** Game board configuration */
   EMPTY_TILES_COUNT: EMPTY_TILES_VALUE,
@@ -140,7 +123,6 @@ export const GAME_CONFIG = {
   /** Default settings */
   DEFAULT_MODE: GAME_MODES.CLASSIC as GameMode,
   DEFAULT_SIZE: GRID.SIZE_3X3,
-  DEFAULT_DIFFICULTY: DIFFICULTY.EASY,
 } as const;
 
 /**
@@ -149,7 +131,6 @@ export const GAME_CONFIG = {
 export const DEFAULT_CONFIG = {
   mode: GAME_CONFIG.DEFAULT_MODE,
   size: GAME_CONFIG.DEFAULT_SIZE,
-  difficulty: GAME_CONFIG.DEFAULT_DIFFICULTY
 } as const;
 
 type ValidationError = {

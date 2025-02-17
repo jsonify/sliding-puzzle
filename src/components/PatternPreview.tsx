@@ -1,24 +1,35 @@
 import type { PatternPreviewProps } from '../types/layout';
 import { MOBILE_LAYOUT_STYLES } from '../constants/mobileLayout';
+import { GameConstants } from '../constants/gameConstants';
+
+const SIZES = {
+  sm: 'w-[160px]',
+  md: 'w-[200px]',
+  lg: 'w-[240px]',
+} as const;
 
 /**
  * Displays the target pattern for the current game mode
  */
 export default function PatternPreview({ 
   mode,
-  pattern 
+  pattern,
+  size = 'md',
+  className = '',
 }: PatternPreviewProps): JSX.Element {
   const {
     CONTAINER,
     HEADER,
-    GRID,
     GRID_CONTAINER,
     HELPER_TEXT,
   } = MOBILE_LAYOUT_STYLES.PATTERN_PREVIEW;
 
   const getItemStyle = (value: number | string) => {
     if (mode === 'classic') {
-      return value === 0 ? 'bg-transparent' : 'bg-white dark:bg-gray-700';
+      // For classic mode, show numbers with consistent styling
+      return value === 0 
+        ? 'bg-transparent' 
+        : 'bg-white dark:bg-gray-700 flex items-center justify-center text-sm font-medium';
     }
 
     // Color mode
@@ -36,7 +47,7 @@ export default function PatternPreview({
 
   return (
     <div 
-      className={CONTAINER} 
+      className={`${CONTAINER} ${className}`}
       role="complementary" 
       aria-label="Target pattern"
     >
@@ -45,11 +56,14 @@ export default function PatternPreview({
         
         <div className={GRID_CONTAINER}>
           <div 
-            className="grid grid-cols-5 gap-1 bg-slate-700 p-2 rounded w-fit mx-auto"
+            className={`
+              grid gap-1 bg-slate-700 p-2 rounded mx-auto
+              ${SIZES[size]}
+            `}
             style={{ 
-              gridTemplateRows: 'repeat(5, 1fr)',
+              gridTemplateColumns: `repeat(${pattern[0].length}, 1fr)`,
+              gridTemplateRows: `repeat(${pattern.length}, 1fr)`,
               aspectRatio: '1/1',
-              width: '160px', // This will make each tile ~30px with gaps
             }}
           >
             {pattern.map((row, rowIndex) => (
@@ -62,7 +76,13 @@ export default function PatternPreview({
                     transition-all duration-200
                   `}
                   role="presentation"
-                />
+                >
+                  {mode === 'classic' && value !== GameConstants.EMPTY_CELL && (
+                    <span className="text-gray-900 dark:text-gray-200">
+                      {value}
+                    </span>
+                  )}
+                </div>
               ))
             ))}
           </div>
