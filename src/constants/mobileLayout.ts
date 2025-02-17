@@ -59,9 +59,9 @@ export const MOBILE_LAYOUT_STYLES = {
       SELECT: 'px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-200',
     },
     CARD: {
-      CONTAINER: 'bg-slate-800 rounded-lg p-4 mb-4',
+      CONTAINER: 'bg-gradient-to-br from-slate-800 to-slate-700/80 rounded-xl p-4 mb-4 shadow-lg border border-slate-600/50',
       HEADER: 'flex justify-between items-start mb-2',
-      TITLE: 'text-lg font-semibold text-slate-200',
+      TITLE: 'text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-200 bg-clip-text text-transparent',
       GRID: 'grid grid-cols-2 gap-4',
       LABEL: 'text-sm text-slate-400',
       VALUE: 'ml-2 text-slate-200',

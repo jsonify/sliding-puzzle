@@ -25,6 +25,29 @@ const createRowKey = (gridSize: number, row: number): string =>
 const isPositionMovable = (pos: Position, movablePositions: Position[]): boolean =>
   movablePositions.some(p => p.row === pos.row && p.col === p.col);
 
+/** Check if a position is directly adjacent to empty tile */
+const isAdjacentToEmpty = (pos: Position, tiles: ClassicBoard | ColorBoard): boolean => {
+  // Find empty tile position
+  let emptyPos: Position | null = null;
+  for (let i = 0; i < tiles.length; i++) {
+    for (let j = 0; j < tiles[i].length; j++) {
+      if (tiles[i][j] === 0) {
+        emptyPos = { row: i, col: j };
+        break;
+      }
+    }
+    if (emptyPos) break;
+  }
+
+  if (!emptyPos) return false;
+
+  // Check if position is directly adjacent (up, down, left, right)
+  return (
+    (Math.abs(pos.row - emptyPos.row) === 1 && pos.col === emptyPos.col) ||
+    (Math.abs(pos.col - emptyPos.col) === 1 && pos.row === emptyPos.row)
+  );
+};
+
 /** Get board CSS classes */
 const getBoardClasses = (isWon: boolean): string => [
   ...BoardClassNames.BASE,
@@ -80,10 +103,15 @@ export default function Board({
   }, []);
   const tileSize = useMemo(() => calculateTileSize(containerSize, gridSize), [containerSize, gridSize]);
 
-  // Memoize position check function
+  // Memoize position check functions
   const checkPositionMovable = useCallback(
     (position: Position) => isPositionMovable(position, movablePositions),
     [movablePositions]
+  );
+
+  const checkAdjacentToEmpty = useCallback(
+    (position: Position) => isAdjacentToEmpty(position, tiles),
+    [tiles]
   );
 
   return (
@@ -105,6 +133,9 @@ export default function Board({
         >
           {row.map((value, colIndex) => {
             const position = createPosition(rowIndex, colIndex);
+            const isMovable = checkPositionMovable(position);
+            const isAdjacent = checkAdjacentToEmpty(position);
+            
             return (
               <Tile
                 key={createTileId(value, position.row, position.col, mode)}
@@ -113,7 +144,8 @@ export default function Board({
                 mode={mode}
                 size={gridSize}
                 tileSize={tileSize}
-                isMovable={checkPositionMovable(position)}
+                isMovable={isMovable}
+                isAdjacent={isAdjacent}
                 onClick={() => onTileClick(position)}
               />
             );

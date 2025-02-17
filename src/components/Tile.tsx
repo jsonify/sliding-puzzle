@@ -8,19 +8,21 @@ interface TileProps {
   size: number;
   tileSize: number;
   isMovable: boolean;
+  isAdjacent: boolean;
   onClick: () => void;
 }
 
-const getColorStyle = (color: TileColor | 0) => {
+const getColorStyle = (color: TileColor | 0, isMovable: boolean, isAdjacent: boolean) => {
   if (color === 0) return '';
   
+  const hoverEffect = isMovable && isAdjacent ? 'hover:scale-105' : '';
   const colorMap: Record<TileColor, string> = {
-    WHITE: 'bg-white hover:opacity-90',
-    RED: 'bg-red-600 hover:opacity-90',
-    BLUE: 'bg-blue-600 hover:opacity-90',
-    ORANGE: 'bg-orange-500 hover:opacity-90',
-    GREEN: 'bg-green-600 hover:opacity-90',
-    YELLOW: 'bg-yellow-400 hover:opacity-90',
+    WHITE: `bg-white ${hoverEffect}`,
+    RED: `bg-red-600 ${hoverEffect}`,
+    BLUE: `bg-blue-600 ${hoverEffect}`,
+    ORANGE: `bg-orange-500 ${hoverEffect}`,
+    GREEN: `bg-green-600 ${hoverEffect}`,
+    YELLOW: `bg-yellow-400 ${hoverEffect}`,
   };
   
   return colorMap[color as TileColor] || 'bg-gray-400';
@@ -34,7 +36,8 @@ export default function Tile({
   mode, 
   position,
   size, 
-  isMovable, 
+  isMovable,
+  isAdjacent,
   onClick 
 }: TileProps): JSX.Element {
   const baseClasses = [
@@ -51,24 +54,26 @@ export default function Tile({
     'h-full',
     'aspect-square',
     'text-2xl',
+    'transform',  // Enable transform for hover/active animations
     'transition-all',
     'duration-200',
+    'ease-in-out', // Smooth easing for animations
     'touch-target', // Mobile-specific class
-    'active-state', // Mobile animation class
+    'active:scale-95', // Scale down on tap/click
   ].join(' ');
 
+  // Only show hover effects on adjacent tiles
   const stateClasses = mode === 'classic'
     ? isMovable
-      ? 'bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 cursor-pointer'
+      ? `bg-white dark:bg-gray-700 ${isAdjacent ? 'hover:scale-105 hover:bg-blue-50 dark:hover:bg-gray-600' : ''} cursor-pointer shadow-md hover:shadow-lg`
       : 'bg-white dark:bg-gray-700 cursor-not-allowed opacity-90'
-    : `${getColorStyle(value as TileColor | 0)} ${isMovable ? 'cursor-pointer' : 'cursor-not-allowed opacity-90'}`;
+    : `${getColorStyle(value as TileColor | 0, isMovable, isAdjacent)} ${isMovable ? 'cursor-pointer shadow-md hover:shadow-lg' : 'cursor-not-allowed opacity-90'}`;
 
   // Skip rendering for empty tile (number 0)
   if (value === 0) {
     return (
       <div
-        className={baseClasses}
-        style={{ visibility: 'hidden' }}
+        className={`${baseClasses} bg-slate-700`}
         aria-hidden="true"
         data-testid="tile-empty"
         aria-label="Empty space"

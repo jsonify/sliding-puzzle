@@ -3,11 +3,13 @@ import type { GameLayoutProps } from '../types/layout';
 import { MOBILE_LAYOUT_STYLES } from '../constants/mobileLayout';
 import { useOrientation } from '../hooks/useOrientation';
 import { generateRandomPattern } from '../utils/colorPatternUtils';
+import { ClassicMenuIcon, ColorMenuIcon } from './MenuIcons';
 import ScoreBar from './ScoreBar';
 import PatternPreview from './PatternPreview';
 import MenuSheet from './MenuSheet';
 import LoadingIndicator from './LoadingIndicator';
 import type { ColorBoard } from '../types/game';
+import { PATTERN_TYPES, type PatternType } from '../constants/colorMode';
 
 /**
  * Pattern can be either a number[][] for classic mode or a ColorBoard for color mode
@@ -29,9 +31,10 @@ export default function GameLayout({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [targetPattern, setTargetPattern] = useState<Pattern>([[]]);
   const [isLoading, setIsLoading] = useState(true);
+  const [patternType, setPatternType] = useState<PatternType>(PATTERN_TYPES.RANDOM);
   const { orientation } = useOrientation();
 
-  // Create target pattern based on mode
+  // Create target pattern based on mode and pattern type
   useEffect(() => {
     setIsLoading(true);
     if (mode === 'classic') {
@@ -48,12 +51,12 @@ export default function GameLayout({
       }
       setTargetPattern(pattern);
     } else {
-      // Use a random but solvable pattern for color mode
+      // Use pattern type for color mode
       const pattern = generateRandomPattern();
       setTargetPattern(pattern);
     }
     setIsLoading(false);
-  }, [mode]);
+  }, [mode, patternType]);
 
   // Layout classes based on orientation
   const layoutClasses = orientation === 'landscape'
@@ -122,19 +125,11 @@ export default function GameLayout({
           `}
           aria-label="Open game menu"
         >
-          <svg
-            className="w-6 h-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
+          {mode === 'classic' ? (
+            <ClassicMenuIcon />
+          ) : (
+            <ColorMenuIcon />
+          )}
         </button>
 
         {/* Menu Sheet */}
@@ -142,6 +137,8 @@ export default function GameLayout({
           isOpen={isMenuOpen}
           onOpenChange={setIsMenuOpen}
           mode={mode}
+          patternType={mode === 'color' ? patternType : undefined}
+          onPatternTypeChange={(type) => setPatternType(type)}
           onNewGame={onNewGame}
           onModeChange={onModeChange}
           onBackToMain={onBackToMain}
