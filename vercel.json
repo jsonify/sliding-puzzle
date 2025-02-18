@@ -10,9 +10,10 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build",
+      "use": "@vercel/node",
       "config": {
-        "zeroConfig": true
+        "installCommand": "pnpm install",
+        "buildCommand": "pnpm run build"
       }
     }
   ]
