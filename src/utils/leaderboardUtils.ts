@@ -101,7 +101,7 @@ function isOldLeaderboardCategory(data: unknown): data is OldLeaderboardCategory
  */
 function migrateLeaderboardData(oldData: Record<string, unknown>): LeaderboardData {
   const categories: LeaderboardCategories = {};
-
+  
   // Migrate existing categories
   Object.entries(oldData).forEach(([key, data]) => {
     if (isOldLeaderboardCategory(data)) {
@@ -119,10 +119,33 @@ function migrateLeaderboardData(oldData: Record<string, unknown>): LeaderboardDa
       };
     }
   });
-
+  
+  // Initialize global stats with proper structure
+  const globalStats: GlobalStats = {
+    totalGamesPlayed: 0,
+    totalTimePlayed: 0,
+    totalMoves: 0,
+    gamesPerMode: {
+      classic: 0,
+      color: 0
+    },
+    gamesPerSize: GridSizes.SIZES.reduce(
+      (acc, size) => ({ ...acc, [size]: 0 }),
+      {} as Record<GridSize, number>
+    )
+  };
+  
+  // If old data exists, assume it was from classic mode
+  if (Object.keys(categories).length > 0) {
+    globalStats.gamesPerMode.classic = Object.values(categories).reduce(
+      (sum, cat) => sum + (cat.stats.gamesPlayed || 0), 
+      0
+    );
+  }
+  
   return {
     categories,
-    global: initializeGlobalStats(),
+    global: globalStats,
     achievements: ACHIEVEMENTS
   };
 }
@@ -206,6 +229,7 @@ function createHistoryEntry(result: GameResult): GameHistoryEntry {
     moves: result.moves,
     timeSeconds: result.timeSeconds,
     completedAt: new Date().toISOString(),
+    mode: result.mode,  // Make sure mode is captured from result
     gridSize: result.gridSize,
     achievementsUnlocked: []
   };
@@ -262,7 +286,22 @@ export function updateLeaderboard(result: GameResult): void {
   leaderboard.global.totalGamesPlayed += GameConstants.GRID_INCREMENT;
   leaderboard.global.totalTimePlayed += result.timeSeconds;
   leaderboard.global.totalMoves += result.moves;
-  leaderboard.global.gamesPerMode.classic += GameConstants.GRID_INCREMENT;
+
+  // Fix: Ensure gamesPerMode object exists before incrementing
+    if (result.mode === 'classic' || result.mode === 'color') {
+      leaderboard.global.gamesPerMode[result.mode] += GameConstants.GRID_INCREMENT;
+    } else {
+      // Default to classic mode if invalid mode provided
+      leaderboard.global.gamesPerMode.classic += GameConstants.GRID_INCREMENT;
+    }
+
+  // Fix: Ensure gamesPerSize object exists
+  if (!leaderboard.global.gamesPerSize) {
+    leaderboard.global.gamesPerSize = GridSizes.SIZES.reduce(
+      (acc, size) => ({ ...acc, [size]: 0 }),
+      {} as Record<GridSize, number>
+    );
+  }
   leaderboard.global.gamesPerSize[result.gridSize] += GameConstants.GRID_INCREMENT;
 
   // Check for achievements
