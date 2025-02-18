@@ -14,6 +14,9 @@ importers:
       '@tanstack/react-query':
         specifier: 5.29.2
         version: 5.29.2(react@18.2.0)
+      lucide-react:
+        specifier: ^0.475.0
+        version: 0.475.0(react@18.2.0)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -38,7 +41,7 @@ importers:
         version: 10.0.0
       '@testing-library/jest-dom':
         specifier: 6.4.2
-        version: 6.4.2(vitest@1.5.0)
+        version: 6.4.2(vitest@1.5.0(@types/node@20.2.3)(@vitest/ui@1.5.0)(jsdom@24.0.0)(terser@5.14.2))
       '@testing-library/react':
         specifier: 15.0.1
         version: 15.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -68,7 +71,7 @@ importers:
         version: 4.2.1(vite@5.2.8(@types/node@20.2.3)(terser@5.14.2))
       '@vitest/coverage-istanbul':
         specifier: 1.5.0
-        version: 1.5.0(vitest@1.5.0)
+        version: 1.5.0(vitest@1.5.0(@types/node@20.2.3)(@vitest/ui@1.5.0)(jsdom@24.0.0)(terser@5.14.2))
       '@vitest/ui':
         specifier: ^1.5.0
         version: 1.5.0(vitest@1.5.0)
@@ -3421,6 +3424,11 @@ packages:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
 
+  lucide-react@0.475.0:
+    resolution: {integrity: sha512-NJzvVu1HwFVeZ+Gwq2q00KygM1aBhy/ZrhY9FsAgJtpB+E4R7uxRk9M2iKvHa6/vNxZydIB59htha4c2vvwvVg==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -6297,7 +6305,7 @@ snapshots:
       lz-string: 1.5.0
       pretty-format: 27.5.1
 
-  '@testing-library/jest-dom@6.4.2(vitest@1.5.0)':
+  '@testing-library/jest-dom@6.4.2(vitest@1.5.0(@types/node@20.2.3)(@vitest/ui@1.5.0)(jsdom@24.0.0)(terser@5.14.2))':
     dependencies:
       '@adobe/css-tools': 4.3.2
       '@babel/runtime': 7.23.7
@@ -6581,7 +6589,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-istanbul@1.5.0(vitest@1.5.0)':
+  '@vitest/coverage-istanbul@1.5.0(vitest@1.5.0(@types/node@20.2.3)(@vitest/ui@1.5.0)(jsdom@24.0.0)(terser@5.14.2))':
     dependencies:
       debug: 4.3.4(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
@@ -8917,6 +8925,10 @@ snapshots:
   lru-cache@6.0.0:
     dependencies:
       yallist: 4.0.0
+
+  lucide-react@0.475.0(react@18.2.0):
+    dependencies:
+      react: 18.2.0
 
   lz-string@1.5.0: {}
 

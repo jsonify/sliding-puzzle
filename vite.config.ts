@@ -55,6 +55,9 @@ export default defineConfig(({ mode }) => {
             vendor: ['react', 'react-dom'],
           },
         },
+        optimizeDeps: {
+          include: ['lucide-react'],
+        },
       },
     },
 
