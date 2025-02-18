@@ -1,30 +1,50 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { loadLeaderboard } from '../../utils/leaderboardUtils';
 import { GridSizes } from '../../constants/gameConstants';
 import BestScores from './BestScores';
+import { Leaderboard } from '../../types/game';
 
 interface LeaderboardModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
-type Difficulty = typeof DIFFICULTIES[number];
-
 export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalProps) {
   const [selectedSize, setSelectedSize] = useState('all');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<'all' | Difficulty>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [leaderboardData, setLeaderboardData] = useState<Leaderboard | null>(null);
 
-  // Load leaderboard data
-  const leaderboard = loadLeaderboard();
-
-  // Reset loading state after data is loaded
-  useEffect(() => {
-    if (leaderboard) {
+  // Load leaderboard data with refresh handling
+  const refreshLeaderboard = useCallback(() => {
+    setIsLoading(true);
+    try {
+      const data = loadLeaderboard();
+      setLeaderboardData(data);
+    } catch (error) {
+      console.error('Failed to load leaderboard:', error);
+    } finally {
       setIsLoading(false);
     }
-  }, [leaderboard]);
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    refreshLeaderboard();
+  }, [refreshLeaderboard]);
+
+  // Refresh when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      refreshLeaderboard();
+    }
+  }, [isOpen, refreshLeaderboard]);
+
+  // Clear selected size when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedSize('all');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -47,7 +67,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
-          <h2 className="text-xl font-bold text-white">Best Scores</h2>
+          <h2 className="text-xl font-bold text-white">Leaderboard</h2>
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-white transition-colors"
@@ -70,32 +90,18 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
           </button>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 p-4 border-b border-slate-700 overflow-x-auto hide-scrollbar">
+        {/* Filter */}
+        <div className="flex p-4 border-b border-slate-700">
           <select
-            className="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 appearance-none cursor-pointer
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 
+              appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={selectedSize}
             onChange={(e) => setSelectedSize(e.target.value)}
           >
-            <option value="all">All Sizes</option>
+            <option value="all">All Puzzle Sizes</option>
             {GridSizes.SIZES.map((size) => (
-              <option key={size} value={`${size}x${size}`}>
-                {size}x{size}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 appearance-none cursor-pointer
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value as 'all' | Difficulty)}
-          >
-            <option value="all">All Difficulties</option>
-            {DIFFICULTIES.map((difficulty) => (
-              <option key={difficulty} value={difficulty}>
-                {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+              <option key={size} value={`${size}`}>
+                {size}x{size} Grid
               </option>
             ))}
           </select>
@@ -107,11 +113,15 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent" />
             </div>
+          ) : !leaderboardData ? (
+            <div className="text-slate-400 text-center py-4">
+              Failed to load leaderboard data
+            </div>
           ) : (
             <BestScores
-              categories={leaderboard.categories}
+              categories={leaderboardData.categories}
               selectedSize={selectedSize}
-              selectedDifficulty={selectedDifficulty}
+              selectedDifficulty="all" // Maintained for backwards compatibility
             />
           )}
         </div>

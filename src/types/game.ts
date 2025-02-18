@@ -120,10 +120,14 @@ export interface GlobalStats {
   gamesPerSize: Record<GridSize, number>;
 }
 
+// Updated LeaderboardCategories to support mode-specific scoring
 export interface LeaderboardCategories {
   [key: string]: {
-    bestMoves: LeaderboardEntry;
-    bestTime: LeaderboardEntry;
+    mode: GameMode;
+    classicScores?: LeaderboardEntry[]; // For Classic mode, combined scores
+    colorScores?: LeaderboardEntry[]; // For Color mode, top 5 scores
+    bestMoves?: LeaderboardEntry; // Kept for backwards compatibility
+    bestTime?: LeaderboardEntry; // Kept for backwards compatibility
     recentGames: GameHistoryEntry[];
     stats: {
       gamesPlayed: number;
