@@ -7,9 +7,15 @@ import {
   LeaderboardData,
   GlobalStats,
   LeaderboardCategories,
-  GameResult
+  GameResult,
+  GameMode
 } from '../types/game';
 import { GameConstants, GridSizes } from '../constants/gameConstants';
+
+const MAX_COLOR_MODE_SCORES = 5;
+const LEADERBOARD_VERSION = 2; // Increment when data structure changes
+const STORAGE_KEY = 'sliding-puzzle-leaderboard';
+const VERSION_KEY = 'sliding-puzzle-leaderboard-version';
 
 /** Achievement definitions */
 const ACHIEVEMENTS: Achievement[] = [
@@ -69,6 +75,22 @@ function getLeaderboardKey(gridSize: GridSize): string {
   return `${gridSize}x${gridSize}`;
 }
 
+/**
+ * Reset leaderboard data
+ */
+export function resetLeaderboard(): void {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(VERSION_KEY);
+}
+
+/**
+ * Clear old leaderboard data and set version
+ */
+function clearOldData(): void {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.setItem(VERSION_KEY, LEADERBOARD_VERSION.toString());
+}
+
 interface OldLeaderboardCategoryData {
   bestMoves: LeaderboardEntry;
   bestTime: LeaderboardEntry;
@@ -105,9 +127,15 @@ function migrateLeaderboardData(oldData: Record<string, unknown>): LeaderboardDa
   // Migrate existing categories
   Object.entries(oldData).forEach(([key, data]) => {
     if (isOldLeaderboardCategory(data)) {
+      // Combine bestMoves and bestTime into classicScores array for classic mode
+      const classicScores = [data.bestMoves, data.bestTime].filter((entry, index, self) =>
+        // Remove duplicates
+        index === self.findIndex(e => e.moves === entry.moves && e.timeSeconds === entry.timeSeconds)
+      );
+
       categories[key] = {
-        bestMoves: data.bestMoves,
-        bestTime: data.bestTime,
+        mode: 'classic', // Assume old data is from classic mode
+        classicScores,
         recentGames: [],
         stats: {
           gamesPlayed: 0,
@@ -119,35 +147,18 @@ function migrateLeaderboardData(oldData: Record<string, unknown>): LeaderboardDa
       };
     }
   });
-  
-  // Initialize global stats with proper structure
-  const globalStats: GlobalStats = {
-    totalGamesPlayed: 0,
-    totalTimePlayed: 0,
-    totalMoves: 0,
-    gamesPerMode: {
-      classic: 0,
-      color: 0
-    },
-    gamesPerSize: GridSizes.SIZES.reduce(
-      (acc, size) => ({ ...acc, [size]: 0 }),
-      {} as Record<GridSize, number>
-    )
-  };
-  
-  // If old data exists, assume it was from classic mode
-  if (Object.keys(categories).length > 0) {
-    globalStats.gamesPerMode.classic = Object.values(categories).reduce(
-      (sum, cat) => sum + (cat.stats.gamesPlayed || 0), 
-      0
-    );
-  }
-  
-  return {
+
+  const newData = {
     categories,
-    global: globalStats,
+    global: initializeGlobalStats(),
     achievements: ACHIEVEMENTS
   };
+
+  // Save migrated data and update version
+  saveLeaderboard(newData);
+  localStorage.setItem(VERSION_KEY, LEADERBOARD_VERSION.toString());
+
+  return newData;
 }
 
 /**
@@ -180,7 +191,14 @@ export function loadLeaderboard(): Leaderboard {
     achievements: ACHIEVEMENTS
   };
 
-  const data = localStorage.getItem('sliding-puzzle-leaderboard');
+  // Check version and clear old data if necessary
+  const currentVersion = parseInt(localStorage.getItem(VERSION_KEY) || '0', 10);
+  if (currentVersion < LEADERBOARD_VERSION) {
+    clearOldData();
+    return defaultLeaderboard;
+  }
+
+  const data = localStorage.getItem(STORAGE_KEY);
   if (!data) {
     return defaultLeaderboard;
   }
@@ -194,10 +212,11 @@ export function loadLeaderboard(): Leaderboard {
     }
 
     if (!isLeaderboardData(parsedData)) {
+      clearOldData();
       return defaultLeaderboard;
     }
 
-    // Update achievements array
+    // Update achievements array and ensure proper structure
     const leaderboard: LeaderboardData = {
       ...parsedData,
       achievements: ACHIEVEMENTS.map(achievement => ({
@@ -206,9 +225,26 @@ export function loadLeaderboard(): Leaderboard {
       }))
     };
 
+    // Ensure gamesPerMode exists in global stats
+    if (!leaderboard.global.gamesPerMode) {
+      leaderboard.global.gamesPerMode = {
+        classic: 0,
+        color: 0
+      };
+    }
+
+    // Ensure gamesPerSize exists in global stats
+    if (!leaderboard.global.gamesPerSize) {
+      leaderboard.global.gamesPerSize = GridSizes.SIZES.reduce(
+        (acc, size) => ({ ...acc, [size]: 0 }),
+        {} as Record<GridSize, number>
+      );
+    }
+
     return leaderboard;
   } catch (error) {
     console.error('Failed to parse leaderboard data:', error);
+    clearOldData();
     return defaultLeaderboard;
   }
 }
@@ -217,7 +253,7 @@ export function loadLeaderboard(): Leaderboard {
  * Save leaderboard data to localStorage
  */
 function saveLeaderboard(leaderboard: Leaderboard): void {
-  localStorage.setItem('sliding-puzzle-leaderboard', JSON.stringify(leaderboard));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(leaderboard));
 }
 
 /**
@@ -229,10 +265,52 @@ function createHistoryEntry(result: GameResult): GameHistoryEntry {
     moves: result.moves,
     timeSeconds: result.timeSeconds,
     completedAt: new Date().toISOString(),
-    mode: result.mode,  // Make sure mode is captured from result
+    mode: result.mode,
     gridSize: result.gridSize,
     achievementsUnlocked: []
   };
+}
+
+/**
+ * Sort and limit color mode scores
+ */
+function updateColorModeScores(scores: LeaderboardEntry[], newEntry: LeaderboardEntry): LeaderboardEntry[] {
+  const allScores = [...scores, newEntry];
+  
+  // Sort by moves first, then by time
+  return allScores
+    .sort((a, b) => {
+      if (a.moves === b.moves) {
+        return a.timeSeconds - b.timeSeconds;
+      }
+      return a.moves - b.moves;
+    })
+    .slice(0, MAX_COLOR_MODE_SCORES);
+}
+
+/**
+ * Update classic mode scores
+ */
+function updateClassicModeScores(scores: LeaderboardEntry[], newEntry: LeaderboardEntry): LeaderboardEntry[] {
+  const existingScores = scores || [];
+  
+  // Add new entry if it's better than existing ones
+  const isBetterScore = !existingScores.some(score => 
+    score.moves <= newEntry.moves && score.timeSeconds <= newEntry.timeSeconds
+  );
+
+  if (isBetterScore) {
+    return [...existingScores, newEntry]
+      .sort((a, b) => {
+        // Sort by moves first, then by time
+        if (a.moves === b.moves) {
+          return a.timeSeconds - b.timeSeconds;
+        }
+        return a.moves - b.moves;
+      });
+  }
+
+  return existingScores;
 }
 
 /**
@@ -246,8 +324,9 @@ export function updateLeaderboard(result: GameResult): void {
   // Initialize or update category
   if (!leaderboard.categories[key]) {
     leaderboard.categories[key] = {
-      bestMoves: historyEntry,
-      bestTime: historyEntry,
+      mode: result.mode,
+      classicScores: result.mode === 'classic' ? [historyEntry] : undefined,
+      colorScores: result.mode === 'color' ? [historyEntry] : undefined,
       recentGames: [historyEntry],
       stats: {
         gamesPlayed: GameConstants.GRID_INCREMENT,
@@ -259,13 +338,13 @@ export function updateLeaderboard(result: GameResult): void {
     };
   } else {
     const category = leaderboard.categories[key];
+    category.mode = result.mode;
     
-    // Update best scores
-    if (result.moves < category.bestMoves.moves) {
-      category.bestMoves = historyEntry;
-    }
-    if (result.timeSeconds < category.bestTime.timeSeconds) {
-      category.bestTime = historyEntry;
+    // Update mode-specific scores
+    if (result.mode === 'classic') {
+      category.classicScores = updateClassicModeScores(category.classicScores || [], historyEntry);
+    } else {
+      category.colorScores = updateColorModeScores(category.colorScores || [], historyEntry);
     }
     
     // Update category statistics
@@ -286,22 +365,7 @@ export function updateLeaderboard(result: GameResult): void {
   leaderboard.global.totalGamesPlayed += GameConstants.GRID_INCREMENT;
   leaderboard.global.totalTimePlayed += result.timeSeconds;
   leaderboard.global.totalMoves += result.moves;
-
-  // Fix: Ensure gamesPerMode object exists before incrementing
-    if (result.mode === 'classic' || result.mode === 'color') {
-      leaderboard.global.gamesPerMode[result.mode] += GameConstants.GRID_INCREMENT;
-    } else {
-      // Default to classic mode if invalid mode provided
-      leaderboard.global.gamesPerMode.classic += GameConstants.GRID_INCREMENT;
-    }
-
-  // Fix: Ensure gamesPerSize object exists
-  if (!leaderboard.global.gamesPerSize) {
-    leaderboard.global.gamesPerSize = GridSizes.SIZES.reduce(
-      (acc, size) => ({ ...acc, [size]: 0 }),
-      {} as Record<GridSize, number>
-    );
-  }
+  leaderboard.global.gamesPerMode[result.mode] += GameConstants.GRID_INCREMENT;
   leaderboard.global.gamesPerSize[result.gridSize] += GameConstants.GRID_INCREMENT;
 
   // Check for achievements
