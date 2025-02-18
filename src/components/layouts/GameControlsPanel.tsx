@@ -14,6 +14,7 @@ export default function GameControlsPanel({
   onSizeChange,
   targetPattern,
   onSolve,
+  unlockedSizes = new Set([GAME_CONFIG.DEFAULT_SIZE]),
 }: GameControlsPanelProps): JSX.Element {
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-6">
@@ -50,15 +51,28 @@ export default function GameControlsPanel({
           </label>
           <select
             value={gridSize}
-            onChange={(e) => onSizeChange(Number(e.target.value) as typeof GAME_CONFIG.GRID_SIZES[number])}
+            onChange={(e) => {
+              const newSize = Number(e.target.value) as typeof GAME_CONFIG.GRID_SIZES[number];
+              if (unlockedSizes.has(newSize)) {
+                onSizeChange(newSize);
+              }
+            }}
             className="w-full bg-slate-700 border-slate-600 rounded-lg p-2 text-slate-200"
           >
-            {GAME_CONFIG.GRID_SIZES.map((size) => (
-              <option key={size} value={size}>
-                {size}x{size}
+            {GAME_CONFIG.GRID_SIZES.map((size) => {
+              const isUnlocked = unlockedSizes.has(size);
+              return (
+              <option key={size} value={size} 
+                disabled={!isUnlocked}>
+                {size}x{size}{!isUnlocked ? ' 🔒' : ''}
               </option>
-            ))}
+            );})}
           </select>
+          <p className="mt-2 text-sm text-slate-400">
+            {GAME_CONFIG.GRID_SIZES.some(size => !unlockedSizes.has(size)) && (
+              "Complete a puzzle to unlock the next size"
+            )}
+          </p>
         </div>
 
         {/* Game Control Buttons */}
