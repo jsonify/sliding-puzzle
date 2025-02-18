@@ -2,7 +2,7 @@ import type { GameControlsPanelProps } from '../../types/layout';
 import PatternPreview from '../PatternPreview';
 import { formatTime } from '../../utils/leaderboardUtils';
 import { GAME_CONFIG } from '../../constants/gameConfig';
-import { Home, Trophy, Timer, RotateCcw } from 'lucide-react';
+import { Home, Trophy, Timer, RotateCw } from 'lucide-react';
 
 export default function GameControlsPanel({
   mode,
@@ -66,7 +66,7 @@ export default function GameControlsPanel({
           onClick={onNewGame}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
         >
-          <RotateCcw className="h-4 w-4" />
+          <RotateCw className="h-4 w-4" />
           New Game
         </button>
 
