@@ -1,21 +1,16 @@
 // src/utils/gameUtils.ts
-import { 
-  Board, 
-  GridSize, 
-  Position, 
-  Leaderboard,
-  GameHistoryEntry, 
-  Achievement, 
-  GlobalStats, 
-  LeaderboardData 
+import {
+  Board, ClassicBoard, ColorBoard, GridSize, Position,
+  Leaderboard, GameHistoryEntry, Achievement,
+  GlobalStats, LeaderboardData
 } from '../types/game';
 import { GameConstants, BoardDirections, GridSizes } from '../constants/gameConstants';
 
 /**
  * Creates a solved board of the specified size
  */
-export function createBoard(size: GridSize): Board {
-  const board: Board = [];
+export function createBoard(size: GridSize): ClassicBoard {
+  const board: number[][] = [];
   let currentNumber = GameConstants.START_NUMBER;
 
   const totalCells = size * size;
@@ -47,8 +42,8 @@ export function isValidMove(pos: Position, emptyPos: Position): boolean {
 /**
  * Makes a move by swapping the tile with empty cell
  */
-export function makeMove(board: Board, pos: Position, emptyPos: Position): Board {
-  const updatedBoard = board.map(row => [...row]);
+export function makeMove<T extends Board>(board: T, pos: Position, emptyPos: Position): T {
+  const updatedBoard = board.map(row => [...row]) as T;
   
   // Swap the clicked position with empty position
   const temp = updatedBoard[pos.row][pos.col];
@@ -59,31 +54,35 @@ export function makeMove(board: Board, pos: Position, emptyPos: Position): Board
 }
 
 /**
- * Checks if the board is in a winning state
+ * Checks if the board is in a winning state for classic mode
  */
 export function isWinningState(board: Board): boolean {
   const size = board.length;
-  let expectedNumber = GameConstants.START_NUMBER;
-  const totalCells = size * size;
   
-  for (let rowIndex = 0; rowIndex < size; rowIndex += 1) {
-    for (let colIndex = 0; colIndex < size; colIndex += 1) {
-      const currentCell = board[rowIndex][colIndex];
-      const isLastCell = expectedNumber === totalCells;
-      
-      if (isLastCell) {
-        return currentCell === GameConstants.EMPTY_CELL;
+  // For classic mode
+  if (board.every(row => row.every(cell => typeof cell === 'number'))) {
+    let expectedNumber = GameConstants.START_NUMBER;
+    for (let rowIndex = 0; rowIndex < size; rowIndex += 1) {
+      for (let colIndex = 0; colIndex < size; colIndex += 1) {
+        const currentCell = board[rowIndex][colIndex];
+        const isLastCell = rowIndex === size - 1 && colIndex === size - 1;
+
+        if (isLastCell) {
+          return currentCell === GameConstants.EMPTY_CELL;
+        }
+
+        if (currentCell !== expectedNumber) {
+          return false;
+        }
+
+        expectedNumber += 1;
       }
-      
-      if (currentCell !== expectedNumber) {
-        return false;
-      }
-      
-      expectedNumber += 1;
     }
+    return true;
   }
   
-  return true;
+  // For color mode, let the pattern matching handle it
+  return false;
 }
 
 /**
@@ -107,7 +106,7 @@ export function findEmptyPosition(board: Board): Position {
  * Checks if a board configuration is solvable
  * Uses inversion count method to determine solvability
  */
-export function isSolvable(board: Board): boolean {
+export function isSolvable(board: ClassicBoard): boolean {
   const size = board.length;
   const flatBoard = board.flat();
   let inversions = 0;
@@ -143,11 +142,11 @@ export function isSolvable(board: Board): boolean {
  * Shuffles the board
  * Returns a solvable board configuration
  */
-export function shuffleBoard(board: Board, moves?: number): Board {
+export function shuffleBoard<T extends Board>(board: T, moves?: number): T {
   const size = board.length;
   // If moves not specified, calculate based on board size
   const moveCount = moves || calculateShuffleMoves(size);
-  let updatedBoard = board.map(row => [...row]);
+  let updatedBoard = board.map(row => [...row]) as T;
   let emptyPos = findEmptyPosition(updatedBoard);
   
   // Perform random valid moves
@@ -201,7 +200,3 @@ export function getMovablePositions(board: Board): Position[] {
   
   return movable;
 }
-
-// Move achievements and leaderboard related code to a separate file
-// This will help reduce complexity and improve maintainability
-// TODO: Create separate leaderboard.ts file for these functions
