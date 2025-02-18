@@ -83,6 +83,7 @@ export interface LevelSelectProps {
 export interface GameResult {
   gridSize: GridSize;
   moves: number;
+  mode: GameMode;
   timeSeconds: number;
 }
 

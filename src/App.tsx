@@ -180,6 +180,7 @@ function App(): ReactElement {
         updateLeaderboard({
           gridSize,
           moves: updatedMoves,
+          mode,
           timeSeconds: gameState.time
         });
       }
