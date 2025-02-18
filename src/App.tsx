@@ -213,7 +213,7 @@ function App(): ReactElement {
         <LevelSelect
           onLevelSelect={onHandleLevelSelect}
           currentSize={gridSize}
-          unlockedSizes={new Set([GameConstants.INITIAL_GRID_SIZE])} // TODO: Get from storage
+          unlockedSizes={new Set([3])} // Start with 3x3 unlocked
           onBackToMain={onBackToMain}
         />
       </div>
