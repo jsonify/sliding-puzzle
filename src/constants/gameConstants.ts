@@ -22,7 +22,7 @@ export const GameConstants = {
   /** Minimum grid index */
   MIN_GRID_INDEX: 0,
   /** Initial grid size */
-  INITIAL_GRID_SIZE: 4,
+  INITIAL_GRID_SIZE: 3,
   /** Seconds in a minute */
   SECONDS_IN_MINUTE: 60,
   /** Time display padding length */
