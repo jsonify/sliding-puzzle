@@ -261,6 +261,7 @@ function App(): ReactElement {
       targetPattern={targetPattern}
       gridSize={gridSize}
       onSizeChange={onHandleSizeChange}
+      unlockedSizes={unlockedSizes}
     >
       <Board
         mode={mode}

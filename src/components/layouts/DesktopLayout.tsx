@@ -11,6 +11,7 @@ export default function DesktopLayout({
   onBackToMain,
   targetPattern,
   children,
+  unlockedSizes,
   gridSize,
   onSizeChange,
   onSolve,
@@ -31,6 +32,7 @@ export default function DesktopLayout({
             gridSize={gridSize}
             onSizeChange={onSizeChange}
             targetPattern={targetPattern}
+            unlockedSizes={unlockedSizes}
             onSolve={onSolve}
           />
         </div>

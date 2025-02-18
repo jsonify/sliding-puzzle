@@ -9,6 +9,7 @@ export interface GameControlsPanelProps {
   onNewGame: () => void;
   onBackToMain: () => void;
   gridSize: GridSize;
+  unlockedSizes: Set<GridSize>;
   onSizeChange: (size: GridSize) => void;
   targetPattern: Board;
   onSolve?: () => void;
@@ -33,6 +34,7 @@ export interface DesktopLayoutProps {
   targetPattern: Board;
   children: ReactNode;
   gridSize: GridSize;
+  unlockedSizes: Set<GridSize>;
   onSizeChange: (size: GridSize) => void;
   onSolve?: () => void;
 }
