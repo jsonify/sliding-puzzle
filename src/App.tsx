@@ -30,7 +30,7 @@ import {
   isPatternMatched
 } from './utils/colorPatternUtils';
 import { updateLeaderboard } from './utils/leaderboardUtils';
-import { GAME_MODES } from './constants/gameConfig';
+import { GAME_MODES, GAME_CONFIG } from './constants/gameConfig';
 import { COLOR_MODE, PATTERN_TYPES } from './constants/colorMode';
 import type { ColorBoard } from './types/game';
 import { GameConstants } from './constants/gameConstants';
@@ -49,6 +49,7 @@ const SHUFFLE_MULTIPLIER = 50;
 
 function App(): ReactElement {
   // Game configuration state
+  const [unlockedSizes, setUnlockedSizes] = useState<Set<GridSize>>(new Set([3]));
   const [mode, setMode] = useState<GameMode>(GAME_MODES.CLASSIC);
   const [gridSize, setGridSize] = useState<GridSize>(GameConstants.INITIAL_GRID_SIZE);
   const [patternType, setPatternType] = useState<typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]>(PATTERN_TYPES.RANDOM);
@@ -181,16 +182,25 @@ function App(): ReactElement {
       }));
 
       if (won) {
+        // Unlock next size if available
+        const currentIndex = GAME_CONFIG.GRID_SIZES.indexOf(gridSize);
+        const nextSize = GAME_CONFIG.GRID_SIZES[currentIndex + 1];
+        
+        if (nextSize) {
+          setUnlockedSizes(prev => new Set([...prev, nextSize]));
+        }
+
+        // Update leaderboard and show victory modal
+        setShowVictoryModal(true);
         updateLeaderboard({
           gridSize,
           moves: updatedMoves,
           mode,
           timeSeconds: gameState.time
         });
-        setShowVictoryModal(true);
       }
     }
-  }, [board, gameState, gridSize, mode, targetPattern]);
+  }, [board, gameState, gridSize, mode, targetPattern, unlockedSizes]);
 
   const handleVictoryClose = useCallback(() => {
     setShowVictoryModal(false);
@@ -213,7 +223,7 @@ function App(): ReactElement {
         <LevelSelect
           onLevelSelect={onHandleLevelSelect}
           currentSize={gridSize}
-          unlockedSizes={new Set([3])} // Start with 3x3 unlocked
+          unlockedSizes={unlockedSizes}
           onBackToMain={onBackToMain}
         />
       </div>
