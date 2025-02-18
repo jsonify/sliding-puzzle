@@ -1,6 +1,6 @@
+// src/utils/gameUtils.ts
 import { 
   Board, 
-  Difficulty, 
   GridSize, 
   Position, 
   Leaderboard,
@@ -70,7 +70,7 @@ export function isWinningState(board: Board): boolean {
     for (let colIndex = 0; colIndex < size; colIndex += 1) {
       const currentCell = board[rowIndex][colIndex];
       const isLastCell = expectedNumber === totalCells;
-
+      
       if (isLastCell) {
         return currentCell === GameConstants.EMPTY_CELL;
       }
@@ -78,7 +78,7 @@ export function isWinningState(board: Board): boolean {
       if (currentCell !== expectedNumber) {
         return false;
       }
-
+      
       expectedNumber += 1;
     }
   }
@@ -140,12 +140,13 @@ export function isSolvable(board: Board): boolean {
 }
 
 /**
- * Shuffles the board based on difficulty
+ * Shuffles the board
  * Returns a solvable board configuration
  */
-export function shuffleBoard(board: Board, difficulty: Difficulty): Board {
+export function shuffleBoard(board: Board, moves?: number): Board {
   const size = board.length;
-  const moveCount = calculateShuffleMoves(size, difficulty);
+  // If moves not specified, calculate based on board size
+  const moveCount = moves || calculateShuffleMoves(size);
   let updatedBoard = board.map(row => [...row]);
   let emptyPos = findEmptyPosition(updatedBoard);
   
@@ -173,11 +174,11 @@ export function shuffleBoard(board: Board, difficulty: Difficulty): Board {
 }
 
 /**
- * Calculate number of random moves for shuffling based on difficulty
+ * Calculate number of random moves for shuffling based on board size
  */
-function calculateShuffleMoves(size: number, difficulty: Difficulty): number {
-  const baseMoves = size * size * GameConstants.BASE_SHUFFLE_MULTIPLIER;
-  return baseMoves * GameConstants.SHUFFLE_MULTIPLIERS[difficulty];
+function calculateShuffleMoves(size: number): number {
+  const SHUFFLE_MULTIPLIER = 20; // Higher multiplier for more randomness
+  return size * size * SHUFFLE_MULTIPLIER;
 }
 
 /**

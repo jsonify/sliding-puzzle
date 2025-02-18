@@ -6,6 +6,7 @@ import Board from './components/Board';
 import ModeSelect from './components/ModeSelect';
 import { LevelSelect } from './components/LevelSelect';
 import GameLayout from './components/GameLayout';
+import VictoryModal from './components/VictoryModal';
 
 // Types
 import type {
@@ -61,6 +62,9 @@ function App(): ReactElement {
 
   // Timer ref to prevent multiple intervals
   const timerRef = useRef<number>();
+
+  // Victory
+  const [showVictoryModal, setShowVictoryModal] = useState(false);
 
   // Timer effect
   useEffect(() => {
@@ -183,9 +187,15 @@ function App(): ReactElement {
           mode,
           timeSeconds: gameState.time
         });
+        setShowVictoryModal(true);
       }
     }
   }, [board, gameState, gridSize, mode, targetPattern]);
+
+  const handleVictoryClose = useCallback(() => {
+    setShowVictoryModal(false);
+    onStartNewGame();
+  }, [onStartNewGame]);
 
   // Mode selection screen
   if (!modeSelected) {
@@ -231,6 +241,12 @@ function App(): ReactElement {
         tileSize={gridSize}
         isWon={gameState.isWon}
         onBackToMain={onBackToMain}
+      />
+      <VictoryModal
+        isOpen={showVictoryModal}
+        onClose={handleVictoryClose}
+        moves={gameState.moves}
+        time={gameState.time}
       />
     </GameLayout>
   );
