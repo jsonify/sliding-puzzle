@@ -13,6 +13,7 @@ export default function DesktopLayout({
   children,
   gridSize,
   onSizeChange,
+  onSolve,
 }: DesktopLayoutProps): JSX.Element {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(true);
 
@@ -30,6 +31,7 @@ export default function DesktopLayout({
             gridSize={gridSize}
             onSizeChange={onSizeChange}
             targetPattern={targetPattern}
+            onSolve={onSolve}
           />
         </div>
 

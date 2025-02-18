@@ -207,6 +207,24 @@ function App(): ReactElement {
     onStartNewGame();
   }, [onStartNewGame]);
 
+  const onSolve = useCallback((): void => {
+    if (gameState.isWon) return;
+    
+    // Create solved board state
+    const solvedBoard = mode === GAME_MODES.CLASSIC
+      ? createBoard(gridSize)
+      : targetPattern;
+      
+    setBoard(solvedBoard);
+    setGameState(prev => ({
+      ...prev,
+      isWon: true,
+      isPlaying: false
+    }));
+    setShowVictoryModal(true);
+    updateLeaderboard({ gridSize, moves: gameState.moves, mode, timeSeconds: gameState.time });
+  }, [gameState.moves, gameState.time, gridSize, mode, targetPattern, gameState.isWon]);
+
   // Mode selection screen
   if (!modeSelected) {
     return (
@@ -239,6 +257,7 @@ function App(): ReactElement {
       onNewGame={onStartNewGame}
       onModeChange={onHandleModeSelect}
       onBackToMain={onBackToMain}
+      onSolve={onSolve}
       targetPattern={targetPattern}
       gridSize={gridSize}
       onSizeChange={onHandleSizeChange}

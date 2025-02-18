@@ -23,6 +23,7 @@ export default function GameLayout({
   targetPattern,
   gridSize,
   onSizeChange,
+  onSolve,
 }: GameLayoutProps): JSX.Element {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { orientation } = useOrientation();
@@ -39,6 +40,7 @@ export default function GameLayout({
         targetPattern={targetPattern}
         gridSize={gridSize}
         onSizeChange={onSizeChange}
+        onSolve={onSolve}
       >
         {children}
       </DesktopLayout>

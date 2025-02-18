@@ -9,6 +9,8 @@ export type Position = {
 
 export type GameMode = 'classic' | 'color';
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
 export type ClassicBoard = number[][];
 export type ColorBoard = (TileColor | 0)[][];
 export type Board = ClassicBoard | ColorBoard;
@@ -68,8 +70,11 @@ export interface GameControlsProperties {
   time: number;
   onNewGame: () => void;
   onSizeChange: (size: GridSize) => void;
+  onDifficultyChange?: (difficulty: Difficulty) => void;
+  currentDifficulty?: Difficulty;
   onPatternTypeChange?: (type: typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]) => void;
   currentSize: GridSize;
+  onSolve?: () => void;  // Optional to maintain backward compatibility
   onBackToMain: () => void;
 }
 

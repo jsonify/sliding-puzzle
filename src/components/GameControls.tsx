@@ -40,6 +40,7 @@ export default function GameControls({
   mode,
   time,
   onNewGame,
+  onSolve,
   onSizeChange,
   onDifficultyChange,
   onPatternTypeChange,
@@ -66,7 +67,9 @@ export default function GameControls({
   }, [onPatternTypeChange]);
 
   const onHandleDifficultySelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-    handleDifficultyChange(event, onDifficultyChange);
+    if (onDifficultyChange) {
+      handleDifficultyChange(event, onDifficultyChange);
+    }
   }, [onDifficultyChange]);
 
   return (
@@ -90,6 +93,15 @@ export default function GameControls({
         >
           New Game
         </button>
+        {onSolve && (
+          <button
+            type="button"
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+            onClick={onSolve}
+          >
+            Solve
+          </button>
+        )}
 
         {/* Pattern Type selector for Color Mode */}
         {mode === GAME_MODES.COLOR && (
@@ -127,7 +139,7 @@ export default function GameControls({
         </select>}
 
         {/* Difficulty selector - Only show for classic mode */}
-        {mode === GAME_MODES.CLASSIC && <select
+        {mode === GAME_MODES.CLASSIC && onDifficultyChange && currentDifficulty && <select
           className="px-2 py-1 rounded border dark:bg-gray-700 dark:border-gray-600"
           value={currentDifficulty}
           onChange={onHandleDifficultySelect}

@@ -2,7 +2,7 @@ import type { GameControlsPanelProps } from '../../types/layout';
 import PatternPreview from '../PatternPreview';
 import { formatTime } from '../../utils/leaderboardUtils';
 import { GAME_CONFIG } from '../../constants/gameConfig';
-import { Home, Trophy, Timer, RotateCw } from 'lucide-react';
+import { Home, Trophy, Timer, RotateCw, Zap } from 'lucide-react';
 
 export default function GameControlsPanel({
   mode,
@@ -13,6 +13,7 @@ export default function GameControlsPanel({
   gridSize,
   onSizeChange,
   targetPattern,
+  onSolve,
 }: GameControlsPanelProps): JSX.Element {
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-6">
@@ -60,15 +61,28 @@ export default function GameControlsPanel({
           </select>
         </div>
 
-        {/* New Game Button */}
-        <button
-          type="button"
-          onClick={onNewGame}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
-        >
-          <RotateCw className="h-4 w-4" />
-          New Game
-        </button>
+        {/* Game Control Buttons */}
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={onNewGame}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <RotateCw className="h-4 w-4" />
+            New Game
+          </button>
+          
+          {onSolve && (
+            <button
+              type="button"
+              onClick={onSolve}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            >
+              <Zap className="h-4 w-4" />
+              Solve
+            </button>
+          )}
+        </div>
 
         {/* Target Pattern */}
         <div>

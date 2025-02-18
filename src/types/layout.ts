@@ -11,6 +11,7 @@ export interface GameControlsPanelProps {
   gridSize: GridSize;
   onSizeChange: (size: GridSize) => void;
   targetPattern: Board;
+  onSolve?: () => void;
 }
 
 export interface LeaderboardPanelProps {
@@ -33,6 +34,7 @@ export interface DesktopLayoutProps {
   children: ReactNode;
   gridSize: GridSize;
   onSizeChange: (size: GridSize) => void;
+  onSolve?: () => void;
 }
 
 export interface GameLayoutProps extends DesktopLayoutProps {
