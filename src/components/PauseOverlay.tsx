@@ -1,11 +1,15 @@
 import { useEffect } from 'react';
 import type { PauseOverlayProps } from '../types/layout';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 /**
  * PauseOverlay component that displays when the game is paused
  * Shows a blurred overlay with a pause icon and resume button
  */
 export default function PauseOverlay({ isPaused, onResume }: PauseOverlayProps): JSX.Element | null {
+  // Use 768px as the breakpoint for mobile devices
+  const isMobile = useMediaQuery('(max-width: 767px)');
+
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isPaused) {
@@ -42,7 +46,7 @@ export default function PauseOverlay({ isPaused, onResume }: PauseOverlayProps):
           Resume
         </button>
         <div className="text-white/60 text-sm mt-4">
-          Press ESC to resume
+          {isMobile ? 'Tap anywhere to resume' : 'Press ESC to resume'}
         </div>
       </div>
     </div>
