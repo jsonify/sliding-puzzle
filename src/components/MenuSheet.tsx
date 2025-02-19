@@ -110,7 +110,10 @@ export default function MenuSheet({
           {/* Game actions */}
           <button
             type="button"
-            onClick={onNewGame}
+            onClick={() => {
+              onNewGame();
+              onOpenChange(false);
+            }}
             className="w-full bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
               text-white font-bold py-4 px-6 rounded-xl shadow-lg active:scale-95 transform transition-all duration-200"
           >
