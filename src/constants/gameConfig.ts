@@ -1,4 +1,4 @@
-import type { GridSize, GameMode } from '../types/game';
+import type { GridSize, GameMode, TimedModeConfig } from '../types/game';
 import { COLOR_MODE, PATTERN_TYPES } from './colorMode';
 
 /** Type guard to check if a value is a number */
@@ -96,11 +96,28 @@ const generateGridSizes = (): readonly GridSize[] => {
 };
 
 /**
+ * Configuration for timed mode
+ */
+export const TIMED_MODE_CONFIG: TimedModeConfig = {
+  baseTime: 60,         // 60 seconds for 3x3
+  timeMultiplier: 2,    // Double time for each size increase
+  warningTime: 10       // Warning at 10 seconds remaining
+} as const;
+
+/**
+ * Calculate time limit for a given grid size
+ */
+export const calculateTimeLimit = (size: GridSize): number => {
+  return TIMED_MODE_CONFIG.baseTime * Math.pow(TIMED_MODE_CONFIG.timeMultiplier, size - GRID.MIN_SIZE);
+};
+
+/**
  * Available game modes
  */
 export const GAME_MODES = {
   CLASSIC: 'classic',
   COLOR: 'color',
+  TIMED: 'timed',
 } as const;
 
 /**
@@ -114,6 +131,7 @@ export const GAME_CONFIG = {
   MODES: [
     GAME_MODES.CLASSIC,
     GAME_MODES.COLOR,
+    GAME_MODES.TIMED,
   ] as const,
 
   /** Game board configuration */

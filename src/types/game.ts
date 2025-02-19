@@ -7,7 +7,7 @@ export type Position = {
   col: number;
 };
 
-export type GameMode = 'classic' | 'color';
+export type GameMode = 'classic' | 'color' | 'timed';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -15,10 +15,17 @@ export type ClassicBoard = number[][];
 export type ColorBoard = (TileColor | 0)[][];
 export type Board = ClassicBoard | ColorBoard;
 
+export interface TimedModeConfig {
+  baseTime: number;
+  timeMultiplier: number;
+  warningTime: number;
+}
+
 export interface GameConfig {
   mode: GameMode;
   gridSize: GridSize;
   patternType?: PatternType; // Only used in color mode
+  timedConfig?: TimedModeConfig;
 }
 
 export interface ColorModeState {
@@ -38,12 +45,21 @@ export interface ClassicModeState {
   isWon: boolean;
 }
 
+export interface TimedModeState {
+  board: ClassicBoard;
+  emptyPosition: Position;
+  moves: number;
+  startTime: number;
+  timeRemaining: number;
+  initialTime: number;
+  isWon: boolean;
+}
+
 export interface GameState {
   board: Board;
   emptyPosition: Position;
   moves: number;
-  startTime: number;
-  isWon: boolean;
+  timeElapsed?: number;
 }
 
 export interface TileProperties {
@@ -61,6 +77,7 @@ export interface BoardProps {
   onTileClick: (position: Position) => void;
   tileSize: number;
   isWon: boolean;
+  timeRemaining?: number;  // Optional: only required for timed mode
   onBackToMain: () => void;
 }
 
