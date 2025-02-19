@@ -47,6 +47,8 @@ export default function GameControls({
   currentSize,
   currentDifficulty,
   onBackToMain,
+  isPaused,
+  onPauseToggle,
 }: GameControlsProperties): JSX.Element {
   const onHandleSizeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const size = Number(event.target.value);
@@ -92,6 +94,19 @@ export default function GameControls({
           onClick={onNewGame}
         >
           New Game
+        </button>
+        <button
+          type="button"
+          className={`px-4 py-2 rounded transition ${
+            isPaused
+              ? 'bg-green-500 hover:bg-green-600'
+              : 'bg-yellow-500 hover:bg-yellow-600'
+          } text-white`}
+          onClick={onPauseToggle}
+          aria-label={isPaused ? 'Resume game' : 'Pause game'}
+          title="Press ESC to toggle pause"
+        >
+          {isPaused ? 'Resume' : 'Pause'}
         </button>
         {onSolve && (
           <button

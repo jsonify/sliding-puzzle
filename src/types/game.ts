@@ -76,6 +76,8 @@ export interface GameControlsProperties {
   currentSize: GridSize;
   onSolve?: () => void;  // Optional to maintain backward compatibility
   onBackToMain: () => void;
+  isPaused: boolean;
+  onPauseToggle: () => void;
 }
 
 export interface LevelSelectProps {

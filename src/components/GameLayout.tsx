@@ -8,6 +8,7 @@ import ScoreBar from './ScoreBar';
 import PatternPreview from './PatternPreview';
 import MenuSheet from './MenuSheet';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import PauseOverlay from './PauseOverlay';
 
 /**
  * Main layout component with responsive design for both desktop and mobile
@@ -25,6 +26,8 @@ export default function GameLayout({
   onSizeChange,
   onSolve,
   unlockedSizes,
+  isPaused,
+  onPauseToggle,
 }: GameLayoutProps): JSX.Element {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { orientation } = useOrientation();
@@ -43,6 +46,8 @@ export default function GameLayout({
         unlockedSizes={unlockedSizes}
         onSizeChange={onSizeChange}
         onSolve={onSolve}
+        isPaused={isPaused}
+        onPauseToggle={onPauseToggle}
       >
         {children}
       </DesktopLayout>
@@ -61,6 +66,7 @@ export default function GameLayout({
 
   return (
     <div className="mobile-container">
+      <PauseOverlay isPaused={isPaused} onResume={onPauseToggle} />
       <div className={MOBILE_LAYOUT_STYLES.CONTAINER}>
         {/* Fixed position score bar */}
         <div className="fixed top-0 left-0 right-0 z-50">
@@ -126,7 +132,10 @@ export default function GameLayout({
           onNewGame={onNewGame}
           onModeChange={onModeChange}
           onBackToMain={onBackToMain}
+          isPaused={isPaused}
+          onPauseToggle={onPauseToggle}
         />
+
       </div>
     </div>
   );

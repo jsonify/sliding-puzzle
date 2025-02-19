@@ -2,7 +2,7 @@ import type { GameControlsPanelProps } from '../../types/layout';
 import PatternPreview from '../PatternPreview';
 import { formatTime } from '../../utils/leaderboardUtils';
 import { GAME_CONFIG } from '../../constants/gameConfig';
-import { Home, Trophy, Timer, RotateCw, Zap } from 'lucide-react';
+import { Home, Trophy, Timer, RotateCw, Zap, Pause, Play } from 'lucide-react';
 
 export default function GameControlsPanel({
   mode,
@@ -14,6 +14,8 @@ export default function GameControlsPanel({
   onSizeChange,
   targetPattern,
   onSolve,
+  isPaused,
+  onPauseToggle,
   unlockedSizes = new Set([GAME_CONFIG.DEFAULT_SIZE]),
 }: GameControlsPanelProps): JSX.Element {
   return (
@@ -84,6 +86,19 @@ export default function GameControlsPanel({
           >
             <RotateCw className="h-4 w-4" />
             New Game
+          </button>
+          
+          <button
+            type="button"
+            onClick={onPauseToggle}
+            className={`w-full font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
+              isPaused
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-yellow-600 hover:bg-yellow-700'
+            } text-white`}
+          >
+            {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            {isPaused ? 'Resume Game' : 'Pause Game'}
           </button>
           
           {onSolve && (
