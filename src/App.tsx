@@ -202,10 +202,39 @@ function App(): ReactElement {
     }
   }, [board, gameState, gridSize, mode, targetPattern, unlockedSizes]);
 
+  const handleNextLevel = useCallback(() => {
+    if (mode !== GAME_MODES.CLASSIC) return;
+    
+    // Find next available size
+    const currentIndex = GAME_CONFIG.GRID_SIZES.indexOf(gridSize);
+    const nextSize = GAME_CONFIG.GRID_SIZES[currentIndex + 1];
+    
+    if (nextSize && unlockedSizes.has(nextSize)) {
+      // Close victory modal
+      setShowVictoryModal(false);
+      
+      // Start new game with next size
+      setGridSize(nextSize);
+      const newTarget = createBoard(nextSize);
+      const moves = nextSize * nextSize * SHUFFLE_MULTIPLIER;
+      const shuffled = shuffleBoard(createBoard(nextSize), moves);
+      setTargetPattern(newTarget);
+      setBoard(shuffled);
+      setGameState(initialGameState);
+    }
+  }, [gridSize, mode, unlockedSizes]);
+
   const handleVictoryClose = useCallback(() => {
     setShowVictoryModal(false);
     onStartNewGame();
   }, [onStartNewGame]);
+
+  const hasNextLevel = useCallback(() => {
+    if (mode !== GAME_MODES.CLASSIC) return false;
+    const currentIndex = GAME_CONFIG.GRID_SIZES.indexOf(gridSize);
+    const nextSize = GAME_CONFIG.GRID_SIZES[currentIndex + 1];
+    return nextSize !== undefined && unlockedSizes.has(nextSize);
+  }, [gridSize, mode, unlockedSizes]);
 
   const onSolve = useCallback((): void => {
     if (gameState.isWon) return;
@@ -277,6 +306,8 @@ function App(): ReactElement {
         onClose={handleVictoryClose}
         moves={gameState.moves}
         time={gameState.time}
+        hasNextLevel={hasNextLevel()}
+        onNextLevel={handleNextLevel}
       />
     </GameLayout>
   );

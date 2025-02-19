@@ -7,9 +7,15 @@ interface VictoryModalProps {
   onClose: () => void;
   moves: number;
   time: number;
+  hasNextLevel?: boolean;
+  onNextLevel?: () => void;
 }
 
-export default function VictoryModal({ isOpen, onClose, moves, time }: VictoryModalProps): JSX.Element | null {
+export default function VictoryModal({
+  isOpen, onClose, moves, time,
+  hasNextLevel = false,
+  onNextLevel
+}: VictoryModalProps): JSX.Element | null {
   if (!isOpen) return null;
 
   return (
@@ -53,13 +59,24 @@ export default function VictoryModal({ isOpen, onClose, moves, time }: VictoryMo
               </div>
             </div>
           </div>
-          
-          <button
-            onClick={onClose}
-            className={`${MOBILE_LAYOUT_STYLES.SHEET.ACTIONS.BUTTON.PRIMARY} py-3 text-lg`}
-          >
-            Play Again
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={onClose}
+              className={`${MOBILE_LAYOUT_STYLES.SHEET.ACTIONS.BUTTON.PRIMARY} py-3 text-lg flex-1`}
+              aria-label="Play current level again"
+            >
+              Play Again
+            </button>
+            {hasNextLevel && onNextLevel && (
+              <button
+                onClick={onNextLevel}
+                className={`${MOBILE_LAYOUT_STYLES.SHEET.ACTIONS.BUTTON.PRIMARY} py-3 text-lg flex-1 bg-emerald-600 hover:bg-emerald-500`}
+                aria-label="Progress to next level"
+              >
+                Next Level
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </>
