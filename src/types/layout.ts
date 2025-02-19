@@ -13,6 +13,8 @@ export interface GameControlsPanelProps {
   onSizeChange: (size: GridSize) => void;
   targetPattern: Board;
   onSolve?: () => void;
+  isPaused: boolean;
+  onPauseToggle: () => void;
 }
 
 export interface LeaderboardPanelProps {
@@ -37,6 +39,8 @@ export interface DesktopLayoutProps {
   unlockedSizes: Set<GridSize>;
   onSizeChange: (size: GridSize) => void;
   onSolve?: () => void;
+  isPaused: boolean;
+  onPauseToggle: () => void;
 }
 
 export interface GameLayoutProps extends DesktopLayoutProps {
@@ -57,6 +61,8 @@ export interface MenuSheetProps {
   onNewGame: () => void;
   onModeChange: (mode: GameMode) => void;
   onBackToMain: () => void;
+  isPaused: boolean;
+  onPauseToggle: () => void;
 }
 
 export interface PatternPreviewProps {
@@ -76,4 +82,9 @@ export interface TabsContainerProps {
   defaultTab: string;
   children: ReactNode;
   className?: string;
+}
+
+export interface PauseOverlayProps {
+  isPaused: boolean;
+  onResume: () => void;
 }

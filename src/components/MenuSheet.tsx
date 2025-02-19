@@ -25,6 +25,8 @@ export default function MenuSheet({
   onNewGame,
   onModeChange,
   onBackToMain,
+  isPaused,
+  onPauseToggle,
 }: MenuSheetProps): JSX.Element {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -120,6 +122,21 @@ export default function MenuSheet({
             New Game
           </button>
 
+          <button
+            type="button"
+            onClick={() => {
+              onPauseToggle();
+              onOpenChange(false);
+            }}
+            className={`w-full text-white font-bold py-4 px-6 rounded-xl shadow-lg active:scale-95 transform transition-all duration-200 ${
+              isPaused
+                ? 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                : 'bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700'
+            }`}
+          >
+            {isPaused ? 'Resume Game' : 'Pause Game'}
+          </button>
+
           {/* Pattern Type Selection - Only show for color mode */}
           {mode === 'color' && onPatternTypeChange && (
             <div className="space-y-2">
@@ -130,7 +147,14 @@ export default function MenuSheet({
                 {PATTERN_OPTIONS.map(({ value, label }) => (
                   <button
                     key={value}
-                    onClick={() => onPatternTypeChange(value)}
+                    onClick={() => {
+                      if (onPatternTypeChange) {
+                        onPatternTypeChange(value);
+                        // Also start a new game when pattern type changes
+                        onNewGame();
+                        onOpenChange(false);
+                      }
+                    }}
                     className={`
                       py-3 px-4 rounded-lg font-medium text-sm
                       transform transition-all duration-200
@@ -149,7 +173,10 @@ export default function MenuSheet({
 
           <button
             type="button"
-            onClick={() => setShowLeaderboard(true)}
+            onClick={() => {
+              setShowLeaderboard(true);
+              onOpenChange(false);
+            }}
             className="w-full bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700
               text-white font-bold py-4 px-6 rounded-xl shadow-lg active:scale-95 transform transition-all duration-200"
           >
@@ -158,7 +185,10 @@ export default function MenuSheet({
 
           <button
             type="button"
-            onClick={onBackToMain}
+            onClick={() => {
+              onBackToMain();
+              onOpenChange(false);
+            }}
             className="w-full bg-gradient-to-br from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500
               text-white font-bold py-4 px-6 rounded-xl shadow-lg active:scale-95 transform transition-all duration-200"
           >

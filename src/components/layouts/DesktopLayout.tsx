@@ -2,6 +2,7 @@ import type { DesktopLayoutProps } from '../../types/layout';
 import { useState } from 'react';
 import GameControlsPanel from '../layouts/GameControlsPanel';
 import LeaderboardPanel from '../layouts/LeaderboardPanel';
+import PauseOverlay from '../PauseOverlay';
 
 export default function DesktopLayout({
   mode,
@@ -15,11 +16,14 @@ export default function DesktopLayout({
   gridSize,
   onSizeChange,
   onSolve,
+  isPaused,
+  onPauseToggle,
 }: DesktopLayoutProps): JSX.Element {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(true);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-4 lg:p-8">
+      <PauseOverlay isPaused={isPaused} onResume={onPauseToggle} />
       <div className="flex flex-col lg:flex-row items-start gap-8 max-w-[1920px] mx-auto">
         {/* Left Panel - Game Controls */}
         <div className="w-full lg:w-80 mb-8 lg:mb-0">
@@ -34,6 +38,8 @@ export default function DesktopLayout({
             targetPattern={targetPattern}
             unlockedSizes={unlockedSizes}
             onSolve={onSolve}
+            isPaused={isPaused}
+            onPauseToggle={onPauseToggle}
           />
         </div>
 

@@ -41,7 +41,8 @@ const initialGameState = {
   time: 0,
   isWon: false,
   isPlaying: false,
-  hasStarted: false
+  hasStarted: false,
+  isPaused: false
 };
 
 // Initial shuffle moves multiplier
@@ -106,7 +107,7 @@ function App(): ReactElement {
       timerRef.current = undefined;
     }
 
-    if (gameState.hasStarted && !gameState.isWon) {
+    if (gameState.hasStarted && !gameState.isWon && !gameState.isPaused) {
       timerRef.current = window.setInterval(() => {
         setGameState(prev => ({
           ...prev,
@@ -120,7 +121,7 @@ function App(): ReactElement {
         clearInterval(timerRef.current);
       }
     };
-  }, [gameState.hasStarted, gameState.isWon]);
+  }, [gameState.hasStarted, gameState.isWon, gameState.isPaused]);
 
   // Event handlers
   const onStartNewGame = useCallback((): void => {
@@ -184,7 +185,7 @@ function App(): ReactElement {
   }, []);
 
   const onHandleTileClick = useCallback((position: Position): void => {
-    if (gameState.isWon) return;
+    if (gameState.isWon || gameState.isPaused) return;
 
     // Start the game on first move
     if (!gameState.hasStarted) {
@@ -232,7 +233,7 @@ function App(): ReactElement {
         });
       }
     }
-  }, [board, gameState, gridSize, mode, targetPattern, unlockedSizes]);
+  }, [board, gameState, gridSize, mode, targetPattern, unlockedSizes]); 
 
   const handleNextLevel = useCallback(() => {
     if (mode !== GAME_MODES.CLASSIC) return;
@@ -286,6 +287,13 @@ function App(): ReactElement {
     updateLeaderboard({ gridSize, moves: gameState.moves, mode, timeSeconds: gameState.time });
   }, [gameState.moves, gameState.time, gridSize, mode, targetPattern, gameState.isWon]);
 
+  const togglePause = useCallback((): void => {
+    setGameState(prev => ({
+      ...prev,
+      isPaused: !prev.isPaused
+    }));
+  }, []);
+
   // Mode selection screen
   if (!modeSelected) {
     return (
@@ -317,6 +325,8 @@ function App(): ReactElement {
       time={gameState.time}
       onNewGame={onStartNewGame}
       onModeChange={onHandleModeSelect}
+      isPaused={gameState.isPaused}
+      onPauseToggle={togglePause}
       onBackToMain={onBackToMain}
       onSolve={onSolve}
       targetPattern={targetPattern}
