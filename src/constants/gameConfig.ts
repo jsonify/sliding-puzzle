@@ -133,6 +133,14 @@ export const DEFAULT_CONFIG = {
   size: GAME_CONFIG.DEFAULT_SIZE,
 } as const;
 
+/**
+ * Local storage keys for persisting game state
+ */
+export const STORAGE_KEYS = {
+  /** Key for storing unlocked grid sizes */
+  UNLOCKED_SIZES: 'slidingPuzzle_unlockedSizes'
+} as const;
+
 type ValidationError = {
   message: string;
   value?: number;

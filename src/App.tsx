@@ -30,7 +30,7 @@ import {
   isPatternMatched
 } from './utils/colorPatternUtils';
 import { updateLeaderboard } from './utils/leaderboardUtils';
-import { GAME_MODES, GAME_CONFIG } from './constants/gameConfig';
+import { GAME_MODES, GAME_CONFIG, STORAGE_KEYS } from './constants/gameConfig';
 import { COLOR_MODE, PATTERN_TYPES } from './constants/colorMode';
 import type { ColorBoard } from './types/game';
 import { GameConstants } from './constants/gameConstants';
@@ -47,9 +47,36 @@ const initialGameState = {
 // Initial shuffle moves multiplier
 const SHUFFLE_MULTIPLIER = 50;
 
+// Helper function to safely handle localStorage operations
+const getUnlockedSizesFromStorage = (): Set<GridSize> => {
+  try {
+    const storedSizes = localStorage.getItem(STORAGE_KEYS.UNLOCKED_SIZES);
+    if (storedSizes) {
+      const parsedSizes = JSON.parse(storedSizes) as number[];
+      // Validate sizes and ensure they are valid grid sizes
+      const validSizes = parsedSizes.filter(size => 
+        GAME_CONFIG.GRID_SIZES.includes(size as GridSize)
+      ) as GridSize[];
+      return new Set(validSizes);
+    }
+  } catch (error) {
+    console.error('Error loading unlocked sizes from storage:', error);
+  }
+  // Return default if storage fails or is empty
+  return new Set([GAME_CONFIG.DEFAULT_SIZE]);
+};
+
+const saveUnlockedSizesToStorage = (sizes: Set<GridSize>): void => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.UNLOCKED_SIZES, JSON.stringify([...sizes]));
+  } catch (error) {
+    console.error('Error saving unlocked sizes to storage:', error);
+  }
+};
+
 function App(): ReactElement {
   // Game configuration state
-  const [unlockedSizes, setUnlockedSizes] = useState<Set<GridSize>>(new Set([3]));
+  const [unlockedSizes, setUnlockedSizes] = useState<Set<GridSize>>(() => getUnlockedSizesFromStorage());
   const [mode, setMode] = useState<GameMode>(GAME_MODES.CLASSIC);
   const [gridSize, setGridSize] = useState<GridSize>(GameConstants.INITIAL_GRID_SIZE);
   const [patternType, setPatternType] = useState<typeof PATTERN_TYPES[keyof typeof PATTERN_TYPES]>(PATTERN_TYPES.RANDOM);
@@ -66,6 +93,11 @@ function App(): ReactElement {
 
   // Victory
   const [showVictoryModal, setShowVictoryModal] = useState(false);
+
+  // Effect to save unlocked sizes whenever they change
+  useEffect(() => {
+    saveUnlockedSizesToStorage(unlockedSizes);
+  }, [unlockedSizes]);
 
   // Timer effect
   useEffect(() => {
