@@ -111,6 +111,78 @@ describe('<App />', () => {
     })
   })
 
+  it('shows Next Level button when next level is available and unlocked', async () => {
+    vi.useFakeTimers()
+    renderWithProviders(<App />, false)
+    const user = userEvent.setup({ delay: undefined })
+
+    // Start game
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.runOnlyPendingTimersAsync()
+    
+    // Simulate winning state
+    const board = screen.getByTestId('game-board')
+    board.dispatchEvent(new CustomEvent('win'))
+    await vi.runOnlyPendingTimersAsync()
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Next Level' })).toBeInTheDocument()
+    })
+  })
+
+  it('transitions to next grid size when clicking Next Level', async () => {
+    vi.useFakeTimers()
+    renderWithProviders(<App />, false)
+    const user = userEvent.setup({ delay: undefined })
+
+    // Start game with 3x3 grid
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.runOnlyPendingTimersAsync()
+    
+    // Simulate winning state
+    const board = screen.getByTestId('game-board')
+    board.dispatchEvent(new CustomEvent('win'))
+    await vi.runOnlyPendingTimersAsync()
+
+    // Click Next Level
+    await user.click(screen.getByRole('button', { name: 'Next Level' }))
+    await vi.runOnlyPendingTimersAsync()
+
+    // Verify we're on 4x4 grid (16 tiles - 1 empty = 15 tiles)
+    await waitFor(() => {
+      const tiles = screen.getAllByRole('button', { name: /Tile/ })
+      expect(tiles).toHaveLength(15)
+    })
+
+    // Verify game state is reset
+    expect(screen.getByText('Moves: 0')).toBeInTheDocument()
+    expect(screen.getByText('Time: 0:00')).toBeInTheDocument()
+  })
+
+  it('does not show Next Level button on final level', async () => {
+    vi.useFakeTimers()
+    renderWithProviders(<App />, false)
+    const user = userEvent.setup({ delay: undefined })
+
+    // Start game
+    await user.click(screen.getByRole('button', { name: 'Start Game' }))
+    await vi.runOnlyPendingTimersAsync()
+
+    // Set to max grid size
+    const sizeSelect = screen.getByLabelText('Grid Size')
+    await user.selectOptions(sizeSelect, '9')
+    await vi.runOnlyPendingTimersAsync()
+    
+    // Simulate winning state
+    const board = screen.getByTestId('game-board')
+    board.dispatchEvent(new CustomEvent('win'))
+    await vi.runOnlyPendingTimersAsync()
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Next Level' })).not.toBeInTheDocument()
+    })
+  })
+
   it('allows changing grid size during gameplay', async () => {
     vi.useFakeTimers()
     renderWithProviders(<App />, false)
