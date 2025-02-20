@@ -49,4 +49,6 @@ codebase.md
 .eslintcache
 .stylelintcache
 
+# Extra
 .aidigestignore
+ideas/
