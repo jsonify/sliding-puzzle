@@ -2,19 +2,7 @@
 
 A modern implementation of the classic 15-puzzle (sliding puzzle) game built with React, TypeScript, and Tailwind CSS, but with a twist.
 
-```
-+------------------+
-|     15 Puzzle     |
-+------------------+
-|  1   2   3   4   |
-|  5   6   7   8   |
-|  9  10  11  12   |
-| 13  14  15       |
-+------------------+
-|   [New Game]     |
-|   Grid Size: 4   |
-+------------------+
-```
+TODO: Add the other modes.
 
 ## Features
 
