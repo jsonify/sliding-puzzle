@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { BoardClassNames, BoardUI } from '../constants/boardUI';
 import type { BoardProps, Position, GameMode, ClassicBoard, ColorBoard } from '../types/game';
+import { MOBILE_LAYOUT_STYLES } from '../constants/mobileLayout';
 import { isValidColor } from '../constants/colorMode';
 import { getMovablePositions } from '../utils/gameUtils';
 import Tile from './Tile';
@@ -125,7 +126,7 @@ export default function Board({
 
   return (
     <div
-      className={boardClasses}
+      className={`${boardClasses} ${isTimedMode(mode) ? MOBILE_LAYOUT_STYLES.BOARD.TIMED_MODE : ''}`}
       style={{
         gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
         gap: `${BoardUI.TILE_GAP_PX}px`,
@@ -135,15 +136,15 @@ export default function Board({
       data-testid="game-board"
     >
       {isTimedMode(mode) && timeRemaining !== undefined && (
-        <div className="fixed top-16 left-0 right-0 z-50 flex justify-center">
-          <TimerDisplay
-            timeRemaining={timeRemaining}
-            gridSize={gridSize}
-            isPaused={false}
-            className="bg-slate-800/80 backdrop-blur-md p-3 px-6 rounded-lg shadow-xl border border-slate-600"
-          />
-        </div>
-      )}
+    <div className="absolute top-0 left-0 right-0 flex justify-center -mt-16">
+      <TimerDisplay
+        timeRemaining={timeRemaining}
+        gridSize={gridSize}
+        isPaused={false}
+        className="bg-slate-800/50 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-slate-700"
+      />
+    </div>
+  )}
       {typedTiles.map((row, rowIndex) => (
         <div 
           key={createRowKey(gridSize, rowIndex)} 

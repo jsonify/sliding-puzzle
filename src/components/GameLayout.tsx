@@ -65,80 +65,85 @@ export default function GameLayout({
     ? 'w-[200px] flex-shrink-0' // Larger size in landscape
     : 'w-[200px] mx-auto mb-4'; // Consistent size in portrait
 
-  return (
-    <div className="mobile-container">
-      <PauseOverlay isPaused={isPaused} onResume={onPauseToggle} />
-      <div className={MOBILE_LAYOUT_STYLES.CONTAINER}>
-        {/* Fixed position score bar - hide in timed mode */}
-        {!isTimedMode && (
-          <div className="fixed top-0 left-0 right-0 z-50">
-            <ScoreBar score={score} time={time} mode={mode}/>
-          </div>
-        )}
-
-        {/* Game content with orientation-specific layout */}
-        <div className={`w-full max-w-5xl mx-auto flex ${layoutClasses}`}>
-          {/* Pattern Preview - conditionally rendered based on orientation */}
-          {orientation === 'portrait' && (
-            <div className={previewClasses}>
-              <PatternPreview 
-                mode={mode} 
-                pattern={targetPattern}
-                size="md"
-              />
-            </div>
+    return (
+      <div className="mobile-container">
+        <PauseOverlay isPaused={isPaused} onResume={onPauseToggle} />
+        <div className={MOBILE_LAYOUT_STYLES.CONTAINER}>
+          {/* Only show pattern preview for color mode */}
+          {mode === 'color' && (
+            <>
+              {orientation === 'portrait' && (
+                <div className={previewClasses}>
+                  <PatternPreview 
+                    mode={mode} 
+                    pattern={targetPattern}
+                    size="md"
+                  />
+                </div>
+              )}
+            </>
           )}
-
-          {/* Game Board */}
-          <div className={`w-full ${orientation === 'landscape' ? 'max-w-xl' : 'max-w-md'} mx-auto`}>
-            <div className={MOBILE_LAYOUT_STYLES.BOARD.CONTAINER}>
-              {children}
+    
+          {/* Game content */}
+          <div className={`w-full max-w-5xl mx-auto flex ${layoutClasses}`}>
+            {/* Game Board - Give more space in timed mode */}
+            <div className={`w-full ${
+              mode === 'timed' 
+                ? 'relative' // Container for positioning timer at bottom
+                : orientation === 'landscape' ? 'max-w-xl' : 'max-w-md'
+            } mx-auto`}>
+              <div className={MOBILE_LAYOUT_STYLES.BOARD.CONTAINER}>
+                {children}
+                {mode === 'timed' && (
+                  <div className={`
+                    w-full flex justify-center
+                    ${orientation === 'landscape' ? 'mt-4' : 'mt-6'}
+                    absolute -bottom-16 left-0 right-0
+                  `}>
+                    <ScoreBar score={score} time={time} mode={mode} />
+                  </div>
+                )}
+              </div>
             </div>
+    
+            {/* Pattern Preview for landscape - only in color mode */}
+            {mode === 'color' && orientation === 'landscape' && (
+              <div className={previewClasses}>
+                <PatternPreview 
+                  mode={mode} 
+                  pattern={targetPattern}
+                  size="md"
+                />
+              </div>
+            )}
           </div>
-
-          {/* Pattern Preview for landscape - positioned on the right */}
-          {orientation === 'landscape' && (
-            <div className={previewClasses}>
-              <PatternPreview 
-                mode={mode} 
-                pattern={targetPattern}
-                size="md"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Menu Button - fixed position at bottom left with safe area padding */}
-        <button
-          type="button"
-          onClick={() => setIsMenuOpen(true)}
-          className={`
-            ${MOBILE_LAYOUT_STYLES.MENU_BUTTON.BUTTON}
-            ${MOBILE_LAYOUT_STYLES.ANIMATION.HOVER}
-            ${MOBILE_LAYOUT_STYLES.ANIMATION.PRESS}
-            fixed bottom-8 left-4 z-50
-          `}
-          aria-label="Open game menu"
-        >
-          {mode === 'classic' ? (
+    
+          {/* Menu Button */}
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(true)}
+            className={`
+              ${MOBILE_LAYOUT_STYLES.MENU_BUTTON.BUTTON}
+              ${MOBILE_LAYOUT_STYLES.ANIMATION.HOVER}
+              ${MOBILE_LAYOUT_STYLES.ANIMATION.PRESS}
+              fixed bottom-8 left-4 z-50
+            `}
+            aria-label="Open game menu"
+          >
             <ClassicMenuIcon />
-          ) : (
-            <ColorMenuIcon />
-          )}
-        </button>
-
-        {/* Menu Sheet */}
-        <MenuSheet
-          isOpen={isMenuOpen}
-          onOpenChange={setIsMenuOpen}
-          mode={mode}
-          onNewGame={onNewGame}
-          onModeChange={onModeChange}
-          onBackToMain={onBackToMain}
-          isPaused={isPaused}
-          onPauseToggle={onPauseToggle}
-        />
+          </button>
+    
+          <MenuSheet
+            isOpen={isMenuOpen}
+            onOpenChange={setIsMenuOpen}
+            mode={mode}
+            onNewGame={onNewGame}
+            onModeChange={onModeChange}
+            onBackToMain={onBackToMain}
+            isPaused={isPaused}
+            onPauseToggle={onPauseToggle}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
 }

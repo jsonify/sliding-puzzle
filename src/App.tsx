@@ -30,7 +30,7 @@ import {
   isPatternMatched
 } from './utils/colorPatternUtils';
 import { updateLeaderboard } from './utils/leaderboardUtils';
-import { GAME_MODES, GAME_CONFIG, STORAGE_KEYS } from './constants/gameConfig';
+import { GAME_MODES, GAME_CONFIG, STORAGE_KEYS, calculateTimeLimit } from './constants/gameConfig';
 import { COLOR_MODE, PATTERN_TYPES } from './constants/colorMode';
 import type { ColorBoard } from './types/game';
 import { GameConstants } from './constants/gameConstants';
@@ -342,6 +342,7 @@ function App(): ReactElement {
         tileSize={gridSize}
         isWon={gameState.isWon}
         onBackToMain={onBackToMain}
+        timeRemaining={mode === 'timed' ? calculateTimeLimit(gridSize) - gameState.time : undefined}
       />
       <VictoryModal
         isOpen={showVictoryModal}

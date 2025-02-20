@@ -105,7 +105,7 @@ export default function Tile({
   };
 
   const tilePosition: Position = position;
-  const displayValue = mode === 'classic' ? value : '';
+  const displayValue = (mode === 'classic' || mode === 'timed') ? value : '';
   const ariaLabel = mode === 'classic' 
     ? `Tile ${value}` 
     : `${isValidColor(value) ? value : 'Unknown'} colored tile`;
