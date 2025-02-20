@@ -50,6 +50,7 @@ export interface GameLayoutProps extends DesktopLayoutProps {
 export interface ScoreBarProps {
   score: number;
   time: number;
+  mode?: GameMode;
 }
 
 export interface MenuSheetProps {

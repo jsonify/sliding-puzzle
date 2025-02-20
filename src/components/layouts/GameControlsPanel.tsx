@@ -40,10 +40,12 @@ export default function GameControlsPanel({
             <Trophy className="h-5 w-5" />
             <span className="text-xl font-bold">{score}</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-200">
-            <Timer className="h-5 w-5" />
-            <span className="text-xl font-mono">{formatTime(time)}</span>
-          </div>
+          {mode !== 'timed' && (
+            <div className="flex items-center gap-2 text-slate-200">
+              <Timer className="h-5 w-5" />
+              <span className="text-xl font-mono">{formatTime(time)}</span>
+            </div>
+          )}
         </div>
 
         {/* Grid Size Selection */}

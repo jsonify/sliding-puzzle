@@ -1,4 +1,5 @@
 import type { PatternPreviewProps } from '../types/layout';
+import { useOrientation } from '../hooks/useOrientation';
 import { MOBILE_LAYOUT_STYLES } from '../constants/mobileLayout';
 import { GameConstants } from '../constants/gameConstants';
 
@@ -17,6 +18,7 @@ export default function PatternPreview({
   size = 'md',
   className = '',
 }: PatternPreviewProps): JSX.Element {
+  const { orientation } = useOrientation();
   const {
     CONTAINER,
     HEADER,
@@ -25,11 +27,12 @@ export default function PatternPreview({
   } = MOBILE_LAYOUT_STYLES.PATTERN_PREVIEW;
 
   const getItemStyle = (value: number | string) => {
-    if (mode === 'classic') {
+    if (mode === 'classic' || mode === 'timed') {
       // For classic mode, show numbers with consistent styling
-      return value === 0 
-        ? 'bg-transparent' 
-        : 'bg-white dark:bg-gray-700 flex items-center justify-center text-sm font-medium';
+      const baseStyle = value === 0 
+        ? 'bg-transparent border border-dashed border-gray-600'
+        : 'bg-white dark:bg-gray-700 flex items-center justify-center font-medium text-gray-900 dark:text-gray-200';
+      return baseStyle;
     }
 
     // Color mode
@@ -47,17 +50,16 @@ export default function PatternPreview({
 
   return (
     <div 
-      className={`${CONTAINER} ${className}`}
+      className={`${CONTAINER} ${className} ${orientation === 'portrait' ? 'w-full max-w-md mx-auto' : 'w-full'}`}
       role="complementary" 
       aria-label="Target pattern"
     >
       <div className="p-4">
-        <h2 className={HEADER}>Target Pattern</h2>
-        
+        <h2 className={`${HEADER} mb-2 text-center`}>Target Pattern</h2>
         <div className={GRID_CONTAINER}>
           <div 
             className={`
-              grid gap-1 bg-slate-700 p-2 rounded mx-auto
+              grid gap-1 bg-slate-700/50 p-2 rounded-lg mx-auto
               ${SIZES[size]}
             `}
             style={{ 
@@ -71,14 +73,14 @@ export default function PatternPreview({
                 <div
                   key={`${rowIndex}-${colIndex}`}
                   className={`
-                    aspect-square w-full rounded-sm
+                    aspect-square w-full rounded
                     ${getItemStyle(value)}
-                    transition-all duration-200
+                    transition-all duration-150
                   `}
                   role="presentation"
                 >
-                  {mode === 'classic' && value !== GameConstants.EMPTY_CELL && (
-                    <span className="text-gray-900 dark:text-gray-200">
+                  {(mode === 'classic' || mode === 'timed') && value !== GameConstants.EMPTY_CELL && (
+                    <span className="text-sm">
                       {value}
                     </span>
                   )}

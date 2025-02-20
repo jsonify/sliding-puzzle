@@ -23,6 +23,7 @@ export const MOBILE_LAYOUT_STYLES = {
   // Game board
   BOARD: {
     CONTAINER: 'w-full bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-lg',
+    TIMED_MODE: 'mt-16',
     GRID: 'grid grid-cols-5 gap-2 p-4',
   },
 
