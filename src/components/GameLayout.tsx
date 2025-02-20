@@ -32,6 +32,7 @@ export default function GameLayout({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { orientation } = useOrientation();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const isTimedMode = mode === 'timed';
 
   if (isDesktop) {
     return (
@@ -68,10 +69,12 @@ export default function GameLayout({
     <div className="mobile-container">
       <PauseOverlay isPaused={isPaused} onResume={onPauseToggle} />
       <div className={MOBILE_LAYOUT_STYLES.CONTAINER}>
-        {/* Fixed position score bar */}
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <ScoreBar score={score} time={time} />
-        </div>
+        {/* Fixed position score bar - hide in timed mode */}
+        {!isTimedMode && (
+          <div className="fixed top-0 left-0 right-0 z-50">
+            <ScoreBar score={score} time={time} mode={mode}/>
+          </div>
+        )}
 
         {/* Game content with orientation-specific layout */}
         <div className={`w-full max-w-5xl mx-auto flex ${layoutClasses}`}>
@@ -135,7 +138,6 @@ export default function GameLayout({
           isPaused={isPaused}
           onPauseToggle={onPauseToggle}
         />
-
       </div>
     </div>
   );

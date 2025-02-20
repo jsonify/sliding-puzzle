@@ -135,15 +135,16 @@ export default function Board({
       data-testid="game-board"
     >
       {isTimedMode(mode) && timeRemaining !== undefined && (
-        <div className="absolute top-0 left-0 right-0 flex justify-center -mt-12">
+        <div className="fixed top-16 left-0 right-0 z-50 flex justify-center">
           <TimerDisplay
             timeRemaining={timeRemaining}
             gridSize={gridSize}
             isPaused={false}
+            className="bg-slate-800/80 backdrop-blur-md p-3 px-6 rounded-lg shadow-xl border border-slate-600"
           />
         </div>
       )}
-    {typedTiles.map((row, rowIndex) => (
+      {typedTiles.map((row, rowIndex) => (
         <div 
           key={createRowKey(gridSize, rowIndex)} 
           className="contents" 

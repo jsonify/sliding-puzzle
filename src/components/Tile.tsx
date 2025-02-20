@@ -63,17 +63,29 @@ export default function Tile({
   ].join(' ');
 
   // Only show hover effects on adjacent tiles
-  const stateClasses = mode === 'classic'
-    ? isMovable
-      ? `bg-white dark:bg-gray-700 ${isAdjacent ? 'hover:scale-105 hover:bg-blue-50 dark:hover:bg-gray-600' : ''} cursor-pointer shadow-md hover:shadow-lg`
-      : 'bg-white dark:bg-gray-700 cursor-not-allowed opacity-90'
-    : `${getColorStyle(value as TileColor | 0, isMovable, isAdjacent)} ${isMovable ? 'cursor-pointer shadow-md hover:shadow-lg' : 'cursor-not-allowed opacity-90'}`;
+  const stateClasses = (mode === 'classic' || mode === 'timed')
+  ? isMovable
+    ? `bg-white dark:bg-gray-700 ${
+        isAdjacent 
+          ? 'hover:scale-105 hover:bg-blue-50 dark:hover:bg-gray-600 hover:shadow-lg' 
+          : ''
+      } cursor-pointer shadow-md`
+    : 'bg-white dark:bg-gray-700/90 cursor-not-allowed opacity-90'
+  : `${getColorStyle(value as TileColor | 0, isMovable, isAdjacent)} ${
+      isMovable 
+        ? 'cursor-pointer shadow-md hover:shadow-lg' 
+        : 'cursor-not-allowed opacity-90'
+    }`;
 
   // Skip rendering for empty tile (number 0)
   if (value === 0) {
     return (
       <div
-        className={`${baseClasses} bg-slate-700`}
+        className={`${baseClasses} ${
+          mode === 'color' 
+            ? 'bg-slate-700/80' 
+            : 'bg-transparent dark:bg-transparent'
+        }`}
         aria-hidden="true"
         data-testid="tile-empty"
         aria-label="Empty space"

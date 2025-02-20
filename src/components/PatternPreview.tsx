@@ -25,11 +25,12 @@ export default function PatternPreview({
   } = MOBILE_LAYOUT_STYLES.PATTERN_PREVIEW;
 
   const getItemStyle = (value: number | string) => {
-    if (mode === 'classic') {
+    if (mode === 'classic' || mode === 'timed') {
       // For classic mode, show numbers with consistent styling
-      return value === 0 
-        ? 'bg-transparent' 
-        : 'bg-white dark:bg-gray-700 flex items-center justify-center text-sm font-medium';
+      const baseStyle = value === 0 
+        ? 'bg-transparent'
+        : 'bg-white dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-900 dark:text-gray-200';
+      return baseStyle;
     }
 
     // Color mode
@@ -52,8 +53,7 @@ export default function PatternPreview({
       aria-label="Target pattern"
     >
       <div className="p-4">
-        <h2 className={HEADER}>Target Pattern</h2>
-        
+        <h2 className={`${HEADER} mb-4`}>Target Pattern</h2>
         <div className={GRID_CONTAINER}>
           <div 
             className={`
@@ -77,8 +77,8 @@ export default function PatternPreview({
                   `}
                   role="presentation"
                 >
-                  {mode === 'classic' && value !== GameConstants.EMPTY_CELL && (
-                    <span className="text-gray-900 dark:text-gray-200">
+                  {(mode === 'classic' || mode === 'timed') && value !== GameConstants.EMPTY_CELL && (
+                    <span>
                       {value}
                     </span>
                   )}
