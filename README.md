@@ -128,6 +128,30 @@ pnpm dev
 - [Vite](https://vitejs.dev/) - Build Tool
 - [Vitest](https://vitest.dev/) - Testing Framework
 
+## Deployment
+
+The project uses a two-environment deployment strategy with Vercel:
+
+### Development Environment
+- Branch: `development`
+- URL: https://dev.sliding-puzzle.vercel.app
+- Purpose: Testing and staging of new features
+- Automatically deploys when changes are merged to `development`
+
+### Production Environment
+- Branch: `main`
+- URL: https://sliding-puzzle.vercel.app
+- Purpose: Live production application
+- Deploys when changes are merged to `main`
+
+### Development Workflow
+1. Create feature branches from `development`
+2. Make changes and test locally
+3. Create PR to merge into `development`
+4. Test changes in staging environment
+5. When ready, create PR from `development` to `main`
+6. Review and merge to deploy to production
+
 ## Development
 
 ### Available Scripts

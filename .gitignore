@@ -39,7 +39,7 @@ cypress/videos
 cypress/downloads
 
 # Github Workflows
-.github/workflows
+#.github/workflows
 codebase.md
 
 # Vercel
