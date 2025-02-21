@@ -275,7 +275,7 @@ function App(): ReactElement {
   }, [board, gameState, gridSize, mode, targetPattern, unlockedSizes]); 
 
   const handleNextLevel = useCallback(() => {
-    if (mode !== GAME_MODES.CLASSIC) return;
+    if (mode !== GAME_MODES.CLASSIC && mode !== 'timed') return;
     
     // Find next available size
     const currentIndex = GAME_CONFIG.GRID_SIZES.indexOf(gridSize);
@@ -284,6 +284,12 @@ function App(): ReactElement {
     if (nextSize && unlockedSizes.has(nextSize)) {
       // Close victory modal
       setShowVictoryModal(false);
+
+      // Reset timer and time remaining for timed mode
+      if (mode === 'timed') {
+        setTimeRemaining(calculateTimeLimit(nextSize));
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
       
       // Start new game with next size
       setGridSize(nextSize);
@@ -302,7 +308,7 @@ function App(): ReactElement {
   }, [onStartNewGame]);
 
   const hasNextLevel = useCallback(() => {
-    if (mode !== GAME_MODES.CLASSIC) return false;
+    if (mode !== GAME_MODES.CLASSIC && mode !== 'timed') return false;
     const currentIndex = GAME_CONFIG.GRID_SIZES.indexOf(gridSize);
     const nextSize = GAME_CONFIG.GRID_SIZES[currentIndex + 1];
     return nextSize !== undefined && unlockedSizes.has(nextSize);
@@ -389,6 +395,8 @@ function App(): ReactElement {
         moves={gameState.moves}
         time={gameState.time}
         hasNextLevel={hasNextLevel()}
+        mode={mode}
+        timeRemaining={mode === 'timed' ? timeRemaining : undefined}
         onNextLevel={handleNextLevel}
       />
     </GameLayout>
