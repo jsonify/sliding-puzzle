@@ -4,7 +4,7 @@ export const MOBILE_LAYOUT_STYLES = {
   
   // Score bar
   SCORE_BAR: {
-    CONTAINER: 'w-full max-w-md flex justify-between items-center mb-8 bg-slate-800/50 p-4 rounded-lg backdrop-blur-sm',
+    CONTAINER: 'w-full max-w-md flex justify-between items-center px-4 py-3 bg-slate-800/50 backdrop-blur-sm border-b border-slate-700',
     SCORE: 'flex items-center gap-2 text-yellow-400',
     SCORE_TEXT: 'text-xl font-bold',
     TIMER: 'flex items-center gap-2 text-slate-200',
@@ -22,7 +22,7 @@ export const MOBILE_LAYOUT_STYLES = {
 
   // Game board
   BOARD: {
-    CONTAINER: 'w-full bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-lg',
+    CONTAINER: 'w-full bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-lg relative',
     TIMED_MODE: 'mt-16',
     GRID: 'grid grid-cols-5 gap-2 p-4',
   },

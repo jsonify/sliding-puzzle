@@ -1,4 +1,5 @@
 // src/components/VictoryModal.tsx
+import type { GameMode } from '../types/game';
 import { MOBILE_LAYOUT_STYLES } from '../constants/mobileLayout';
 import { formatTime } from '../utils/leaderboardUtils';
 
@@ -7,12 +8,14 @@ interface VictoryModalProps {
   onClose: () => void;
   moves: number;
   time: number;
+  mode: GameMode;
   hasNextLevel?: boolean;
   onNextLevel?: () => void;
+  timeRemaining?: number;
 }
 
 export default function VictoryModal({
-  isOpen, onClose, moves, time,
+  isOpen, onClose, moves, time, mode, timeRemaining,
   hasNextLevel = false,
   onNextLevel
 }: VictoryModalProps): JSX.Element | null {
@@ -46,6 +49,11 @@ export default function VictoryModal({
           <p className="text-xl text-slate-200 mb-6">
             You solved the puzzle!
           </p>
+          {mode === 'timed' && timeRemaining !== undefined && (
+            <p className="text-lg text-emerald-400 mb-6">
+              Time Remaining: {formatTime(timeRemaining)}
+            </p>
+          )}
           
           <div className="bg-slate-800/50 rounded-lg p-4 mb-6">
             <div className="grid grid-cols-2 gap-4">

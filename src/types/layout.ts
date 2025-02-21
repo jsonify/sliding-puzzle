@@ -45,6 +45,8 @@ export interface DesktopLayoutProps {
 
 export interface GameLayoutProps extends DesktopLayoutProps {
   onModeChange: (mode: GameMode) => void;
+  timeRemaining?: number;
+  onTimeUp?: () => void;
 }
 
 export interface ScoreBarProps {

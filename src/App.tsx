@@ -7,6 +7,7 @@ import ModeSelect from './components/ModeSelect';
 import { LevelSelect } from './components/LevelSelect';
 import GameLayout from './components/GameLayout';
 import VictoryModal from './components/VictoryModal';
+import GameEndModal from './components/GameEndModal';
 
 // Types
 import type {
@@ -88,6 +89,8 @@ function App(): ReactElement {
   const [board, setBoard] = useState<BoardType>(() => createBoard(gridSize));
   const [targetPattern, setTargetPattern] = useState<BoardType>(() => createBoard(gridSize));
   const [gameState, setGameState] = useState(initialGameState);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
   // Timer ref to prevent multiple intervals
   const timerRef = useRef<number>();
@@ -108,11 +111,37 @@ function App(): ReactElement {
     }
 
     if (gameState.hasStarted && !gameState.isWon && !gameState.isPaused) {
+      if (mode === 'timed') {
+        const timeLimit = calculateTimeLimit(gridSize);
+        setTimeRemaining(timeLimit - gameState.time);
+      }
+
       timerRef.current = window.setInterval(() => {
-        setGameState(prev => ({
-          ...prev,
-          time: prev.time + GameConstants.TIME_INCREMENT
-        }));
+        setGameState(prev => {
+          const newTime = prev.time + GameConstants.TIME_INCREMENT;
+          
+          if (mode === 'timed') {
+            const newRemaining = calculateTimeLimit(gridSize) - newTime;
+            setTimeRemaining(newRemaining);
+            
+            if (newRemaining <= 0) {
+              if (timerRef.current) {
+                clearInterval(timerRef.current);
+              }
+              setShowGameOverModal(true);
+              return {
+                ...prev,
+                isPlaying: false,
+                hasStarted: false
+              };
+            }
+          }
+
+          return {
+            ...prev,
+            time: newTime
+          };
+        });
       }, GameConstants.TIMER_INTERVAL) as unknown as number;
     }
 
@@ -121,10 +150,20 @@ function App(): ReactElement {
         clearInterval(timerRef.current);
       }
     };
-  }, [gameState.hasStarted, gameState.isWon, gameState.isPaused]);
+  }, [gameState.hasStarted, gameState.isWon, gameState.isPaused, mode, gridSize]);
+
 
   // Event handlers
   const onStartNewGame = useCallback((): void => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = undefined;
+    }
+
+    if (mode === 'timed') {
+      setTimeRemaining(calculateTimeLimit(gridSize));
+    }
+
     if (mode === GAME_MODES.CLASSIC) {
       const newTarget = createBoard(gridSize);
       const moves = gridSize * gridSize * SHUFFLE_MULTIPLIER;
@@ -236,7 +275,7 @@ function App(): ReactElement {
   }, [board, gameState, gridSize, mode, targetPattern, unlockedSizes]); 
 
   const handleNextLevel = useCallback(() => {
-    if (mode !== GAME_MODES.CLASSIC) return;
+    if (mode !== GAME_MODES.CLASSIC && mode !== 'timed') return;
     
     // Find next available size
     const currentIndex = GAME_CONFIG.GRID_SIZES.indexOf(gridSize);
@@ -245,6 +284,12 @@ function App(): ReactElement {
     if (nextSize && unlockedSizes.has(nextSize)) {
       // Close victory modal
       setShowVictoryModal(false);
+
+      // Reset timer and time remaining for timed mode
+      if (mode === 'timed') {
+        setTimeRemaining(calculateTimeLimit(nextSize));
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
       
       // Start new game with next size
       setGridSize(nextSize);
@@ -263,7 +308,7 @@ function App(): ReactElement {
   }, [onStartNewGame]);
 
   const hasNextLevel = useCallback(() => {
-    if (mode !== GAME_MODES.CLASSIC) return false;
+    if (mode !== GAME_MODES.CLASSIC && mode !== 'timed') return false;
     const currentIndex = GAME_CONFIG.GRID_SIZES.indexOf(gridSize);
     const nextSize = GAME_CONFIG.GRID_SIZES[currentIndex + 1];
     return nextSize !== undefined && unlockedSizes.has(nextSize);
@@ -350,6 +395,8 @@ function App(): ReactElement {
         moves={gameState.moves}
         time={gameState.time}
         hasNextLevel={hasNextLevel()}
+        mode={mode}
+        timeRemaining={mode === 'timed' ? timeRemaining : undefined}
         onNextLevel={handleNextLevel}
       />
     </GameLayout>
